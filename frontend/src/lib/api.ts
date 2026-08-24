@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -29,8 +29,8 @@ export function attachErrorInterceptor(handlers: {
 }) {
   return api.interceptors.response.use(
     (response) => response,
-    (error) => {
-      const body: ApiErrorBody | undefined = error.response?.data
+    (error: AxiosError<ApiErrorBody>) => {
+      const body = error.response?.data
 
       switch (body?.code) {
         case 'UNAUTHENTICATED':
