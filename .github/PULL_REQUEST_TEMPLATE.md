@@ -37,3 +37,8 @@ Branch must follow `feature/TS-XX-name` (or `fix/*` / `hotfix/*`)
 
 ## Notes for the reviewer
 <!-- Any context, design decision, or spot where you want specific attention. -->
+
+<!--
+  Track Studio PR template.
+  The PR title must follow the commit convention: TS-XX: description
+-->
