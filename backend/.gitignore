@@ -25,3 +25,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Laravel Boost — archivos generados (regenerables con boost:install)
+/AGENTS.md
+/boost.json
+/.ai/
+/.claude/skills/
