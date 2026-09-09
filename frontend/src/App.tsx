@@ -1,13 +1,16 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import LoginButton from './components/LoginButton'
-import LogoutButton from './components/LogoutButton'
-import Profile from './components/Profile'
 import { api, attachAuthInterceptor, attachErrorInterceptor } from '@/lib/api'
 import { useEffect } from 'react'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import RequireAuth from './routes/RequireAuth'
+import RequireRole from './routes/RequireRole'
+import Home from './routes/Home'
+import Forbidden from './routes/Forbidden'
+import MePage from './routes/Me.tsx'
 
 function App() {
-  const { isAuthenticated, isLoading, error, getAccessTokenSilently, loginWithRedirect } =
-    useAuth0()
+  const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
+  const navigate = useNavigate()
 
   useEffect(() => {
     // TODO: verify whether loginWithRedirect() rejections are already surfaced via useAuth0().error
@@ -25,7 +28,7 @@ function App() {
       api.interceptors.request.eject(authId)
       api.interceptors.response.eject(errorId)
     }
-  }, [getAccessTokenSilently, loginWithRedirect])
+  }, [getAccessTokenSilently, loginWithRedirect, navigate])
 
   if (isLoading) {
     return (
@@ -50,35 +53,16 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      <div className="main-card-wrapper">
-        <img
-          src="https://cdn.auth0.com/quantum-assets/dist/latest/logos/auth0/auth0-lockup-en-ondark.png"
-          alt="Auth0 Logo"
-          className="auth0-logo"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
-        />
-        <h1 className="main-title">Welcome to Sample0</h1>
-
-        {isAuthenticated ? (
-          <div className="logged-in-section">
-            <div className="logged-in-message">✅ Successfully authenticated!</div>
-            <h2 className="profile-section-title">Your Profile</h2>
-            <div className="profile-card">
-              <Profile />
-            </div>
-            <LogoutButton />
-          </div>
-        ) : (
-          <div className="action-card">
-            <p className="action-text">Get started by signing in to your account</p>
-            <LoginButton />
-          </div>
-        )}
-      </div>
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/403" element={<Forbidden />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<RequireRole allowed={['productor', 'artista']} />}>
+          <Route path="/me" element={<MePage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
