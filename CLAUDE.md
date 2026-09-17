@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. (Hoy: **bloque 7 — subida de audio a S3 está ABIERTO**; mientras siga así, el ERD no se cierra y ninguna historia de audio HU-13..HU-16 es "Ready".)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF, **8.3** CORS y rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: las historias de audio HU-13..HU-16 siguen sin ser "Ready", pero por el **ERD completo, diferido deliberadamente**, no por el bloque 7.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 
@@ -85,12 +85,14 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ---
 
-## 5. Qué NO hacer todavía (vigente hasta cerrar el bloque 7 del ADR)
+## 5. Qué NO hacer todavía (alcance del Sprint 1 + ERD diferido)
 
-- No tocar S3, subida de archivos ni presigned URLs.
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`.
-- No implementar hash de integridad (sí se pueden **definir** las interfaces de frontera).
-- No construir interfaz de los módulos funcionales más allá del endpoint de humo del Sprint 1.
+> **Por qué existe este bloque, actualizado el 2026-09-17:** antes vetaba por el **bloque 7 del ADR**, que estaba `ABIERTO`. Ese bloque se **cerró el 2026-08-18** (D7.1-D7.7). Los cuatro vetos siguen vigentes, pero ahora por dos motivos distintos: el **alcance acordado del Sprint 1** y el **ERD completo, que el equipo difirió deliberadamente** (no está bloqueado por nada — se retoma cuando se decida). Si se levanta un veto, se levanta aquí primero.
+
+- No tocar S3, subida de archivos ni presigned URLs. *(Alcance de Sprint 1. La decisión técnica ya existe —bloque 7—, lo que falta es que le toque el turno.)*
+- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 **solo** `users`, `artists`, `production_access` (T-31). *(ERD diferido + alcance de Sprint 1.)*
+- No implementar hash de integridad (sí se pueden **definir** las interfaces de frontera). *(Alcance de Sprint 1.)*
+- No construir interfaz de los módulos funcionales más allá del endpoint de humo del Sprint 1. *(Alcance de Sprint 1.)*
 
 ---
 
@@ -101,7 +103,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 - **Correo del proyecto:** `trackstudioec@outlook.com`.
 - **Región AWS:** `us-east-1`. **Gestor de paquetes JS:** npm. **Tablero:** Jira.
 
-**Drift reconciliado** (detectado 2026-09-02): el handoff de backend (31-ago) registró que el SDK real de Auth0 para Laravel es `auth0/login` **v7** y no "v4.x" como decía una restricción del documento de tesis) y que conviene actualizar la tabla de versiones (D2.1) con las versiones ya instaladas. Corregir en el ADR/documento la próxima vez que se toquen.
+**Drift reconciliado** (detectado 2026-09-02, **aplicado al ADR el 2026-09-17**): el SDK real de Auth0 para Laravel es `auth0/login` **v7** (namespace `Auth0\Laravel`), no la "v4.x" que decía D4.8 y una restricción del documento de tesis — ya corregido en D4.8. Las versiones verificadas del stack están ahora en **D2.1**. **Pendiente:** arrastrar las dos correcciones al documento de tesis, que es el único sitio donde siguen sin corregir.
 
 ---
 

@@ -138,7 +138,8 @@ Es memoria **del código**, no de la conversación. La memoria entre sesiones la
 
 ## 8. Lo que este método NO cambia
 
-- **Las puertas ABIERTAS del ADR siguen cerrando.** Si una tarea toca algo marcado `ABIERTO` (hoy: bloque 7, subida de audio a S3), no se escribe ni su spec de implementación ni sus tests todavía: se señala la decisión pendiente. Ninguna historia de audio (HU-13..HU-16) es "Ready" mientras siga abierto.
+- **Las puertas ABIERTAS del ADR siguen cerrando.** Si una tarea toca un punto marcado `ABIERTO`, no se escribe ni su spec de implementación ni sus tests todavía: se señala la decisión pendiente. La lista viva vive al final del ADR, no aquí — copiarla sería el drift que §0 prohíbe. *(Actualizado 2026-09-17: el bloque 7 —audio/S3— está **cerrado**; las historias HU-13..HU-16 siguen sin ser "Ready" por el ERD completo, diferido deliberadamente.)*
+- **Una decisión `ABIERTA` no siempre bloquea.** Si la implementación es compatible con **todas** las salidas posibles de la decisión, el punto se anota y se avanza. Precedente: `3.7` (origen del `trace_id`) — el backend genera un ULID, y si mañana se decide que el frontend aporte el suyo, el manejador lo respeta sin reescribir nada. Lo que no vale es elegir en silencio una de las salidas y llamarlo "no bloquea".
 - **"Qué NO hacer todavía"** del `CLAUDE.md` manda por encima de este ciclo. Aunque el método permita escribir tests, no se escriben para módulos vetados en ese bloque.
 - **Definition of Done** del proyecto (código en rama principal sin fallos de pipeline, tests pasando, AC cumplidos, RNF verificados, revisado en Sprint Review) sigue siendo el criterio de cierre. Este método es cómo se llega ahí, no un sustituto.
 

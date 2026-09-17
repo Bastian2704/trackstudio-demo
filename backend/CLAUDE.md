@@ -69,7 +69,7 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 | Capas                         | **D4.4** | Controller delgado → Service (negocio) → Eloquent/Contratos → Resource.                                                                                                                                       |
 | Borrado                       | **D4.5** | Soft deletes con cascada **explícita en el Service** (no `ON DELETE CASCADE`). Objetos S3 se conservan al soft-delete.                                                                                        |
 | Enums                         | **D4.6** | Enums nativos backed, validados con `Rule::enum()`.                                                                                                                                                           |
-| RBAC                          | **D4.8** | Rol desde el claim del JWT de Auth0 (`https://trackstudio.site/roles`). Middleware valida y extrae; autorización fina con Policies/Gates. Nunca se guardan credenciales en el backend.                        |
+| RBAC                          | **D4.8** | Rol desde el claim del JWT de Auth0 (`https://trackstudio.site/roles`, leído de `config('auth0.roles_claim')`). El guard `auth0-api` de `auth0/login` **v7** valida el JWT; el rol se extrae en `UserRepositoryContract::fromAccessToken()`; autorización fina con Policies/Gates. Nunca se guardan credenciales en el backend. Ver `docs/specs/backend/HU-03.md` §3.2. |
 | Pruebas                       | **D4.7** | Pest. Cubrir Form Requests, Services (mock de interfaces externas) y endpoints (RBAC).                                                                                                                        |
 
 ## 4. Reglas de PHP 8.4
@@ -88,7 +88,9 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 - **`auth0_sub` en `users`: único e indexado** (clave de búsqueda por request; corrección registrada en el handoff de backend sobre una omisión de D6.7).
 - Factories con Faker para todos los modelos; seeder de prod solo la cuenta real del productor; seeder de dev/staging con dataset **en español** y al menos una canción con cuatro versiones paralelas — **D6.8**.
 
-## 6. Qué NO hacer todavía (backend) — vigente hasta cerrar el bloque 7 del ADR
+## 6. Qué NO hacer todavía (backend) — alcance del Sprint 1 + ERD diferido
+
+> Actualizado 2026-09-17: el **bloque 7 del ADR (audio/S3) está CERRADO** desde el 2026-08-18. Estos vetos siguen vigentes por **alcance de Sprint 1** y por el **ERD completo, diferido deliberadamente** — ver `CLAUDE.md` raíz §5, que es su dueño.
 
 - No tocar S3, subida de archivos ni presigned URLs.
 - No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 **solo** `users`, `artists`, `production_access` (T-31).
