@@ -7,7 +7,7 @@
 - [Roadmap](roadmap.md): 8 sprints, 3 releases y 92 SP; horizonte, no capacidad comprometida.
 - [Backlog de Jira](jira-backlog.md): catálogo de épicas, Story y Task, y cobertura HU ↔ RF/RNF.
 - `sprints/sprint-NN.md` (pendientes): desglose por sprint con tickets, checklists y dependencias.
-- `imports/` (pendiente): CSV de cada lote y tabla `local_id → clave TS-<n>`.
+- [imports/](imports/README.md): CSV de cada lote y tabla `local_id → clave TS-<n>`.
 - [Metodología SDD/TDD](../global/metodologia-sdd-tdd.md): ciclo, roles, compuertas C1-C5, Ready y Done.
 - [Reglas de git](../global/reglas-git.md): ramas, commits y entrega de comandos.
 - ADR (`docs/adr/decisiones-tecnicas-track-studio.md`): decisiones técnicas por número (`Dx.y`) y bloques ABIERTOS.
