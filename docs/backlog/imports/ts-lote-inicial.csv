@@ -1,0 +1,467 @@
+"Work item ID","Work type","Summary","Description","Parent","Priority","Story point estimate","Labels","Labels","Labels","Labels","Labels","Labels","Labels"
+"1001","Epic","Infraestructura y entornos","Resultado y límites: Monorepo, CI/CD, modelo de datos (ERD), entornos de staging y producción, dominio y proveedores externos (S3, Resend) configurados por el equipo. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-infra","lote-inicial","backlog-oficial","","","",""
+"1002","Epic","Identidad y control de acceso","Resultado y límites: Autenticación con Auth0 y RBAC productor/artista aplicado en todas las rutas. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-identity","lote-inicial","backlog-oficial","","","",""
+"1003","Epic","Artistas","Resultado y límites: Registro centralizado de artistas con unicidad y estados activo/suspendido/bloqueado. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-artists","lote-inicial","backlog-oficial","","","",""
+"1004","Epic","Producciones","Resultado y límites: Producciones por artista y formato (álbum, EP, sencillo) con sus reglas de formato. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-productions","lote-inicial","backlog-oficial","","","",""
+"1005","Epic","Canciones","Resultado y límites: Canciones por producción con posición, estado y borrado confirmado en cascada. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-songs","lote-inicial","backlog-oficial","","","",""
+"1006","Epic","Versiones de audio","Resultado y límites: Subida WAV/MP3 ≤ 500 MB, versionado secuencial, reproducción embebida y URLs prefirmadas. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-audio","lote-inicial","backlog-oficial","","","",""
+"1007","Epic","Comentarios con marca de tiempo","Resultado y límites: Retroalimentación vinculada al segundo exacto del audio, no editable, con borrado solo del autor. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-comments","lote-inicial","backlog-oficial","","","",""
+"1008","Epic","Acceso del artista","Resultado y límites: Invitación y revocación por producción; el artista solo ve lo que se le asignó. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-artist-access","lote-inicial","backlog-oficial","","","",""
+"1009","Epic","Sesiones de estudio","Resultado y límites: Calendario del productor sin solapes y solicitudes de sesión del artista. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-sessions","lote-inicial","backlog-oficial","","","",""
+"1010","Epic","Calidad y aceptación","Resultado y límites: Pruebas unitarias e integración, verificación de RNF y aceptación con el productor. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-quality","lote-inicial","backlog-oficial","","","",""
+"1011","Epic","Documento de tesis","Resultado y límites: Secciones de diseño, desarrollo, pruebas y resultados del documento de titulación, con evidencia del proyecto. La épica agrupa alcance aprobado; cada entrega requiere spec de capa y tests en rojo antes de implementar.","","","","local-ts-epic-thesis","lote-inicial","backlog-oficial","","","",""
+"1101","Story","HU-01 Configurar entorno y repositorios","Historia: Como equipo de desarrollo, quiero configurar el entorno y los repositorios, para tener una base de trabajo versionada y estandarizada.
+
+Alcance: estructura del monorepo, estrategia de ramas, herramientas de calidad local y documentación de variables de entorno de ambas capas. Sin valores reales en ningún .env.example.
+
+Criterios de aceptación:
+- Repositorios inicializados con estructura frontend/backend.
+- Estrategia de ramas definida (main, develop, feature/*).
+- Variables de entorno documentadas.
+
+Referencias: docs/global/reglas-git.md; backend/docs/nomenclatura.md; backend/docs/Handoff backend sprint1.md; ADR D2.1, D2.2.
+
+Checklist de ejecución:
+- [x] ts-01.01 Estructura del monorepo. Hecho cuando: backend/ y frontend/ hermanos, cada uno con su CLAUDE.md y su stack arrancando. Evidencia: PR #1-#5. Orden interno: según dependencias del ticket.
+- [x] ts-01.02 Estrategia de ramas definida. Hecho cuando: main, develop y feature/* documentados en reglas-git.md y develop creada en el remoto. Evidencia: origin/develop. Orden interno: ts-01.01.
+- [x] ts-01.03 Calidad local en el frontend. Hecho cuando: Husky, ESLint (type-checked) y Prettier se ejecutan antes del commit. Evidencia: PR #3. Orden interno: ts-01.02.
+- [x] ts-01.04 Plantilla de PR. Hecho cuando: .github/PULL_REQUEST_TEMPLATE.md versionada. Evidencia: commit 342df30. Orden interno: ts-01.02.
+- [ ] ts-01.05 Documentar variables del frontend (humano). Hecho cuando: frontend/.env.example versionado con VITE_AUTH0_DOMAIN, VITE_AUTH0_CLIENT_ID, VITE_AUTH0_AUDIENCE, VITE_AUTH0_ROLE_CLAIM y VITE_API_BASE_URL sin valores reales; .env sigue en .gitignore. Orden interno: ts-01.04.
+- [ ] ts-01.06 Documentar variables del backend (humano). Hecho cuando: backend/.env.example incluye las variables de Auth0 (dominio, audience, clave del claim de roles) sin valores reales, alineadas con ts-03.01. Orden interno: ts-01.05.
+- [ ] ts-01.07 Registrar evidencia y cerrar. Hecho cuando: PRs enlazados en el ticket de Jira, los tres AC comprobados y ticket movido a Done a mano. Orden interno: ts-01.06.","1001","High","3","local-ts-01","lote-inicial","backlog-oficial","release-r1","target-s1","capa-ambas","riesgo-normal"
+"1102","Story","HU-02 Pipeline CI/CD con despliegue a staging","Historia: Como equipo de desarrollo, quiero un pipeline CI/CD, para automatizar build, pruebas y despliegue a staging.
+
+Alcance: CI de ambas capas con lint, build y pruebas; fallo del pipeline ante un test roto; despliegue automático a staging tras el merge a develop; protección de ramas. Sin despliegue a producción.
+
+Criterios de aceptación:
+- Cada push ejecuta lint + build + pruebas unitarias.
+- El merge a develop despliega a staging automáticamente.
+- El pipeline falla si una prueba no pasa.
+
+Referencias: .github/workflows/frontend-ci.yml; .github/workflows/backend-ci.yml; metodologia-sdd-tdd.md §5 (C4) y §6; ADR D2.1.
+
+Dependencia externa: permisos de administración del repositorio en GitHub para la protección de ramas.
+
+Checklist de ejecución:
+- [x] ts-02.01 CI frontend. Hecho cuando: npm ci, format:check, lint y build corren en push y PR a main/develop. Evidencia: PR #7; run 34368239813. Orden interno: según dependencias del ticket.
+- [x] ts-02.02 CI backend. Hecho cuando: composer install, Pint, Larastan y tests corren en push y PR a main/develop. Evidencia: PR #8; run 34491523296. Orden interno: ts-02.01.
+- [ ] ts-02.03 Tests del backend contra PostgreSQL (C4). Hecho cuando: el job de tests usa un servicio PostgreSQL en vez de SQLite y queda en verde. En curso: PR #10. Orden interno: ts-02.02.
+- [ ] ts-02.04 Pruebas unitarias en la CI frontend (humano). Hecho cuando: Vitest instalado con un script test y la CI lo ejecuta; es requisito de ts-03.06 y ts-04.06. Orden interno: ts-02.03.
+- [ ] ts-02.05 El pipeline falla ante un test roto. Hecho cuando: un PR de prueba con un test roto a propósito en cada capa queda en rojo, y se registra el enlace del run. Orden interno: ts-02.04.
+- [ ] ts-02.06 Protección de main y develop (humano). Hecho cuando: sin push directo, PR con 1 review y checks de CI obligatorios en ambas ramas. Orden interno: ts-02.05.
+- [ ] ts-02.07 Despliegue a staging tras merge a develop. Hecho cuando: un merge a develop actualiza Railway y Vercel sin pasos manuales. Orden interno: ts-02.06 y ts-29.06.
+- [ ] ts-02.08 Corregir el AC en Jira. Hecho cuando: el criterio dice develop → staging antes de importar, y la discrepancia se cierra en el roadmap. Orden interno: independiente.
+- [ ] ts-02.09 Integración y cierre. Hecho cuando: los tres AC tienen evidencia (runs verde y rojo, despliegue), el handoff está actualizado y el ticket se mueve a Done. Orden interno: ts-02.07, ts-02.08.","1001","High","5","local-ts-02","lote-inicial","backlog-oficial","release-r1","target-s1","capa-infra","riesgo-infra"
+"1103","Story","HU-03 Autenticación con Auth0","Historia: Como usuario, quiero autenticarme mediante Auth0, para acceder de forma segura al sistema.
+
+Alcance: login y logout en el frontend (ya integrado), validación del JWT en cada solicitud de la API y endpoint de humo autenticado. El sistema no almacena credenciales propias. RBAC por rol queda en ts-04.
+
+Criterios de aceptación:
+- Login y logout funcionales con emisión de token JWT.
+- La API valida el token en cada solicitud.
+- Credenciales nunca almacenadas en el sistema propio.
+
+Referencias: RNF-02; ADR D4.8 (claim https://trackstudio.site/roles) y D5.1 (token en memoria); backend/docs/Handoff backend sprint1.md (SDK auth0/login ^7).
+
+Dependencia externa: configuración del tenant de Auth0 (equipo humano), casilla ts-03.10.
+
+Checklist de ejecución:
+- [ ] ts-03.10 Tenant de Auth0 preparado (humano). Hecho cuando: la SPA y la API (audience) existen, una Action añade el claim https://trackstudio.site/roles y un token real se verificó en jwt.io con ese claim. Orden interno: según dependencias del ticket; antes de ts-03.02.
+- [ ] ts-03.01 Spec backend. Hecho cuando: docs/specs/backend/HU-03.md aprobada; define validación de firma, issuer, audience y expiración con auth0/login ^7, el endpoint de humo /api/v1/me, el 401 en formato D3.1 y una sola clave de config para el claim. Orden interno: independiente.
+- [ ] ts-03.02 Tests backend en rojo (agente). Hecho cuando: tests Pest vistos fallar para sin token, firma inválida, token expirado, audience ajena y token válido → 200. Al menos uno ejercita un JWT real de Auth0 (C4). Orden interno: ts-03.01, ts-03.10.
+- [ ] ts-03.03 Código backend hasta verde (humano). Hecho cuando: SDK instalado, middleware JWT, routes/api.php y /api/v1/me hacen pasar los tests; Larastan nivel 5 y Pint limpios. Orden interno: ts-03.02.
+- [ ] ts-03.04 Review backend. Hecho cuando: hallazgos con archivo:línea resueltos o justificados; cada test no trivial probado en rojo (C3). Orden interno: ts-03.03.
+- [ ] ts-03.05 Spec frontend. Hecho cuando: docs/specs/frontend/HU-03.md aprobada y enlazada a la backend; documenta el código ya integrado y no repite el test de token en memoria de HU-04 frontend. Orden interno: independiente.
+- [ ] ts-03.06 Tests frontend (agente). Hecho cuando: tests Vitest de login/logout y del interceptor que añade Authorization: Bearer. Como el código ya existe, el rojo se demuestra rompiendo la implementación (C3). Orden interno: ts-03.05, ts-02.04.
+- [x] ts-03.07 Código frontend. Hecho cuando: Auth0Provider con cacheLocation=""memory"", botones de login/logout e interceptor con Bearer integrados. Evidencia: PR #6. Se reabre si ts-03.06 revela fallos. Orden interno: ts-03.06.
+- [ ] ts-03.08 Review frontend. Hecho cuando: igual que ts-03.04 para la capa frontend. Orden interno: ts-03.07.
+- [ ] ts-03.11 Sin credenciales propias. Hecho cuando: el backend solo persiste auth0_sub (sin contraseñas ni tokens) y los logs no contienen tokens ni cabeceras Authorization. Orden interno: ts-03.04.
+- [ ] ts-03.09 Integración y cierre. Hecho cuando: PR a develop con CI verde; login, logout y llamada autenticada a /api/v1/me comprobados en staging; RNF-02 verificado; handoff actualizado. Orden interno: ts-03.08, ts-03.11, ts-29.06.","1002","High","5","local-ts-03","lote-inicial","backlog-oficial","release-r1","target-s1","capa-ambas","riesgo-seguridad"
+"1104","Story","HU-04 Control de acceso basado en roles","Historia: Como sistema, quiero aplicar control de acceso basado en roles, para restringir cada operación al rol correspondiente.
+
+Alcance: roles productor y artista desde el claim de Auth0, middleware RBAC en todas las rutas de la API, errores 401/403 en formato D3.1, endpoint de escritura de prueba y guardas de ruta en el frontend. Las vistas funcionales y la vista restringida completa del artista quedan en sus HU (HU-05+, HU-21).
+
+Criterios de aceptación:
+- Middleware RBAC en el 100% de las rutas.
+- Rol artista rechazado (403) al acceder a recursos ajenos.
+- Roles productor y artista diferenciados.
+
+Referencias: RNF-01; ADR D3.1, D4.1, D4.2, D4.4, D4.8, D5.1, D6.1, D6.6, D6.7; docs/specs/backend/HU-04.md; docs/specs/frontend/HU-04.md.
+
+Dependencia externa: usuarios sintéticos con rol en Auth0 (equipo humano), casilla ts-04.10.
+
+Checklist de ejecución:
+- [ ] ts-04.01 Aprobar la spec backend. Hecho cuando: la spec pasa de borrador a aprobada tras resolver dos puntos: sustituir las referencias T-xx del tablero anterior y aplicar la decisión de ts-38.04 sobre production_access, cuya FK apunta a productions, tabla vetada mientras el bloque 7 siga ABIERTO. Orden interno: ts-38.04.
+- [ ] ts-04.02 Tests backend en rojo (agente). Hecho cuando: RbacTest (401 sin token, 403 al artista, 2xx al productor), ErrorShapeTest (forma D3.1 y code) y un test que recorre las rutas /api/v1 y exige middleware de autenticación y rol en el 100 %, todos vistos fallar. Orden interno: ts-04.01, ts-03.03.
+- [ ] ts-04.03 Código backend hasta verde (humano). Hecho cuando: manejador centralizado D3.1, unauthenticated() sobrescrito, Policy, endpoint de escritura de prueba y solo las migraciones permitidas, conforme al ERD aprobado en ts-38.06; tests en verde; Larastan y Pint limpios. Orden interno: ts-04.02, ts-38.06.
+- [ ] ts-04.04 Review backend. Hecho cuando: hallazgos resueltos o justificados; cada test probado en rojo según la columna C3 de la spec. Orden interno: ts-04.03.
+- [ ] ts-04.05 Aprobar la spec frontend. Hecho cuando: la spec pasa a aprobada con referencias T-xx sustituidas y enlace coherente con la backend. Orden interno: independiente.
+- [ ] ts-04.06 Tests frontend (agente). Hecho cuando: tests Vitest del interceptor (despacha por code, ignora message), de RequireRole (el artista no accede a rutas del productor) y del token fuera de localStorage/sessionStorage. Como el código ya existe en parte, el rojo se demuestra rompiéndolo (C3). Orden interno: ts-04.05, ts-02.04.
+- [ ] ts-04.07 Código frontend hasta verde (humano). Hecho cuando: RequireRole, useRole, Forbidden e interceptor (ya presentes desde PR #6) completan lo que pidan los tests; tsc --noEmit, ESLint y Prettier limpios. Orden interno: ts-04.06.
+- [ ] ts-04.08 Review frontend. Hecho cuando: igual que ts-04.04 para la capa frontend. Orden interno: ts-04.07.
+- [ ] ts-04.10 Usuarios sintéticos con rol (humano). Hecho cuando: un usuario productor y uno artista de prueba en Auth0, con el rol presente en el claim del token; sin datos reales. Orden interno: ts-03.10.
+- [ ] ts-04.09 Integración y demo del sprint. Hecho cuando: PR a develop con CI verde; en staging el artista recibe 403 FORBIDDEN y ve la pantalla sin permiso, el productor recibe 2xx y sin token hay 401; RNF-01 verificado; handoff actualizado. Orden interno: ts-04.04, ts-04.08, ts-04.10, ts-02.07.","1002","High","3","local-ts-04","lote-inicial","backlog-oficial","release-r1","target-s1","capa-ambas","riesgo-seguridad"
+"1105","Story","HU-05 Registrar y editar artistas","Historia: Como productor, quiero registrar y editar artistas, para mantener un registro centralizado.
+
+Alcance: Alta y edición de artistas por el productor, en backend y frontend. Excluye el cambio de estado (HU-07) y el acceso del artista a producciones (HU-20).
+
+Criterios de aceptación:
+- Alta y edición con nombre y email obligatorios.
+- Unicidad de nombre y email validada.
+- Identificador único generado.
+
+Referencias: RF-01; ERD aprobado de users/artists (ts-38); docs/specs/backend/HU-05.md y docs/specs/frontend/HU-05.md (pendientes); roadmap S2.","1003","High","3","local-ts-05","lote-inicial","backlog-oficial","release-r1","target-s2","capa-ambas","riesgo-datos"
+"1106","Story","HU-06 Listar artistas con estado y producciones","Historia: Como productor, quiero listar los artistas con su estado y producciones, para tener visión general de mis clientes.
+
+Alcance: Listado de artistas del productor con su estado y producciones asociadas. Excluye las métricas del dashboard y las estadísticas del artista, que siguen pendientes de decisión.
+
+Criterios de aceptación:
+- Listado ordenado por estado y fecha.
+- Muestra producciones asociadas por artista.
+
+Referencias: RF-01; docs/specs/{backend,frontend}/HU-06.md (pendientes); roadmap S2.","1003","High","2","local-ts-06","lote-inicial","backlog-oficial","release-r1","target-s2","capa-ambas","riesgo-datos"
+"1107","Story","HU-07 Cambiar el estado de un artista","Historia: Como productor, quiero cambiar el estado de un artista, para reflejar su relación vigente con el estudio.
+
+Alcance: Cambio de estado de un artista entre activo, suspendido y bloqueado, con registro auditable del cambio.
+
+Criterios de aceptación:
+- Estados activo/suspendido/bloqueado disponibles.
+- Cambio persistido y auditable.
+
+Referencias: RF-01; docs/specs/{backend,frontend}/HU-07.md (pendientes); roadmap S2.","1003","High","2","local-ts-07","lote-inicial","backlog-oficial","release-r1","target-s2","capa-ambas","riesgo-datos"
+"1108","Story","HU-08 Registrar, editar y eliminar producciones","Historia: Como productor, quiero registrar, editar y eliminar producciones por artista y formato, para organizar mi trabajo.
+
+Alcance: Alta, edición y borrado de producciones por artista y formato. Excluye las reglas de formato (HU-09), la portada y el porcentaje de avance (pendientes de decisión).
+
+Criterios de aceptación:
+- Producción siempre asociada a un artista existente.
+- Formato álbum/EP/sencillo asignado.
+- Identificador único generado.
+
+Referencias: RF-02; ERD (ts-38); docs/specs/{backend,frontend}/HU-08.md (pendientes); roadmap S2.
+
+Dependencia externa: La migración de productions está vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1004","High","3","local-ts-08","lote-inicial","backlog-oficial","release-r1","target-s2","capa-ambas","riesgo-datos"
+"1109","Story","HU-09 Validar restricciones de formato","Historia: Como productor, quiero que el sistema valide las restricciones de formato, para mantener la coherencia con la industria.
+
+Alcance: Validación de las reglas de cada formato en alta y edición, en backend y frontend. La fuente de la duración usada para el límite del EP se define en la spec.
+
+Criterios de aceptación:
+- Sencillo admite una sola canción.
+- EP no supera 30 min.
+- Álbum admite múltiples canciones.
+- Validación en alta y edición.
+
+Referencias: RF-02; docs/specs/{backend,frontend}/HU-09.md (pendientes); roadmap S2.
+
+Dependencia externa: Depende de la migración de productions, vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1004","High","3","local-ts-09","lote-inicial","backlog-oficial","release-r1","target-s2","capa-ambas","riesgo-datos"
+"1110","Story","HU-10 Registrar, editar y eliminar canciones","Historia: Como productor, quiero registrar, editar y eliminar canciones dentro de una producción, para estructurar su contenido.
+
+Alcance: Alta, edición y borrado simple de canciones dentro de una producción. El borrado con confirmación y cascada es HU-12.
+
+Criterios de aceptación:
+- Canción siempre asociada a producción existente.
+- Nombre único dentro de la producción.
+- Identificador único generado.
+
+Referencias: RF-03; ERD (ts-38); docs/specs/{backend,frontend}/HU-10.md (pendientes); roadmap S3.
+
+Dependencia externa: La migración de songs está vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1005","High","3","local-ts-10","lote-inicial","backlog-oficial","release-r1","target-s3","capa-ambas","riesgo-datos"
+"1111","Story","HU-11 Listar canciones con estado y posición","Historia: Como productor, quiero listar las canciones con su estado y posición, para seguir el avance de la producción.
+
+Alcance: Listado de canciones de una producción con estado y posición.
+
+Criterios de aceptación:
+- Listado con estado vigente (por hacer/en progreso/finalizada) y posición asignada.
+
+Referencias: RF-03; docs/specs/{backend,frontend}/HU-11.md (pendientes); roadmap S3.
+
+Dependencia externa: Depende de la migración de songs, vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1005","High","2","local-ts-11","lote-inicial","backlog-oficial","release-r1","target-s3","capa-ambas","riesgo-datos"
+"1112","Story","HU-12 Eliminar canción con confirmación y cascada","Historia: Como productor, quiero eliminar una canción con confirmación, para evitar borrados accidentales.
+
+Alcance: Borrado de una canción con confirmación explícita y cascada sobre sus versiones y archivos de audio.
+
+Criterios de aceptación:
+- Confirmación explícita requerida.
+- Eliminación en cascada de versiones y archivos asociados.
+
+Referencias: RF-03; ERD (ts-38); docs/specs/{backend,frontend}/HU-12.md (pendientes); roadmap S3.
+
+Dependencia externa: Borra archivos en S3: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1005","High","3","local-ts-12","lote-inicial","backlog-oficial","release-r1","target-s3","capa-ambas","riesgo-datos"
+"1113","Story","HU-13 Subir archivos de audio a una versión","Historia: Como productor, quiero subir archivos de audio a una versión, para registrar el avance de cada canción.
+
+Alcance: Subida de un archivo WAV o MP3 de hasta 500 MB a una versión, con validación en ambas capas y progreso visible. Excluye la edición o el procesamiento de audio (fuera de alcance).
+
+Criterios de aceptación:
+- Solo WAV/MP3 aceptados.
+- Tamaño máximo 500 MB.
+- Validación en frontend y backend.
+- Feedback de progreso < 3 s.
+
+Referencias: RF-04, RNF-03; ERD (ts-38); docs/specs/{backend,frontend}/HU-13.md (pendientes); roadmap S3.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5). Bucket S3 e IAM (ts-31) configurados por el equipo.","1006","High","5","local-ts-13","lote-inicial","backlog-oficial","release-r1","target-s3","capa-ambas","riesgo-archivos"
+"1114","Story","HU-14 Versionado secuencial automático","Historia: Como productor, quiero que cada archivo genere una versión con número secuencial, para mantener el historial.
+
+Alcance: Numeración automática e inmodificable de versiones por canción e historial cronológico.
+
+Criterios de aceptación:
+- Número de versión automático e inmodificable.
+- Historial en orden cronológico con etiqueta, fecha y descripción.
+
+Referencias: RF-04, RNF-05; docs/specs/{backend,frontend}/HU-14.md (pendientes); roadmap S4.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1006","High","3","local-ts-14","lote-inicial","backlog-oficial","release-r1","target-s4","capa-ambas","riesgo-archivos"
+"1115","Story","HU-15 Reproducir versiones desde la interfaz","Historia: Como productor y artista, quiero reproducir cualquier versión desde la interfaz, para escuchar sin descargar.
+
+Alcance: Reproductor embebido que reproduce cualquier versión desde el historial, sin descargar el archivo.
+
+Criterios de aceptación:
+- Reproductor embebido funcional.
+- Reproducción sin descarga del archivo.
+- Acceso desde el historial.
+
+Referencias: RF-04; docs/specs/{backend,frontend}/HU-15.md (pendientes); roadmap S4.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1006","High","5","local-ts-15","lote-inicial","backlog-oficial","release-r1","target-s4","capa-ambas","riesgo-archivos"
+"1116","Story","HU-16 Servir audio mediante URLs firmadas","Historia: Como sistema, quiero servir el audio mediante URLs firmadas, para proteger la confidencialidad de los archivos.
+
+Alcance: Emisión de URLs prefirmadas con expiración para reproducir audio. La integridad por hash se define según el bloque 7 del ADR.
+
+Criterios de aceptación:
+- Ningún archivo accesible por URL pública permanente.
+- URLs prefirmadas con expiración obligatoria.
+- URL fresca por sesión.
+
+Referencias: RF-04, RNF-02, RNF-05; docs/specs/backend/HU-16.md (pendiente); roadmap S4.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1006","High","5","local-ts-16","lote-inicial","backlog-oficial","release-r1","target-s4","capa-backend","riesgo-archivos"
+"1117","Story","HU-17 Comentar sobre una marca de tiempo","Historia: Como productor y artista, quiero comentar sobre una marca de tiempo del audio, para dar retroalimentación precisa.
+
+Alcance: Registro de comentarios sobre una marca de tiempo de una versión. Excluye el estado resuelto/pendiente, la prioridad y las respuestas a comentarios (pendientes de decisión).
+
+Criterios de aceptación:
+- Comentario vinculado a timestamp válido dentro de la duración.
+- Texto obligatorio.
+- Registro con autor y fecha.
+
+Referencias: RF-05; ERD (ts-38); docs/specs/{backend,frontend}/HU-17.md (pendientes); roadmap S5.
+
+Dependencia externa: La migración de comments está vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1007","High","5","local-ts-17","lote-inicial","backlog-oficial","release-r2","target-s5","capa-ambas","riesgo-datos"
+"1118","Story","HU-18 Ver comentarios en la línea de tiempo","Historia: Como usuario, quiero ver los comentarios sobre la línea de tiempo del reproductor, para ubicar el feedback en contexto.
+
+Alcance: Marcadores de comentarios sobre la línea de tiempo del reproductor y listado ordenado por marca de tiempo.
+
+Criterios de aceptación:
+- Marcadores visibles sobre la línea de tiempo.
+- Listado en orden cronológico de marca de tiempo.
+
+Referencias: RF-05; docs/specs/{backend,frontend}/HU-18.md (pendientes); roadmap S5.","1007","High","5","local-ts-18","lote-inicial","backlog-oficial","release-r2","target-s5","capa-ambas","riesgo-datos"
+"1119","Story","HU-19 Navegar al comentario y eliminar los propios","Historia: Como usuario, quiero navegar al punto exacto del audio desde un comentario y eliminar los propios, para gestionar mi feedback.
+
+Alcance: Navegación del reproductor al comentario seleccionado y borrado de comentarios propios. Los comentarios no se editan.
+
+Criterios de aceptación:
+- Salto al timestamp al seleccionar un comentario.
+- Cada usuario elimina solo los suyos.
+- Comentarios no editables tras registro.
+
+Referencias: RF-05, RNF-01; docs/specs/{backend,frontend}/HU-19.md (pendientes); roadmap S5.","1007","High","3","local-ts-19","lote-inicial","backlog-oficial","release-r2","target-s5","capa-ambas","riesgo-datos"
+"1120","Story","HU-20 Otorgar y revocar acceso del artista","Historia: Como productor, quiero otorgar y revocar acceso de un artista a su producción, para controlar la confidencialidad.
+
+Alcance: Otorgar y revocar el acceso de un artista a una producción concreta, con invitación por correo.
+
+Criterios de aceptación:
+- Invitación por correo automática al otorgar acceso.
+- Revocación en cualquier momento.
+- Acceso limitado a la producción indicada.
+
+Referencias: RF-06, RNF-01; ERD (ts-38, production_access); docs/specs/{backend,frontend}/HU-20.md (pendientes); roadmap S6.
+
+Dependencia externa: Resend con dominio verificado (ts-32), configurado por el equipo.","1008","High","3","local-ts-20","lote-inicial","backlog-oficial","release-r2","target-s6","capa-ambas","riesgo-seguridad"
+"1121","Story","HU-21 Vista restringida a producciones asignadas","Historia: Como artista, quiero acceder únicamente a mis producciones asignadas, para revisar mi trabajo sin ver el de otros.
+
+Alcance: Vista del artista limitada a sus producciones autorizadas y rechazo de cualquier recurso ajeno.
+
+Criterios de aceptación:
+- Vista restringida a producciones autorizadas.
+- Sin acceso a funciones administrativas.
+- Rechazo ante recursos ajenos.
+
+Referencias: RF-06, RNF-01; docs/specs/{backend,frontend}/HU-21.md (pendientes); roadmap S6.","1008","High","2","local-ts-21","lote-inicial","backlog-oficial","release-r2","target-s6","capa-ambas","riesgo-seguridad"
+"1122","Story","HU-22 Registrar, editar y cancelar sesiones","Historia: Como productor, quiero registrar, editar y cancelar sesiones en un calendario, para planificar mi trabajo.
+
+Alcance: Calendario del productor con alta, edición y cancelación de sesiones de estudio, sin solapes.
+
+Criterios de aceptación:
+- Sesión asociada a proyecto existente.
+- Alerta y bloqueo ante superposición de horario.
+- Cancelación con confirmación.
+
+Referencias: RF-07; ERD (ts-38); docs/specs/{backend,frontend}/HU-22.md (pendientes); roadmap S6.
+
+Dependencia externa: La migración de studio_sessions está vetada mientras el ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5).","1009","High","3","local-ts-22","lote-inicial","backlog-oficial","release-r2","target-s6","capa-ambas","riesgo-datos"
+"1123","Story","HU-23 Consultar calendario y solicitar sesiones","Historia: Como artista, quiero consultar el calendario y solicitar sesiones, para coordinar fechas con el productor.
+
+Alcance: Calendario del artista con sus sesiones y solicitud de nuevas sesiones al productor.
+
+Criterios de aceptación:
+- Vista de calendario con sesiones propias.
+- Botón de solicitud de sesión.
+- Sesiones pasadas conservadas en el historial.
+
+Referencias: RF-07, RNF-01; docs/specs/{backend,frontend}/HU-23.md (pendientes); roadmap S6.","1009","High","3","local-ts-23","lote-inicial","backlog-oficial","release-r2","target-s6","capa-ambas","riesgo-datos"
+"1124","Story","HU-24 Pruebas unitarias de componentes críticos","Historia: Como equipo, quiero pruebas unitarias sobre componentes críticos, para asegurar la calidad del código.
+
+Alcance: Consolidación y cobertura de pruebas unitarias de los componentes críticos. Cada historia conserva sus propios tests.
+
+Criterios de aceptación:
+- Cobertura de componentes críticos de backend y frontend.
+- Ejecución automática en el pipeline.
+
+Referencias: Calidad; metodologia-sdd-tdd.md §5; roadmap S7.","1010","High","3","local-ts-24","lote-inicial","backlog-oficial","release-r3","target-s7","capa-ambas","riesgo-normal"
+"1125","Story","HU-25 Pruebas de integración de endpoints","Historia: Como equipo, quiero pruebas de integración sobre los endpoints, para verificar el comportamiento de la API.
+
+Alcance: Pruebas de integración de los endpoints principales y de los flujos funcionales completos.
+
+Criterios de aceptación:
+- Pruebas sobre los endpoints principales.
+- Validación de flujos funcionales completos.
+
+Referencias: Calidad; metodologia-sdd-tdd.md §5 (C4); roadmap S7.","1010","High","3","local-ts-25","lote-inicial","backlog-oficial","release-r3","target-s7","capa-backend","riesgo-normal"
+"1126","Story","HU-26 Corregir defectos y verificar RNF","Historia: Como equipo, quiero corregir defectos y verificar los RNF, para cumplir los criterios de calidad definidos.
+
+Alcance: Corrección de defectos priorizados y verificación formal de RNF-03 y RNF-07.
+
+Criterios de aceptación:
+- 95% de solicitudes < 2 s verificado.
+- Responsive desde 375 px en Chrome/Firefox/Safari.
+- Defectos priorizados resueltos.
+
+Referencias: RNF-03, RNF-07; roadmap S7.","1010","High","2","local-ts-26","lote-inicial","backlog-oficial","release-r3","target-s7","capa-ambas","riesgo-normal"
+"1127","Story","HU-27 Desplegar a producción","Historia: Como equipo, quiero desplegar el sistema a producción, para entregar una instancia operativa.
+
+Alcance: Despliegue a producción desde main con aprobación manual.
+
+Criterios de aceptación:
+- Backend y PostgreSQL en Railway.
+- Frontend en Vercel.
+- Despliegue reproducible vía pipeline.
+
+Referencias: RNF-04; reglas-git.md §2; roadmap S8.
+
+Dependencia externa: Entorno de producción configurado por el equipo (ts-33); aprobación manual del merge a main.","1001","High","3","local-ts-27","lote-inicial","backlog-oficial","release-r3","target-s8","capa-infra","riesgo-infra"
+"1128","Story","HU-28 Documentación final y pruebas de aceptación","Historia: Como equipo, quiero completar la documentación y las pruebas de aceptación, para validar el sistema con el usuario real.
+
+Alcance: Documentación final entregada a Milenium Sound y pruebas de aceptación con el productor.
+
+Criterios de aceptación:
+- Documentación final entregada.
+- Pruebas de aceptación con el productor registradas.
+- Flujo completo en < 10 min sin asistencia.
+
+Referencias: RNF-06; roadmap S8.
+
+Dependencia externa: Disponibilidad del productor de Milenium Sound para la sesión de aceptación.","1010","High","2","local-ts-28","lote-inicial","backlog-oficial","release-r3","target-s8","capa-docs","riesgo-normal"
+"1129","Task","Configurar staging (Railway desde develop + Vercel preview)","Alcance: Disponer de un entorno de staging que se actualice con cada merge a develop y donde se demuestre el sprint. Servicio backend en Railway, proyecto frontend en Vercel y su conexión con Auth0. Sin dominio propio (ts-30, S2) ni producción (ts-33, S7).
+
+Criterios de aceptación:
+- Frontend y backend de staging alcanzables, desplegados desde develop, con login Auth0 funcionando y sin secretos en el repo.
+
+Referencias: docs/global/reglas-git.md §2; ADR D2.2.
+
+Dependencia externa: acceso de administración a Railway, Vercel y el tenant de Auth0 (equipo humano).
+
+Checklist de ejecución:
+- [ ] ts-29.01 Backend en Railway desde develop. Hecho cuando: el servicio despliega automáticamente al hacer merge a develop con PHP 8.4. La configuración está ajustada (PR #9), pero falta confirmar la rama origen. Orden interno: según dependencias del ticket.
+- [ ] ts-29.02 Variables de entorno en Railway. Hecho cuando: APP_KEY, base de datos PostgreSQL y variables de Auth0 cargadas en el panel; APP_DEBUG=false; nada de esto en el repo. Orden interno: ts-29.01.
+- [ ] ts-29.03 Frontend en Vercel desde develop. Hecho cuando: el proyecto despliega develop a una URL estable de staging con las variables VITE_* cargadas en el panel. Orden interno: ts-29.02.
+- [ ] ts-29.04 URLs de staging en Auth0. Hecho cuando: callback, logout y web origins de la SPA incluyen la URL de Vercel; la API de Auth0 acepta el audience de staging. Orden interno: ts-29.03.
+- [ ] ts-29.05 CORS del backend. Hecho cuando: el backend de staging acepta solo el origen de Vercel y localhost de desarrollo. Orden interno: ts-29.04.
+- [ ] ts-29.06 Smoke test de staging. Hecho cuando: el frontend carga, el login redirige y vuelve, y /up del backend responde 200. Orden interno: ts-29.05.
+- [ ] ts-29.07 Registrar el entorno. Hecho cuando: URLs de staging y responsables anotados en el handoff y en el ticket, sin credenciales. Orden interno: ts-29.06.","1001","High","","local-ts-29","lote-inicial","backlog-oficial","release-r1","target-s1","capa-infra","riesgo-infra"
+"1130","Task","Configurar dominio trackstudio.site y DNS","Alcance: Registro DNS de trackstudio.site para los entornos del proyecto. Base del namespace del claim de Auth0 (D4.8) y de la verificación de Resend (ts-32).
+
+Criterios de aceptación:
+- El dominio resuelve a los servicios acordados con HTTPS activo.
+- Los registros DNS quedan documentados sin credenciales.
+
+Referencias: ADR D4.8; CLAUDE.md §6; roadmap S2.
+
+Dependencia externa: Acceso al registrador del dominio (equipo humano).","1001","","","local-ts-30","lote-inicial","backlog-oficial","release-r1","target-s2","capa-infra","riesgo-infra"
+"1131","Task","Provisionar bucket S3 e IAM en us-east-1","Alcance: Bucket privado de audio en us-east-1 y credenciales de mínimo privilegio para la API. No se configura hasta que el bloque 7 del ADR esté DECIDIDO.
+
+Criterios de aceptación:
+- Bucket sin acceso público.
+- Rol o usuario IAM con mínimo privilegio para la API.
+- Credenciales solo en variables de entorno de cada servicio.
+
+Referencias: RF-04, RNF-02; CLAUDE.md §5 y §6; roadmap S3.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) ABIERTO: no es Ready hasta que esté DECIDIDO (CLAUDE.md §5). Cuenta AWS (equipo humano).","1001","","","local-ts-31","lote-inicial","backlog-oficial","release-r1","target-s3","capa-infra","riesgo-archivos"
+"1132","Task","Configurar Resend con dominio verificado","Alcance: Proveedor de correo para las invitaciones de HU-20, con el dominio del proyecto verificado.
+
+Criterios de aceptación:
+- Dominio verificado en Resend.
+- API key solo en variables de entorno.
+- Un envío de prueba llega a un buzón de prueba.
+
+Referencias: RF-06; CLAUDE.md §6; roadmap S6.
+
+Dependencia externa: Cuenta Resend (equipo humano).","1001","","","local-ts-32","lote-inicial","backlog-oficial","release-r2","target-s5","capa-infra","riesgo-infra"
+"1133","Task","Configurar producción (Railway, Vercel, Auth0) y monitoreo de uptime","Alcance: Servicios de producción separados de staging y monitoreo de disponibilidad.
+
+Criterios de aceptación:
+- Railway, Vercel y Auth0 de producción configurados sin secretos en el repo.
+- El merge a main requiere aprobación manual.
+- Monitoreo de uptime activo con alerta (RNF-04).
+
+Referencias: RNF-04; reglas-git.md §2; roadmap S7-S8.
+
+Dependencia externa: Accesos de producción y aprobación manual (equipo humano).","1001","","","local-ts-33","lote-inicial","backlog-oficial","release-r3","target-s7","capa-infra","riesgo-infra"
+"1134","Task","Tesis: Diseño de la solución (C4 niveles 2-4, ERD, persistencia)","Alcance: Sección de diseño del documento de titulación.
+
+Criterios de aceptación:
+- Sección redactada con diagramas C4 de niveles 2 a 4, el ERD aprobado (ts-38) y la estrategia de persistencia.
+- Revisada por el equipo.
+
+Referencias: Documentacion.md; roadmap, track paralelo S3-S6.","1011","","","local-ts-34","lote-inicial","backlog-oficial","release-transversal","target-s4","capa-docs","riesgo-normal"
+"1135","Task","Tesis: Desarrollo de la solución (evidencia SCRUM por sprint)","Alcance: Sección de desarrollo del documento de titulación. Se actualiza en cada sprint (S2-S8) y se cierra en S8.
+
+Criterios de aceptación:
+- Cada sprint cerrado tiene su evidencia (PR, CI, Sprint Review) en la sección.
+- Sin datos reales de Milenium Sound.
+
+Referencias: Documentacion.md; roadmap, track paralelo.","1011","","","local-ts-35","lote-inicial","backlog-oficial","release-transversal","target-s2","capa-docs","riesgo-normal"
+"1136","Task","Tesis: Pruebas y evaluación de la solución","Alcance: Sección de pruebas y evaluación del documento de titulación.
+
+Criterios de aceptación:
+- Trazabilidad RF/RNF → pruebas → evidencia completa.
+- Revisada por el equipo.
+
+Referencias: Documentacion.md; roadmap, track paralelo S7-S8.","1011","","","local-ts-36","lote-inicial","backlog-oficial","release-transversal","target-s7","capa-docs","riesgo-normal"
+"1137","Task","Tesis: Resultados, ética, conclusiones, trabajo futuro y resumen","Alcance: Secciones finales del documento de titulación.
+
+Criterios de aceptación:
+- Resultados y discusión, ética, conclusiones, trabajo futuro y resumen/abstract redactados.
+- Revisados por el equipo.
+
+Referencias: Documentacion.md; roadmap, track paralelo S7-S8.","1011","","","local-ts-37","lote-inicial","backlog-oficial","release-transversal","target-s8","capa-docs","riesgo-normal"
+"1138","Task","Diseñar y cerrar el ERD del modelo de datos","Alcance: Fijar el modelo de datos de Track Studio antes de migrar, para que las migraciones de cada historia salgan de un diseño aprobado y no se inventen tabla a tabla. Entidades, atributos, claves, relaciones, cardinalidades, restricciones e índices de todas las tablas que respaldan RF-01..RF-07. Incluye users, artists, productions, songs, versions, comments, production_access y studio_sessions, más las que resulten del inventario. No crea migraciones ni toca código de aplicación. No incorpora elementos de los prototipos sin respaldo en un RF (roadmap, ""Pendientes de decisión"").
+
+Criterios de aceptación:
+- ERD versionado en docs/erd/, trazado a RF/HU, anclado a D6.x y aprobado por el humano. La aprobación de users y artists llega en S1; el cierre completo, cuando el bloque 7 del ADR esté DECIDIDO.
+
+Referencias: RF-01..RF-07; ADR D6.1 (UUID), D6.6 (nombres), D6.7 (índices); backend/docs/nomenclatura.md; backend/docs/Handoff backend sprint1.md (auth0_sub único e indexado); docs/specs/backend/HU-04.md §3.
+
+Dependencia externa: ADR bloque 7 (subida de audio a S3) DECIDIDO para cerrar los atributos de versions. Debe cerrarse antes del 19-oct para no desplazar R1. Aprobación humana del diseño.
+
+Checklist de ejecución:
+- [ ] ts-38.01 Inventariar entidades. Hecho cuando: cada tabla candidata tiene su RF y sus HU de origen; lo que venga solo de los prototipos queda fuera y anotado. Orden interno: según dependencias del ticket.
+- [ ] ts-38.02 Definir atributos y restricciones. Hecho cuando: cada tabla tiene columnas, tipos, nulabilidad y unicidad, con PK/FK en UUID (D6.1) y nombres según D6.6. Cubre auth0_sub único, unicidad de artista (HU-05), estados del artista (HU-07), formato de producción (HU-09), posición de canción (HU-11) y número de versión secuencial (HU-14). Orden interno: ts-38.01.
+- [ ] ts-38.03 Definir relaciones, cardinalidades y borrados. Hecho cuando: cada FK declara su cardinalidad y su comportamiento al borrar, incluida la cascada canción → versiones → comentarios (HU-12). Orden interno: ts-38.02.
+- [ ] ts-38.04 Decidir production_access para S1. Hecho cuando: queda decidido si ts-04 crea production_access ahora (su FK apunta a productions, vetada por §5) o la difiere a HU-20. La decisión se registra y se aplica en ts-04.01. Orden interno: ts-38.03.
+- [ ] ts-38.05 Definir índices y reglas de integridad. Hecho cuando: índices según D6.7, incluido el único parcial (production_id, user_id) WHERE revoked_at IS NULL, y la regla de no solapamiento de sesiones (HU-22) indica dónde se garantiza (BD o servicio). Orden interno: ts-38.03.
+- [ ] ts-38.06 Aprobar users y artists. Hecho cuando: el humano aprueba esas tablas, que no dependen del bloque 7, y ts-04.03 y ts-05 pueden migrarlas desde este diseño. Orden interno: ts-38.04, ts-38.05.
+- [ ] ts-38.07 Marcar los atributos pendientes del bloque 7. Hecho cuando: los atributos de almacenamiento y de integridad de versions (clave del objeto, tamaño, tipo MIME, hash) aparecen como ABIERTO en el ERD, sin valores inventados. Orden interno: ts-38.06.
+- [ ] ts-38.08 Versionar el diagrama. Hecho cuando: el ERD vive en docs/erd/ en un formato de texto que se revisa por diff (por ejemplo Mermaid erDiagram) y cada tabla enlaza sus RF/HU. Orden interno: ts-38.07.
+- [ ] ts-38.09 Cerrar el ERD. Hecho cuando: con el bloque 7 DECIDIDO, versions se completa, el humano aprueba el ERD entero, se desbloquean ts-08, ts-10, ts-13, ts-17 y ts-22, y el handoff lo registra. Puede cerrarse en S2. Orden interno: ts-38.08.","1001","High","","local-ts-38","lote-inicial","backlog-oficial","release-r1","target-s1","capa-docs","riesgo-datos"
