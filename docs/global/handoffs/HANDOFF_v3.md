@@ -15,7 +15,7 @@ Se instaló `sentry/sentry-laravel` 4.28.0, con `sentry/sentry` 4.32.0 resuelto 
 
 El proyecto real de Sentry y su DSN todavía no están disponibles. `.env.example` incluye `SENTRY_LARAVEL_DSN=` vacío y la ausencia del DSN desactiva el envío sin alterar la respuesta. `sentry:test` queda como validación operativa pendiente, no como bloqueo del código de TS-27.
 
-TS-28 y TS-29 continúan deliberadamente en Red.
+Los contratos y los rojos ya observados de TS-28/TS-29 permanecen en la spec y en `c53d03d`, pero sus archivos de prueba se separaron de la rama TS-27 para mantener un PR por tarea.
 
 ## 2. Evidencia SDD/TDD
 
@@ -31,7 +31,7 @@ TS-28 y TS-29 continúan deliberadamente en Red.
 | Dependencias | `composer validate --strict` y `composer audit` pasan; cero advisories conocidos |
 | Review | Cero hallazgos abiertos; se corrigió un comentario obsoleto del test antes del cierre |
 
-La suite global ejecutó 39 casos: 25 pasan y quedan 14 no verdes exclusivos de TS-28/TS-29 (`auth0-api`, `UserRepository` y `/api/v1/me` aún no implementados). No son regresiones de TS-27.
+Antes de separar los tests futuros, la suite global ejecutó 39 casos: 25 pasaban y los otros 14 correspondían exclusivamente a TS-28/TS-29. Después de retirar de esta rama esos tests y sus helpers, la suite completa de TS-27 pasa dentro de Sail con **25 tests y 103 assertions**.
 
 ## 3. Implementación cerrada
 
@@ -63,9 +63,9 @@ Commit sugerido para la unidad pendiente:
 feat(backend): TS-27 correlacionar trace_id con Sentry
 ```
 
-La rama ya contiene, desde `c53d03d`, los tests rojos de TS-28 y TS-29. Por ello, un CI que ejecute toda la suite seguirá rojo aunque TS-27 esté cerrado. Antes de fusionar hacia `develop`, el equipo debe implementar esas tareas o separar sus tests futuros en las ramas correspondientes; no se deben relajar ni borrar silenciosamente.
+Los tests futuros que entraron originalmente en `c53d03d` se retiraron mediante un commit posterior de separación, sin reescribir la historia. El PR de TS-27 queda así limitado a sus pruebas verdes. Los contratos no se relajaron: el commit original conserva los archivos para recuperarlos en sus tareas.
 
-El siguiente trabajo funcional es TS-28 (`auth0/login:^7`, guard `auth0-api` y extracción del rol). Debe comenzar revisando `HU-03.md` §3.2 y los rojos existentes, sin volver a modificar el contrato ya cerrado de TS-27.
+El siguiente trabajo funcional es TS-28 (`auth0/login:^7`, guard `auth0-api` y extracción del rol). Debe comenzar desde `develop` después de fusionar TS-27, recuperar de `c53d03d` `TokenGuardTest.php` y `UserRepositoryTest.php`, y reintroducir únicamente el helper `claimsDeToken()`. TS-29 recuperará después `MeEndpointTest.php` y `impersonarToken()`. No se debe volver a modificar el contrato ya cerrado de TS-27.
 
 ## 6. Regla
 
