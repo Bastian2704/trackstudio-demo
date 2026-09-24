@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,14 @@ beforeEach(function () {
         Route::get('/api/v1/__test/sin-permiso', function () {
             throw new AuthorizationException;
         });
+
+        Route::get('/api/v1/__test/no-autenticado', function () {
+            throw new AuthenticationException;
+        });
+
+        Route::get('/api/v1/__test/limite-peticiones', function () {
+            throw new ThrottleRequestsException;
+        });
     });
 
     // Fuera del grupo `api` a propósito: es el control del test 10.
@@ -54,6 +64,12 @@ it('devuelve el cuerpo completo de D3.1 ante un recurso inexistente', function (
 
     $respuesta->assertJsonPath('code', 'RESOURCE_NOT_FOUND')
         ->assertJsonPath('status', 404);
+});
+
+it('responde con el media type de RFC 9457', function () {
+    $this->getJson('/api/v1/no-existe')
+        ->assertNotFound()
+        ->assertHeader('Content-Type', 'application/problem+json');
 });
 
 it('deriva el type del code contra el dominio del proyecto', function () {
@@ -115,11 +131,28 @@ it('conserva la forma nativa de Laravel en los errores de validación', function
         ->and($respuesta->json('errors.nombre.0'))->toBeString();
 });
 
+it('traduce una excepción de autenticación a 401 UNAUTHENTICATED', function () {
+    // El status solo no basta: el frontend toma decisiones con el `code`.
+    $this->getJson('/api/v1/__test/no-autenticado')
+        ->assertUnauthorized()
+        ->assertJsonPath('code', 'UNAUTHENTICATED')
+        ->assertJsonPath('type', 'https://trackstudio.site/errors/unauthenticated');
+});
+
 it('traduce una excepción de autorización a 403 FORBIDDEN', function () {
     $this->getJson('/api/v1/__test/sin-permiso')
         ->assertForbidden()
         ->assertJsonPath('code', 'FORBIDDEN')
         ->assertJsonPath('type', 'https://trackstudio.site/errors/forbidden');
+});
+
+it('traduce una excepción de límite de peticiones a 429 RATE_LIMITED', function () {
+    // Se prueba el mapeo de la excepción; configurar la política de rate
+    // limiting sigue fuera de TS-27, tal como establece la spec.
+    $this->getJson('/api/v1/__test/limite-peticiones')
+        ->assertTooManyRequests()
+        ->assertJsonPath('code', 'RATE_LIMITED')
+        ->assertJsonPath('type', 'https://trackstudio.site/errors/rate-limited');
 });
 
 it('deja pasar las respuestas que no son de API', function () {
