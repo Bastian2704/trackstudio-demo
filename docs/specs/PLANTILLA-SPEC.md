@@ -31,7 +31,7 @@ Copia este archivo y rellénalo. **Dónde vive la spec:**
 
 **Fuera / diferido (con motivo):**
 
-- … <!-- p. ej. "el disparo automático de X → depende de la decisión ABIERTA del bloque 7 del ADR" -->
+- … <!-- p. ej. "el rate limiting del endpoint → depende de 8.3 del ADR, ABIERTO" -->
 
 ## 2. Dependencias
 
