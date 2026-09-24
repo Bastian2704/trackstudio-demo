@@ -105,9 +105,11 @@ Se decide **público** en GitHub (2026-07-21), decisión intencional del equipo 
 
 Se adopta una variante de **RFC 9457 (Problem Details for HTTP APIs)**, adaptada al formato nativo de validación de Laravel.
 
+Las respuestas construidas por el manejador usan el media type **`application/problem+json`**. `code`, `errors` y `trace_id` son miembros de extensión del Problem Details.
+
 ```json
 {
-  "type": "https://trackstudio.site/errors/validation",
+  "type": "https://trackstudio.site/errors/validation-error",
   "title": "Los datos proporcionados no son válidos",
   "status": 422,
   "code": "VALIDATION_ERROR",
@@ -140,7 +142,7 @@ Se adopta una variante de **RFC 9457 (Problem Details for HTTP APIs)**, adaptada
 
 **Nivel de adhesión a RFC 9457 (cierra 3.6, 2026-09-17):** **completo**. Se emiten `type` e `instance` en toda respuesta de error, no solo los campos pragmáticos. El motivo original para diferirlos —que la URL de `type` apuntaba a un dominio no comprado— desapareció al confirmarse `trackstudio.site` (bloque 10). El `type` **se deriva del `code`**, no se escribe a mano: `https://trackstudio.site/errors/{code en kebab-case}` (`FORBIDDEN` → `.../errors/forbidden`). El `instance` es la ruta pedida.
 
-> Corrección de 2026-09-17: el ejemplo de arriba decía `trackstudio.app`, resto de antes de comprar el dominio. El dominio del proyecto es **`trackstudio.site`**, el mismo del namespace del claim de D4.8.
+> Correcciones: el 2026-09-17 se cambió `trackstudio.app` por el dominio confirmado **`trackstudio.site`**; el 2026-09-23 se alineó el slug del ejemplo (`validation` → `validation-error`) con la regla que deriva `type` desde `VALIDATION_ERROR`.
 
 **`trace_id` mientras 3.7 siga abierto:** lo genera el **backend** como ULID en cada respuesta de error. Es el comportamiento compatible con las dos salidas posibles de 3.7 —si se decide que el frontend mande `X-Trace-Id`, el backend lo respeta y solo genera cuando falta—, así que **3.7 no bloquea** la implementación del manejador ni la Definition of Ready de las historias que dependen de D3.1.
 
