@@ -12,8 +12,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Integration;
+use Sentry\State\Scope;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+use function Sentry\configureScope;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,12 +34,48 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $traceId = static function (Request $request): string {
+            $attribute = 'trackstudio.trace_id';
+            $existing = $request->attributes->get($attribute);
+
+            if (is_string($existing) && $existing !== '') {
+                return $existing;
+            }
+
+            $generated = (string) Str::ulid();
+
+            $request->attributes->set($attribute, $generated);
+
+            return $generated;
+        };
+
+        $exceptions->reportable(
+            static function (Throwable $exception) use ($traceId): void {
+                $request = request();
+
+                if (! $request instanceof Request || ! $request->is('api/*')) {
+                    return;
+                }
+
+                $resolvedTraceId = $traceId($request);
+
+                configureScope(
+                    static function (Scope $scope) use ($resolvedTraceId): void {
+                        $scope->setTag('trace_id', $resolvedTraceId);
+                    },
+                );
+            },
+        );
+
+        Integration::handles($exceptions);
+
         $problem = static function (
             ErrorCode $code,
             Request $request,
             string $detail,
             array $additional = [],
-        ): JsonResponse {
+        ) use ($traceId): JsonResponse {
             $body = [
                 'type' => $code->type(),
                 'title' => $code->title(),
@@ -43,7 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'code' => $code->value,
                 'detail' => $detail,
                 'instance' => $request->getPathInfo(),
-                'trace_id' => (string) Str::ulid(),
+                'trace_id' => $traceId($request),
             ];
 
             return response()->json(
