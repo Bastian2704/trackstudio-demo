@@ -3,10 +3,10 @@ name: Backend CI
 on:
   push:
     branches: [main, develop]
-    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+    paths: ["backend/**", ".github/workflows/backend-ci.yml"]
   pull_request:
     branches: [main, develop]
-    paths: ['backend/**', '.github/workflows/backend-ci.yml']
+    paths: ["backend/**", ".github/workflows/backend-ci.yml"]
 
 defaults:
   run:
@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/pint --test
@@ -30,22 +30,40 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/phpstan analyse --no-progress
 
   test:
     runs-on: ubuntu-latest
+    services:
+      pgsql:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: testing
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready -U sail -d testing"
+          --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: sail
+      DB_PASSWORD: password
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: sqlite3, pdo_sqlite
+          php-version: "8.4"
+          extensions: pdo_pgsql
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env
       - run: php artisan key:generate
-      - run: touch database/database.sqlite
+      - run: php artisan migrate --force
       - run: php artisan test
