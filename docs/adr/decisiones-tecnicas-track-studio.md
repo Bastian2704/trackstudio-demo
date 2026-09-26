@@ -461,8 +461,9 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 |---|---|---|---|
 | 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — faltan filas de `productions`/`songs`/`versions`/`comments` hasta cerrar el ERD |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
-| 8.3 | CORS del backend, rate limiting | ABIERTO | — |
+| 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
+| 8.5 | Rate limiting | ABIERTO | — (separado de 8.3 el 2026-09-25) |
 
 ### D8.1 — Matriz RBAC: rol × recurso × acción (iniciada 2026-08-18)
 
@@ -480,6 +481,24 @@ Documentación formal de las reglas de autorización que ya implican D4.2 (API R
 | Endpoint de humo (`/api/v1/me`) | Ver | ✅ | ✅ |
 
 **Evidencia auditable (D3.1):** el 403 que recibe un `artista` al intentar una acción marcada ❌ arriba es la prueba end-to-end de que esta matriz se cumple en código, no solo en documentación — es el entregable de HU-04 y de la Definition of Done del Sprint 1.
+
+→ *ISO 25010: seguridad (control de acceso). Cubre: RNF-01.*
+
+### D8.3 — CORS del backend (2026-09-25)
+
+Configurado en `backend/config/cors.php`. La autenticación es por `Authorization: Bearer` con el token de Auth0 (D4.8, D5.1), sin cookies, por lo que no hay Sanctum ni credenciales cross-origin.
+
+**Rutas:** solo `api/*`. No se incluye `sanctum/csrf-cookie` porque no se usa Sanctum.
+
+**Orígenes permitidos:** lista explícita por entorno desde la variable `CORS_ALLOWED_ORIGINS` (separada por comas; en local, `http://localhost:5173`). Nunca `*`, con el mismo criterio que D7.5. Sin `allowed_origins_patterns`: no se usan comodines sobre `*.vercel.app`, porque ese dominio lo comparte cualquier proyecto de Vercel.
+
+**Métodos:** `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`. No se usa `*`.
+
+**Headers:** `Authorization`, `Content-Type`, `Accept`, `X-Requested-With`. No se usa `*`. `exposed_headers` va vacío.
+
+**Preflight:** `max_age` de 600 s. **Credenciales:** `supports_credentials = false`.
+
+**⚠️ Revisar:** (1) si 3.7 decide que el frontend envía `X-Trace-Id`, hay que agregarlo a los headers; (2) al configurar el dominio de staging o de producción, hay que agregar el origen a `CORS_ALLOWED_ORIGINS` en Railway.
 
 → *ISO 25010: seguridad (control de acceso). Cubre: RNF-01.*
 
