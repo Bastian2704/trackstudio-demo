@@ -152,6 +152,8 @@ Las respuestas construidas por el manejador usan el media type **`application/pr
 
 **Distinción 401 vs 403:** 401 = identidad no verificada; 403 = identidad válida sin permiso. El 403 del artista al intentar escribir es la evidencia auditable del RBAC.
 
+**Exención (TS-44, 2026-09-28):** `GET /api/v1/health` queda fuera de este formato, también en su 503. No informa del fallo de una operación: informa del estado del sistema a un monitor. Por eso su 503 no se considera una "respuesta de error" a efectos de la regla "ningún controlador formatea errores". El contrato vive en D9.3. La excepción de BD se sigue reportando a Sentry (`report()`), así que la trazabilidad de la regla de seguridad se mantiene. **La exención es solo para esta ruta.** Cualquier otro endpoint que quiera salirse de D3.1 necesita su propia decisión en el ADR.
+
 → *ISO 25010: mantenibilidad, seguridad (confidencialidad). Cubre: RNF-01, RNF-02.*
 
 ### D3.2 — Zona horaria: UTC en persistencia, UTC-5 en presentación
@@ -524,6 +526,24 @@ Configurado en `backend/config/cors.php`. La autenticación es por `Authorizatio
 **⚠️ Riesgo de Términos de Servicio, aceptado deliberadamente:** desde diciembre de 2024, el plan gratuito de UptimeRobot restringe su uso a personal/no comercial en sus Términos de Servicio, con una excepción documentada (aunque inconsistente con otra documentación propia de UptimeRobot) para uso educativo/open-source. Track Studio es un proyecto capstone académico, pero corre en producción real para un cliente real (Milenium Sound) — cae en una zona gris entre "educativo" y "trabajo de cliente". Se evaluó como alternativa sin este riesgo un workflow de GitHub Actions con `schedule: cron` pingueando el health-check (reutilizando infraestructura ya presente, coherente con D6.10), pero el equipo decide mantenerse en UptimeRobot.
 
 **Plan de contingencia si UptimeRobot suspende la cuenta:** migrar al workflow de GitHub Actions descartado arriba, que no depende de los Términos de Servicio de un tercero.
+
+**Contrato de `/api/v1/health` y exención de D3.1 (2026-09-28, TS-44):**
+
+| Estado | HTTP | Cuerpo (`application/json`) |
+|---|---|---|
+| BD responde | 200 | `{"status":"ok","checks":{"database":true},"timestamp":"<ISO 8601>"}` |
+| BD falla | 503 | `{"status":"degraded","checks":{"database":false},"timestamp":"<ISO 8601>"}` |
+
+- **Exento de D3.1.** Health es un reporte de estado, no un error de una operación: el request siempre se atiende, y el 503 es una señal para el monitor. Además, en RFC 9457 `status` es el entero HTTP, mientras que aquí es `"ok"`/`"degraded"`. Un cuerpo híbrido sería ambiguo y rompería el keyword del monitor (`"status":"ok"`). La forma es la misma en los dos estados, así que Railway, UptimeRobot y una persona leen `checks.database` sin ramas. Hay precedente: el formato propio de health (draft IETF `application/health+json`) existe porque no encaja en Problem Details.
+- El controlador captura el fallo, así que el manejador de D3.1 no interviene. El fallo se **reporta** (`report()`), de modo que llega a Sentry con su `trace_id`. Su mensaje nunca va al cuerpo.
+- No se expone `environment` (repo público, D2.2). Staging y producción se distinguen por la URL.
+- **Sin rate limiting** mientras 8.5 siga ABIERTO.
+
+**Rutas públicas: excepción justificada frente a RNF-01.** Solo existen dos rutas sin autenticación, y ninguna expone datos de negocio:
+- `/up` (Laravel por defecto, fuera de `api/*`). Solo confirma que la app arranca, y sirve de respaldo para la plataforma de despliegue.
+- `/api/v1/health` (este contrato). Solo expone el estado de la conexión a la BD, sin mensajes de error ni datos del entorno.
+
+Todas las demás rutas de `/api/v1` exigen el token de Auth0 (D4.8).
 
 → *ISO 25010: fiabilidad (madurez, disponibilidad). Cubre: RNF-04. Riesgo: incumplimiento de ToS de un proveedor externo, aceptado conscientemente.*
 
