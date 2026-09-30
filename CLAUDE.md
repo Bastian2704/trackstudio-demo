@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF, **8.3** CORS y rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: las historias de audio HU-13..HU-16 siguen sin ser "Ready", pero por el **ERD completo, diferido deliberadamente**, no por el bloque 7.)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: las historias de audio HU-13..HU-16 siguen sin ser "Ready", pero por el **ERD completo, diferido deliberadamente**, no por el bloque 7.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 
@@ -90,7 +90,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 > **Por qué existe este bloque, actualizado el 2026-09-17:** antes vetaba por el **bloque 7 del ADR**, que estaba `ABIERTO`. Ese bloque se **cerró el 2026-08-18** (D7.1-D7.7). Los cuatro vetos siguen vigentes, pero ahora por dos motivos distintos: el **alcance acordado del Sprint 1** y el **ERD completo, que el equipo difirió deliberadamente** (no está bloqueado por nada — se retoma cuando se decida). Si se levanta un veto, se levanta aquí primero.
 
 - No tocar S3, subida de archivos ni presigned URLs. *(Alcance de Sprint 1. La decisión técnica ya existe —bloque 7—, lo que falta es que le toque el turno.)*
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 **solo** `users`, `artists`, `production_access` (T-31). *(ERD diferido + alcance de Sprint 1.)*
+- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 **solo** el modelo mínimo aprobado en `TS-54` para `users` y `artists`; `production_access` se decide allí antes de migrar (`TS-15`, `ts-04.03`). *(ERD diferido + alcance de Sprint 1.)*
 - No implementar hash de integridad (sí se pueden **definir** las interfaces de frontera). *(Alcance de Sprint 1.)*
 - No construir interfaz de los módulos funcionales más allá del endpoint de humo del Sprint 1. *(Alcance de Sprint 1.)*
 

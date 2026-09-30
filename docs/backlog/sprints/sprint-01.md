@@ -1,15 +1,15 @@
 # Sprint 1 - Backlog desglosado
 
-**Estado:** backlog oficial desde 2026-09-22; no es una spec ni un compromiso de entrega. Ningún ticket es Ready solo por aparecer aquí (`metodologia-sdd-tdd.md` §9).
+**Estado:** baseline de planificación creada el 2026-09-22 y reconciliada con Jira el 2026-09-30. Jira manda sobre estado, checklist, sprint y criterios de aceptación; este archivo conserva el desglose y la trazabilidad.
 **Ventana máxima:** 2026-09-21 a 2026-10-02. **Release:** R1 - Núcleo interno (MVP).
-**Selección:** ts-01, ts-02, ts-03, ts-04 (16 SP) y las Task ts-29 y ts-38.
+**Selección funcional:** `TS-12`..`TS-15` (16 SP) y `TS-40`. El hito mínimo del ERD está en `TS-54`; `TS-50`, `TS-51` y `TS-52` son trabajo completado trazado retrospectivamente; `TS-53` contiene la evidencia de tesis de S1.
 **Formato:** [campos y reglas de expansión](../backlog-format.md) · catálogo en [jira-backlog.md](../jira-backlog.md) · secuencia en [roadmap.md](../roadmap.md).
 
 ## Objetivo y baseline aprobada
 
 Demostrar en staging, desplegado desde `develop`: el monorepo con CI de frontend y backend en verde, login y logout con Auth0, una API que valida el JWT en cada solicitud y un endpoint protegido por RBAC que devuelve 403 al rol artista y 2xx al productor.
 
-Las seis entradas son P0. Las cinco primeras son necesarias para la demo, y ts-38 (ERD) aporta el modelo de `users` y `artists` que usan las migraciones de ts-04. El cierre completo del ERD espera al bloque 7 del ADR y puede extenderse a S2. Los criterios de aceptación de cada historia viven en Jira (copiados del Anexo C de `Documentacion.md` al construir el CSV). Este documento los **referencia, no los copia**: cada checklist los cubre con casillas verificables.
+Las historias HU-01..04 son P0 para la demo. `TS-54` aporta el modelo mínimo de `users` y `artists` que necesita `TS-15`; el cierre completo del ERD permanece en `TS-49` y puede extenderse a S2. El bloque 7 del ADR está cerrado y no es el gate vigente. Los criterios de aceptación viven en Jira; este documento los referencia.
 
 Buena parte del sprint ya está integrada en `develop` (PR #1 a #9). Esas casillas se marcan `[x]` con su evidencia. El resto queda abierto aunque el ticket parezca casi terminado.
 
@@ -26,7 +26,7 @@ Buena parte del sprint ya está integrada en `develop` (PR #1 a #9). Esas casill
 
 Cada ID de la última columna bloquea la entrega del registro de la primera. ts-38 no bloquea a ningún ticket de S1: bloquea ts-08, ts-10, ts-13, ts-17 y ts-22 (ver catálogo), y dentro de S1 solo se relaciona con ts-04 por orden interno de casillas. Se permite adelantar specs y tests en rojo de un sucesor cuando la dependencia no afecta a esa actividad.
 
-## Estado de partida verificado (2026-09-22)
+## Estado reconciliado (2026-09-30)
 
 | Hecho                                                                                                                                     | Evidencia                                       |
 | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -34,29 +34,29 @@ Cada ID de la última columna bloquea la entrega del registro de la primera. ts-
 | Ramas `main` y `develop` existen; modelo de ramas en `docs/global/reglas-git.md`                                                          | `git branch -a`                                 |
 | CI frontend (format, lint, build) en verde                                                                                                | PR #7; run 34368239813                          |
 | CI backend (Pint, Larastan, tests sobre **SQLite**) en verde                                                                              | PR #8; runs 34491523296 y 34863307630 (PR #9)   |
-| CI backend contra PostgreSQL                                                                                                              | PR #10 **abierto**                              |
+| CI backend contra PostgreSQL                                                                                                              | PR #10 mergeado; run 36505635906                |
 | Frontend: `Auth0Provider` con token en memoria, login/logout, interceptor axios (Bearer + mapeo de `code`), `RequireAuth`, `RequireRole`, `useRole`, `Forbidden` | PR #6                         |
-| Backend **sin** SDK de Auth0 (`auth0/login` ausente de composer), sin `routes/api.php` ni middleware JWT                                  | Inspección del repo                             |
-| Frontend **sin** Vitest ni tests; sin `frontend/.env.example`. `backend/.env.example` sin variables de Auth0                               | Inspección del repo                             |
-| Workflows sin paso de despliegue; despliegue a staging por confirmar                                                                     | `.github/workflows/*.yml`                       |
+| Auth0 backend en fase Red: `auth0/login` instalado en `origin/feature/TS-14-auth0-auth`, guard y `/me` aún por implementar                 | TS-14; rama remota 3 commits adelante           |
+| Vitest y variables de entorno documentadas; corrección menor de formato preparada en este cambio                                         | PR #18, PR #19                                  |
+| Staging alcanzable; falta probar con un merge nuevo el autodeploy simultáneo de Railway y Vercel                                          | TS-13, `ts-02.07`                               |
 | Specs `docs/specs/{backend,frontend}/HU-04.md` en **borrador**                                                                            | Cabecera de estado de cada spec                 |
 
 ## Condiciones externas y exclusiones
 
 - Railway, Vercel y Auth0 los configura el equipo humano (`CLAUDE.md` regla 6). Las casillas que los tocan son trabajo humano; el agente las señala y se detiene.
-- **ADR bloque 7 ABIERTO.** En S1 no se toca S3, subida de archivos ni URLs prefirmadas, y no se crean migraciones de `productions`, `songs`, `versions`, `comments` ni `studio_sessions` (`CLAUDE.md` §5). Esas tablas sí pueden **diseñarse** en el ERD (ts-38); lo vetado es migrarlas y dar el ERD por cerrado.
+- **ADR bloque 7 CERRADO.** En S1 no se toca S3, subida de archivos ni URLs prefirmadas por alcance; tampoco se crean migraciones de `productions`, `songs`, `versions`, `comments` ni `studio_sessions` (`CLAUDE.md` §5).
 - No se repite el scaffolding existente. CI, ramas y configuración se verifican con evidencia vigente.
 - Solo datos sintéticos. Ningún secreto, token ni dato real de Milenium Sound en el repo, en Jira ni en este documento (`D2.2`). Las variables de entorno se nombran, nunca se valoran.
-- El proyecto `TS` de Jira está vacío. Las ramas y commits nuevos esperan la clave real `TS-<n>` (`reglas-git.md` §4). Las claves TS-01..TS-23 de commits antiguos son del tablero anterior y no se reescriben.
+- El proyecto `TS` de Jira está poblado. Las claves actuales están en [`../jira-key-map.md`](../jira-key-map.md); las claves de commits antiguos pertenecen al tablero anterior y no se reescriben.
 - Fuera de S1: módulos funcionales (artistas, producciones…) más allá del endpoint de humo, dominio y DNS (ts-30, S2), producción (ts-33).
 
 ## Checklist y separación de tickets
 
-El sprint conserva 6 tickets: 4 Story y 2 Task, con 53 casillas en total. No hacen falta Sub-task.
+El desglose original tenía 6 tickets. Jira ahora separa unidades con seguimiento propio en `TS-50`, `TS-52`, `TS-53` y `TS-54`; `TS-51` registra retrospectivamente el manejador de errores/Sentry.
 
 - Las Story cross-capa (ts-03, ts-04) usan la plantilla estándar `.01`-`.09` de `backlog-format.md` y añaden casillas específicas desde `.10`. El número de una casilla no indica su orden; el orden lo da "Orden interno".
 - Las historias de infraestructura (ts-01, ts-02) y las Task ts-29 y ts-38 usan casillas propias de su naturaleza.
-- Si el cierre del ERD se retrasa por el bloque 7, ts-38 puede dividirse en "ERD de tablas independientes" (S1) y "cierre del ERD" (S2), repartiendo las casillas sin duplicarlas.
+- El ERD se dividió sin duplicar alcance: `TS-54` cubre el modelo mínimo de S1 y `TS-49` conserva el cierre completo.
 - Los IDs con sufijo identifican casillas, no tickets. El orden interno no genera enlaces Blocks en Jira.
 - Si la parte backend de HU-03 la lleva otra persona con plazo propio, puede promoverse a Sub-task (`ts-03-backend`), dejando las casillas como referencia. No se hace por defecto.
 
@@ -96,13 +96,13 @@ Dependencia externa: acceso de administración a Railway, Vercel y el tenant de 
 
 Checklist de ejecución:
 
-- [ ] `ts-29.01` Backend en Railway desde `develop`. Hecho cuando: el servicio despliega automáticamente al hacer merge a `develop` con PHP 8.4. La configuración está ajustada (PR #9), pero falta confirmar la rama origen. Orden interno: según dependencias del ticket.
-- [ ] `ts-29.02` Variables de entorno en Railway. Hecho cuando: `APP_KEY`, base de datos PostgreSQL y variables de Auth0 cargadas en el panel; `APP_DEBUG=false`; nada de esto en el repo. Orden interno: ts-29.01.
-- [ ] `ts-29.03` Frontend en Vercel desde `develop`. Hecho cuando: el proyecto despliega `develop` a una URL estable de staging con las variables `VITE_*` cargadas en el panel. Orden interno: ts-29.02.
-- [ ] `ts-29.04` URLs de staging en Auth0. Hecho cuando: callback, logout y web origins de la SPA incluyen la URL de Vercel; la API de Auth0 acepta el audience de staging. Orden interno: ts-29.03.
-- [ ] `ts-29.05` CORS del backend. Hecho cuando: el backend de staging acepta solo el origen de Vercel y `localhost` de desarrollo. Orden interno: ts-29.04.
-- [ ] `ts-29.06` Smoke test de staging. Hecho cuando: el frontend carga, el login redirige y vuelve, y `/up` del backend responde 200. Orden interno: ts-29.05.
-- [ ] `ts-29.07` Registrar el entorno. Hecho cuando: URLs de staging y responsables anotados en el handoff y en el ticket, sin credenciales. Orden interno: ts-29.06.
+- [x] `ts-29.01` Backend en Railway desde `develop`. Evidencia: TS-40, PR #13.
+- [x] `ts-29.02` Variables de entorno en Railway sin secretos versionados. Evidencia: TS-40 y smoke test.
+- [x] `ts-29.03` Frontend en Vercel desde `develop`. Evidencia: `https://trackstudio-staging.vercel.app`.
+- [x] `ts-29.04` URLs de staging en Auth0. Evidencia: login redirige y vuelve sin callback mismatch.
+- [x] `ts-29.05` CORS del backend. Evidencia: PR #13 y `HANDOFF_v5.md`.
+- [x] `ts-29.06` Smoke test de staging. Evidencia: frontend y `/up` responden 200.
+- [x] `ts-29.07` Entorno registrado sin credenciales. Evidencia: `TS-40` y `HANDOFF_v5.md`.
 
 ### ts-02 - HU-02 Pipeline CI/CD con despliegue a staging
 
@@ -120,12 +120,12 @@ Checklist de ejecución:
 
 - [x] `ts-02.01` CI frontend. Hecho cuando: `npm ci`, `format:check`, `lint` y `build` corren en push y PR a `main`/`develop`. Evidencia: PR #7; run 34368239813. Orden interno: según dependencias del ticket.
 - [x] `ts-02.02` CI backend. Hecho cuando: `composer install`, Pint, Larastan y tests corren en push y PR a `main`/`develop`. Evidencia: PR #8; run 34491523296. Orden interno: ts-02.01.
-- [ ] `ts-02.03` Tests del backend contra PostgreSQL (C4). Hecho cuando: el job de tests usa un servicio PostgreSQL en vez de SQLite y queda en verde. En curso: PR #10. Orden interno: ts-02.02.
-- [ ] `ts-02.04` Pruebas unitarias en la CI frontend (humano). Hecho cuando: Vitest instalado con un script `test` y la CI lo ejecuta; es requisito de ts-03.06 y ts-04.06. Orden interno: ts-02.03.
+- [x] `ts-02.03` Tests del backend contra PostgreSQL (C4). Evidencia: PR #10; run 36505635906. Orden interno: ts-02.02.
+- [x] `ts-02.04` Pruebas unitarias en la CI frontend. Evidencia: PR #19; run 36668531996. Orden interno: ts-02.03.
 - [ ] `ts-02.05` El pipeline falla ante un test roto. Hecho cuando: un PR de prueba con un test roto a propósito en cada capa queda en rojo, y se registra el enlace del run. Orden interno: ts-02.04.
-- [ ] `ts-02.06` Protección de `main` y `develop` (humano). Hecho cuando: sin push directo, PR con 1 review y checks de CI obligatorios en ambas ramas. Orden interno: ts-02.05.
+- [x] `ts-02.06` Protección de `main` y `develop`. Evidencia: rulesets `protect-main` y `protect-develop`, PR + 1 review y checks obligatorios. Orden interno: ts-02.05.
 - [ ] `ts-02.07` Despliegue a staging tras merge a `develop`. Hecho cuando: un merge a `develop` actualiza Railway y Vercel sin pasos manuales. Orden interno: ts-02.06 y ts-29.06.
-- [ ] `ts-02.08` Corregir el AC en Jira. Hecho cuando: el criterio dice `develop` → staging antes de importar, y la discrepancia se cierra en el roadmap. Orden interno: independiente.
+- [x] `ts-02.08` AC corregido: `develop` → staging. Evidencia: Jira y PR #20. El Anexo C queda en TS-53.
 - [ ] `ts-02.09` Integración y cierre. Hecho cuando: los tres AC tienen evidencia (runs verde y rojo, despliegue), el handoff está actualizado y el ticket se mueve a Done. Orden interno: ts-02.07, ts-02.08.
 
 ### ts-03 - HU-03 Autenticación con Auth0
@@ -142,9 +142,9 @@ Dependencia externa: configuración del tenant de Auth0 (equipo humano), casilla
 
 Checklist de ejecución:
 
-- [ ] `ts-03.10` Tenant de Auth0 preparado (humano). Hecho cuando: la SPA y la API (audience) existen, una Action añade el claim `https://trackstudio.site/roles` y un token real se verificó en jwt.io con ese claim. Orden interno: según dependencias del ticket; antes de ts-03.02.
-- [ ] `ts-03.01` Spec backend. Hecho cuando: `docs/specs/backend/HU-03.md` aprobada; define validación de firma, issuer, audience y expiración con `auth0/login` ^7, el endpoint de humo `/api/v1/me`, el 401 en formato D3.1 y una sola clave de config para el claim. Orden interno: independiente.
-- [ ] `ts-03.02` Tests backend en rojo (agente). Hecho cuando: tests Pest vistos fallar para sin token, firma inválida, token expirado, audience ajena y token válido → 200. Al menos uno ejercita un JWT real de Auth0 (C4). Orden interno: ts-03.01, ts-03.10.
+- [x] `ts-03.10` Tenant de Auth0 preparado y token real verificado en jwt.io el 2026-09-30. Orden interno: antes de ts-03.02.
+- [x] `ts-03.01` Spec backend aprobada en la rama `origin/feature/TS-14-auth0-auth`.
+- [x] `ts-03.02` Tests backend vistos en rojo. Evidencia: 63 tests, 39 verdes, 23 rojos y 1 saltado tras instalar `auth0/login` ^7; el token real se ejecutó aparte y falló como se esperaba.
 - [ ] `ts-03.03` Código backend hasta verde (humano). Hecho cuando: SDK instalado, middleware JWT, `routes/api.php` y `/api/v1/me` hacen pasar los tests; Larastan nivel 5 y Pint limpios. Orden interno: ts-03.02.
 - [ ] `ts-03.04` Review backend. Hecho cuando: hallazgos con `archivo:línea` resueltos o justificados; cada test no trivial probado en rojo (C3). Orden interno: ts-03.03.
 - [ ] `ts-03.05` Spec frontend. Hecho cuando: `docs/specs/frontend/HU-03.md` aprobada y enlazada a la backend; documenta el código ya integrado y no repite el test de token en memoria de HU-04 frontend. Orden interno: independiente.
@@ -168,7 +168,7 @@ Dependencia externa: usuarios sintéticos con rol en Auth0 (equipo humano), casi
 
 Checklist de ejecución:
 
-- [ ] `ts-04.01` Aprobar la spec backend. Hecho cuando: la spec pasa de borrador a aprobada tras resolver dos puntos: sustituir las referencias `T-xx` del tablero anterior y aplicar la decisión de ts-38.04 sobre `production_access`, cuya FK apunta a `productions`, tabla vetada mientras el bloque 7 siga ABIERTO. Orden interno: ts-38.04.
+- [ ] `ts-04.01` Aprobar la spec backend. Hecho cuando: la spec normalizada se aprueba y aplica la decisión de `TS-54` sobre `production_access`, cuya FK apunta a `productions`, tabla fuera del alcance del Sprint 1. Orden interno: TS-54.
 - [ ] `ts-04.02` Tests backend en rojo (agente). Hecho cuando: `RbacTest` (401 sin token, 403 al artista, 2xx al productor), `ErrorShapeTest` (forma D3.1 y `code`) y un test que recorre las rutas `/api/v1` y exige middleware de autenticación y rol en el 100 %, todos vistos fallar. Orden interno: ts-04.01, ts-03.03.
 - [ ] `ts-04.03` Código backend hasta verde (humano). Hecho cuando: manejador centralizado D3.1, `unauthenticated()` sobrescrito, Policy, endpoint de escritura de prueba y solo las migraciones permitidas, conforme al ERD aprobado en ts-38.06; tests en verde; Larastan y Pint limpios. Orden interno: ts-04.02, ts-38.06.
 - [ ] `ts-04.04` Review backend. Hecho cuando: hallazgos resueltos o justificados; cada test probado en rojo según la columna C3 de la spec. Orden interno: ts-04.03.
@@ -185,11 +185,11 @@ Objetivo: fijar el modelo de datos de Track Studio antes de migrar, para que las
 
 Alcance: entidades, atributos, claves, relaciones, cardinalidades, restricciones e índices de todas las tablas que respaldan RF-01..RF-07. Incluye `users`, `artists`, `productions`, `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, más las que resulten del inventario. No crea migraciones ni toca código de aplicación. No incorpora elementos de los prototipos sin respaldo en un RF (roadmap, "Pendientes de decisión").
 
-Hecho cuando: ERD versionado en `docs/erd/`, trazado a RF/HU, anclado a D6.x y aprobado por el humano. La aprobación de `users` y `artists` llega en S1; el cierre completo, cuando el bloque 7 del ADR esté DECIDIDO.
+Hecho cuando: ERD versionado en `docs/erd/`, trazado a RF/HU, anclado a D6.x y aprobado por el humano. La aprobación de `users` y `artists` llega en S1 mediante `TS-54`; el cierre completo queda en `TS-49`.
 
 Referencias: RF-01..RF-07; ADR D6.1 (UUID), D6.6 (nombres), D6.7 (índices); `backend/docs/nomenclatura.md`; `backend/docs/Handoff backend sprint1.md` (`auth0_sub` único e indexado); [spec backend HU-04](../../specs/backend/HU-04.md) §3.
 
-Dependencia externa: ADR bloque 7 (subida de audio a S3) DECIDIDO para cerrar los atributos de `versions`. Debe cerrarse antes del 19-oct para no desplazar R1. Aprobación humana del diseño.
+Dependencia externa: aprobación humana del diseño. El bloque 7 está cerrado desde el 2026-08-18.
 
 Checklist de ejecución:
 
@@ -198,10 +198,10 @@ Checklist de ejecución:
 - [ ] `ts-38.03` Definir relaciones, cardinalidades y borrados. Hecho cuando: cada FK declara su cardinalidad y su comportamiento al borrar, incluida la cascada canción → versiones → comentarios (HU-12). Orden interno: ts-38.02.
 - [ ] `ts-38.04` Decidir `production_access` para S1. Hecho cuando: queda decidido si ts-04 crea `production_access` ahora (su FK apunta a `productions`, vetada por §5) o la difiere a HU-20. La decisión se registra y se aplica en ts-04.01. Orden interno: ts-38.03.
 - [ ] `ts-38.05` Definir índices y reglas de integridad. Hecho cuando: índices según D6.7, incluido el único parcial `(production_id, user_id) WHERE revoked_at IS NULL`, y la regla de no solapamiento de sesiones (HU-22) indica dónde se garantiza (BD o servicio). Orden interno: ts-38.03.
-- [ ] `ts-38.06` Aprobar `users` y `artists`. Hecho cuando: el humano aprueba esas tablas, que no dependen del bloque 7, y ts-04.03 y ts-05 pueden migrarlas desde este diseño. Orden interno: ts-38.04, ts-38.05.
-- [ ] `ts-38.07` Marcar los atributos pendientes del bloque 7. Hecho cuando: los atributos de almacenamiento y de integridad de `versions` (clave del objeto, tamaño, tipo MIME, hash) aparecen como ABIERTO en el ERD, sin valores inventados. Orden interno: ts-38.06.
+- [ ] `ts-38.06` Aprobar `users` y `artists` en `TS-54`. Hecho cuando: el humano aprueba esas tablas y `TS-15` puede migrarlas desde este diseño. Orden interno: ts-38.04, ts-38.05.
+- [ ] `ts-38.07` Aplicar D7.x a `versions`. Hecho cuando: los atributos de almacenamiento e integridad (clave del objeto, tamaño, tipo MIME y hash) quedan trazados a D7.1-D7.7, sin valores inventados. Orden interno: ts-38.06.
 - [ ] `ts-38.08` Versionar el diagrama. Hecho cuando: el ERD vive en `docs/erd/` en un formato de texto que se revisa por diff (por ejemplo Mermaid `erDiagram`) y cada tabla enlaza sus RF/HU. Orden interno: ts-38.07.
-- [ ] `ts-38.09` Cerrar el ERD. Hecho cuando: con el bloque 7 DECIDIDO, `versions` se completa, el humano aprueba el ERD entero, se desbloquean ts-08, ts-10, ts-13, ts-17 y ts-22, y el handoff lo registra. Puede cerrarse en S2. Orden interno: ts-38.08.
+- [ ] `ts-38.09` Cerrar el ERD. Hecho cuando: todas las entidades están completas, el humano aprueba el ERD entero, se desbloquean las historias dependientes y el handoff lo registra. Puede cerrarse en S2. Orden interno: ts-38.08.
 
 ## Cierre y capacidad
 
@@ -211,15 +211,15 @@ El inventario contiene 6 tickets y 53 casillas: ts-01 (7), ts-29 (7), ts-02 (9),
 
 Capacidad nominal: 2 desarrolladores × 80 h = 160 h para 16 SP. Specs, tests, reviews, integración y correcciones consumen esa misma capacidad. Las esperas de infraestructura humana (Auth0, Railway, Vercel, GitHub) se registran aparte, sin horas ficticias.
 
-Camino crítico: ts-03.10 → ts-03.02 → ts-03.03 → ts-04.02 → ts-04.03 → ts-04.09. La validación JWT del backend no existe todavía y bloquea el RBAC, así que conviene empezar por ahí. En paralelo, ts-38.01 → ts-38.06 debe terminar antes de ts-04.03 para que las migraciones partan del ERD. Si sobra capacidad, se usa en el track paralelo (bloque 7 del ADR), nunca en historias bloqueadas.
+Camino crítico: `TS-14 ts-03.03` → review backend/frontend → `TS-54` → `TS-15` → demo. La validación JWT bloquea RBAC; en paralelo, `TS-54` debe aprobar el modelo mínimo antes de las migraciones de `TS-15`.
 
 ## Pendientes y discrepancias
 
-- **Bloque 7 del ADR sin ticket.** El ERD ya tiene su Task (ts-38), pero la decisión del bloque 7, de la que depende su cierre, sigue sin ticket propio. Si se crea, tomaría el siguiente ID libre (`ts-39`), bloquearía a ts-38 y ts-31, y el lote pasaría de 49 a 50 filas.
+- **Bloque 7 cerrado.** No necesita ticket adicional. La preparación de AWS está en `TS-50`; el bucket/IAM de aplicación continúa en `TS-42` para S3.
 - **Estado de ts-03 en `jira-backlog.md`.** Dice "Login/logout con Auth0 integrado (PR #6)", pero la validación del JWT en la API no está hecha. Hay que corregir esa fila.
 - **Documentos ausentes.** El repo no contiene `docs/adr/decisiones-tecnicas-track-studio.md` ni `docs/global/handoffs/`, aunque `CLAUDE.md` y la metodología los citan. Las referencias `Dx.y` de este documento no se pueden verificar hasta que estén versionados.
 - **SDK de Auth0.** Se instala `auth0/login` ^7, no v4.x: corregir D2.1 y el documento de tesis (roadmap, discrepancias).
 - **HU-02.** Corregir el AC antes de importar (casilla ts-02.08).
 - **S2.** ts-30 (dominio y DNS) y la primera actualización de ts-35 (tesis, evidencia del sprint).
 
-Siguiente paso: aprobar este desglose, decidir si el bloque 7 lleva ticket propio y generar el CSV del lote inicial en `docs/backlog/imports/`.
+Siguiente paso: cerrar las evidencias pendientes de `TS-12`/`TS-13` y continuar `TS-14`; después completar `TS-54` antes de `TS-15`.
