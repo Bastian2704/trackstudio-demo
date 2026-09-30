@@ -6,7 +6,6 @@ on:
     paths: ['frontend/**', '.github/workflows/frontend-ci.yml']
   pull_request:
     branches: [main, develop]
-    paths: ['frontend/**', '.github/workflows/frontend-ci.yml']
 
 defaults:
   run:
@@ -25,4 +24,5 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
+      - run: npm test
       - run: npm run build
