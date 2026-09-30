@@ -3,7 +3,7 @@
 **Proyecto:** Track Studio — Gestión de proyectos musicales para Milenium Sound
 **Equipo:** Sebastian Abad (SM + Dev), Adrián Cornejo (Dev)
 **Product Owner:** Efraín Abad (Milenium Sound)
-**Última actualización:** 2026-09-17
+**Última actualización:** 2026-09-29
 
 **Leyenda de estado:**
 `DECIDIDO` decisión cerrada · `ABIERTO` requiere definición · `PENDIENTE` depende de otro bloque · `PARCIAL` decisión tomada pero con partes que dependen de otro punto todavía abierto
@@ -67,6 +67,7 @@ Las herramientas de análisis estático se fijan por **versión exacta** (sin `^
 | Larastan | 3.10 | Nivel 5, sobre PHPStan 2.x |
 | Pint | 1.30.5 | Preset `laravel` |
 | `auth0/login` | **^7** | Ver D4.8 |
+| Vitest | **4.1.11** | Runner frontend (D11.2). La 5.x exige Node ≥ 22; subir junto con `.nvmrc` |
 
 > **Trampa registrada:** cuando el contenedor suba de parche de PHP (8.4.24 → 8.4.25), hay que actualizar `config.platform.php` al mismo valor o Composer falla la resolución.
 
@@ -566,10 +567,14 @@ Todas las demás rutas de `/api/v1` exigen el token de Auth0 (D4.8).
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
 | 11.1 | Backend | DECIDIDO | Pest (D4.7) |
-| 11.2 | Frontend | ABIERTO | Vitest + RTL |
+| 11.2 | Frontend | DECIDIDO | Vitest + RTL (ver D11.2) |
 | 11.3 | E2E | ABIERTO | Playwright (Sprint 7) |
 | 11.4 | Metas de cobertura | ABIERTO | — |
 | 11.5 | Plan de medición por RNF | **ABIERTO** | Instrumento concreto para evidenciar RNF-01 a RNF-07 |
+
+### D11.2 — Pruebas del frontend: Vitest + React Testing Library (2026-09-29)
+Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y en la CI (`frontend-ci.yml`), y React Testing Library para las pruebas de componentes. Vitest reutiliza la configuración de Vite (alias `@/*`, plugins), así que no hay un segundo pipeline de transformación que mantener. Es el equivalente frontend de D4.7 y el requisito de ts-02.04 (HU-02).
+→ *ISO 25010: mantenibilidad (testeabilidad). Cubre: HU-02, HU-24, HU-25.*
 
 ---
 
