@@ -109,7 +109,7 @@ El backlog conserva completos RF-01 a RF-07. La asignación a un sprint es una p
 
 | Discrepancia                                                                                    | Dónde                          | Acción                                          |
 | ----------------------------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
-| HU-02 dice "el merge a main despliega a staging"; el plan CI/CD y `reglas-git.md` dicen `develop` → staging. | Anexo C vs plan CI/CD | Corregir el criterio de HU-02 en Jira y en el documento. |
+| ~~HU-02 dice "el merge a main despliega a staging"; el plan CI/CD y `reglas-git.md` dicen `develop` → staging.~~ | Anexo C vs plan CI/CD | **Cerrada en Jira el 2026-09-30** (TS-13, ts-02.08): el criterio ya dice "el merge a develop despliega a staging". Pendiente arrastrar la corrección al Anexo C del documento de tesis. |
 | Restricción "Auth0 SDK v4.x para Laravel"; lo instalado es `auth0/login` v7.                    | Limitaciones vs backend        | Actualizar documento y ADR (D2.1).              |
 | La tabla de costos cita ClickUp como gestor SCRUM; el tablero es Jira.                          | Tabla 21                       | Actualizar el documento.                        |
 | HU-28 sin SP ni RF/RNF.                                                                          | Anexo C                        | Estimar (supuesto: 2 SP) y enlazar RNF-06.      |
