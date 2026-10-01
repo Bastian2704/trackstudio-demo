@@ -23,7 +23,7 @@ final class UserResource extends JsonResource
 
         return [
             'sub' => $this->resource->getAuthIdentifier(),
-            'role' => $role instanceof Role ? $role->value : null,        
-            ];
+            'role' => $role instanceof Role ? $role->value : null,
+        ];
     }
 }
