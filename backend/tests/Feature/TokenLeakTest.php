@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\TestHandler;
+use Sentry\Laravel\Http\SetRequestMiddleware;
 use Sentry\SentrySdk;
 use Sentry\Serializer\PayloadSerializer;
 
@@ -28,7 +29,10 @@ use Sentry\Serializer\PayloadSerializer;
 it('no escribe el token en los logs ni en el evento de Sentry', function () {
     configurarSdkDePrueba();
 
-    Route::middleware(['api', 'auth:auth0-api'])->get('/api/v1/__test/falla-autenticada', function () {
+    // `SetRequestMiddleware` es el que entrega el request a Sentry. El SDK solo lo
+    // registra si al arrancar hay DSN, y en la suite no lo hay: sin él, el evento
+    // sale sin cabeceras y el test no podría ver una fuga aunque la hubiera.
+    Route::middleware([SetRequestMiddleware::class, 'api', 'auth:auth0-api'])->get('/api/v1/__test/falla-autenticada', function () {
         throw new RuntimeException('fallo dentro de una ruta autenticada');
     });
 
@@ -62,6 +66,10 @@ it('no escribe el token en los logs ni en el evento de Sentry', function () {
     expect($registros)->toContain('fallo dentro de una ruta autenticada');
 
     $evento = (new PayloadSerializer(SentrySdk::getCurrentHub()->getClient()->getOptions()))->serialize($eventos[0]);
+
+    // Tercera ancla: el evento sí lleva las cabeceras del request. Sin ellas, que
+    // el token no aparezca no probaría nada.
+    expect($eventos[0]->getRequest()['headers'] ?? [])->toHaveKey('authorization');
 
     // La aserción de RNF-02. Se busca el token entero y también su firma
     // suelta, por si algún formateador parte la cabecera.
