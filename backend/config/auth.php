@@ -1,5 +1,6 @@
 <?php
 
+use App\Auth\UserRepository;
 use App\Models\User;
 
 return [
@@ -42,6 +43,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'auth0-api' => [
+            'driver' => 'auth0.authorizer',
+            'configuration' => 'api',
+            'provider' => 'auth0-provider',
+        ],
     ],
 
     /*
@@ -65,6 +71,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+        'auth0-provider' => [
+            'driver' => 'auth0.provider',
+            'repository' => UserRepository::class,
         ],
 
         // 'users' => [

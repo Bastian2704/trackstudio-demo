@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\MeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
+Route::get('/me', MeController::class)->middleware('auth:auth0-api');
