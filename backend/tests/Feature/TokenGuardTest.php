@@ -22,6 +22,11 @@ beforeEach(function () {
     // de humo. Si usara /api/v1/me, estos tests fallarían por una ruta que falta
     // y no por el guard, que es lo que afirman.
     registrarRutaProtegida();
+
+    // El token basura llega hasta el SDK, que exige dominio y audience antes de
+    // rechazarlo. Sin esto el test dependería del `.env` de quien lo corre: en
+    // CI (`.env.example`, audience vacío) daba 500 en vez de 401.
+    configurarSdkDePrueba();
 });
 
 it('rechaza con 401 UNAUTHENTICATED la petición sin token', function () {
