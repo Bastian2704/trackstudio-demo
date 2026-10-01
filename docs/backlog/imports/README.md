@@ -1,6 +1,6 @@
 # Importación a Jira - Track Studio
 
-**Estado:** preparado, sin importar. Proyecto `TS` (Jira Cloud) vacío al 2026-09-22.
+**Estado:** importación completada en el Jira de MediHealth. Este README y el CSV son artefactos históricos: **no reimportar**. El mapa vigente está en [`../jira-key-map.md`](../jira-key-map.md).
 **Archivo:** [ts-lote-inicial.csv](ts-lote-inicial.csv), el lote inicial único de 49 filas.
 **Procedimiento:** [backlog-format.md](../backlog-format.md#preparación-del-csv). Este archivo registra el resultado y no repite el procedimiento.
 
@@ -47,9 +47,9 @@
 - Importar primero la muestra: `1001` (Epic infra) y `1101` (ts-01). La muestra forma parte del lote; al importar el resto, quitar esas dos filas.
 - **No reimportar nunca el archivo completo.** Ante un éxito parcial, consultar Jira y preparar un archivo mínimo con lo que falte.
 
-## Mapeo de claves
+## Mapeo de claves del artefacto de importación
 
-Rellenar la columna "Clave Jira" con las claves devueltas por el importador.
+La tabla siguiente conserva la plantilla previa a la importación y por eso muestra `—`. No se rellena ni se vuelve a importar: las claves reales viven en [`../jira-key-map.md`](../jira-key-map.md), que se contrasta con Jira.
 
 | Import ID | ID local | Tipo | Summary | Clave Jira |
 | --- | --- | --- | --- | --- |
@@ -173,9 +173,10 @@ project = TS AND labels = "target-s1" ORDER BY Rank ASC
 project = TS AND labels = "riesgo-archivos" ORDER BY key ASC
 ```
 
-## Después de importar
+## Después de importar (completado)
 
-1. Registrar las claves en la tabla de mapeo y en la columna Jira del catálogo de épicas de `jira-backlog.md`.
-2. Sustituir `TS-XXX` en `docs/specs/{backend,frontend}/HU-04.md` por la clave real de ts-04.
-3. Crear el sprint S1 en Jira (2026-09-21 a 2026-10-02) con los seis tickets `target-s1`.
-4. Usar las claves nuevas en ramas y commits. Las claves TS-01..TS-23 de commits antiguos son del tablero anterior.
+1. Claves registradas en [`../jira-key-map.md`](../jira-key-map.md).
+2. Specs HU-04 normalizadas con `TS-15` el 2026-09-30.
+3. Sprint 1 creado y reconciliado con Jira; el objetivo está registrado en el sprint.
+4. Los 46 enlaces `Blocks` se crearon el 2026-09-30 con la dirección del cuadro anterior.
+5. Las ramas y commits nuevos usan las claves actuales. Las claves de commits antiguos son del tablero anterior y no se reescriben.

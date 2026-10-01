@@ -6,7 +6,7 @@
 
 Este backlog descompone [el roadmap](roadmap.md) y gobierna el proyecto `TS` en Jira. Sigue el [formato común del backlog](backlog-format.md). Prevalecen el ADR (`docs/adr/decisiones-tecnicas-track-studio.md`), el `CLAUDE.md` y la [metodología SDD/TDD](../global/metodologia-sdd-tdd.md). El alcance proviene de `Documentacion.md`: RF-01..07, RNF-01..07 y las 28 historias del Anexo C.
 
-El proyecto `TS` está vacío. Todo se crea desde este catálogo en un lote inicial por CSV. Las épicas agrupan un módulo funcional o un trabajo transversal. Cada sprint toma Story y Task de varias épicas. Las checklists de ejecución se escriben en `sprints/sprint-NN.md` al refinar cada sprint.
+El proyecto `TS` está poblado en `medihealthec.atlassian.net` y Jira es la fuente de verdad. Este catálogo conserva el diseño del backlog; las claves vigentes y las unidades posteriores a la importación están en [`jira-key-map.md`](jira-key-map.md). Las checklists se mantienen en Jira y los documentos de sprint solo registran planificación y handoff.
 
 Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continúan desde `ts-29` y las épicas son `ts-epic-<slug>`. La clave real `TS-<n>` se registra en `imports/` después de importar.
 
@@ -92,16 +92,16 @@ La historia y los criterios de aceptación de cada Story se copian del Anexo C a
 | ----- | ------------------------------------------------------------------ | -------------- | ------- | ----------- | ----- | -------- | ------------- | --------------------------------------------- |
 | ts-29 | Configurar staging (Railway desde `develop` + Vercel preview)       | ts-epic-infra  | S1      | R1          | infra | infra    | —             | Acceso a Railway y Vercel                     |
 | ts-30 | Configurar dominio `trackstudio.site` y DNS                        | ts-epic-infra  | S2      | R1          | infra | infra    | —             | Registrador del dominio                       |
-| ts-31 | Provisionar bucket S3 e IAM en us-east-1                           | ts-epic-infra  | S3      | R1          | infra | archivos | —             | ADR bloque 7 DECIDIDO; cuenta AWS             |
+| ts-31 | Provisionar bucket S3 e IAM en us-east-1                           | ts-epic-infra  | S3      | R1          | infra | archivos | —             | D7.1-D7.7 decididas; cuenta AWS preparada en TS-50 |
 | ts-32 | Configurar Resend con dominio verificado                           | ts-epic-infra  | S5      | R2          | infra | infra    | ts-30         | Cuenta Resend                                 |
 | ts-33 | Configurar producción (Railway, Vercel, Auth0) y monitoreo de uptime | ts-epic-infra | S7      | R3          | infra | infra    | ts-30         | Accesos de producción; aprobación manual      |
 | ts-34 | Tesis: Diseño de la solución (C4 niveles 2-4, ERD, persistencia)   | ts-epic-thesis | S4      | transversal | docs  | normal   | —             | —                                             |
 | ts-35 | Tesis: Desarrollo de la solución (evidencia SCRUM por sprint)      | ts-epic-thesis | S2-S8   | transversal | docs  | normal   | —             | —                                             |
 | ts-36 | Tesis: Pruebas y evaluación de la solución                         | ts-epic-thesis | S7      | transversal | docs  | normal   | ts-24, ts-25  | —                                             |
 | ts-37 | Tesis: Resultados, ética, conclusiones, trabajo futuro y resumen   | ts-epic-thesis | S8      | transversal | docs  | normal   | ts-28         | —                                             |
-| ts-38 | Diseñar y cerrar el ERD del modelo de datos                        | ts-epic-infra  | S1-S2   | R1          | docs  | datos    | —             | ADR bloque 7 DECIDIDO para cerrar; aprobación humana |
+| ts-38 | Diseñar y cerrar el ERD del modelo de datos                        | ts-epic-infra  | S1-S2   | R1          | docs  | datos    | —             | Hito mínimo S1 en TS-54; aprobación humana |
 
-Las Task de infraestructura las ejecuta el equipo humano (`CLAUDE.md` regla 6). El agente las señala como dependencia y se detiene. ts-38 es documentación de diseño, no infraestructura: el agente puede redactar el ERD y el humano lo aprueba. Solo bloquea a las historias cuyas tablas dependen del bloque 7 (ts-08, ts-10, ts-13, ts-17, ts-22); `users` y `artists` se aprueban antes, dentro del mismo ticket, para no frenar a ts-04 y ts-05. Las Task no llevan SP; su esfuerzo consume la misma capacidad del sprint. ts-35 se actualiza en cada sprint y se cierra en S8.
+Las Task de infraestructura las ejecuta el equipo humano (`CLAUDE.md` regla 6). El agente las señala como dependencia y se detiene. ts-38 es documentación de diseño, no infraestructura: el agente puede redactar el ERD y el humano lo aprueba. Bloquea a las historias que necesitan tablas aún no diseñadas; `users` y `artists` se aprueban en `TS-54` para no frenar `TS-15`. Las Task no llevan SP; su esfuerzo consume la misma capacidad del sprint. ts-35 se actualiza en cada sprint y se cierra en S8.
 
 ## Sprint 1
 
@@ -111,15 +111,15 @@ Las Task de infraestructura las ejecuta el equipo humano (`CLAUDE.md` regla 6). 
 | ts-02 | HU-02 Pipeline CI/CD con despliegue a staging | CI de frontend y backend integradas (PR #7, #8); falta confirmar el despliegue a staging. |
 | ts-03 | HU-03 Autenticación con Auth0                 | Login/logout con Auth0 integrado (PR #6).                                                |
 | ts-04 | HU-04 Control de acceso basado en roles       | Specs de capa en `docs/specs/{backend,frontend}/HU-04.md`; implementación en curso.     |
-| ts-29 | Configurar staging                            | Configuración de Railway ajustada (PR #9); Vercel por confirmar.                         |
-| ts-38 | Diseñar y cerrar el ERD del modelo de datos   | Sin iniciar; no existe `docs/erd/`. El cierre espera al bloque 7 del ADR.                |
+| ts-29 | Configurar staging                            | Cerrada como `TS-40`; Railway, Vercel, Auth0 y smoke test verificados.                    |
+| ts-38 | Diseñar y cerrar el ERD del modelo de datos   | Padre `TS-49`; hito mínimo de S1 separado en `TS-54`.                                    |
 
 Estos tickets se importan en To Do. Pasan a Done a mano solo cuando se registra la evidencia (PR o ejecución de CI) y se cumplen sus criterios de aceptación. El desglose con checklist va en `sprints/sprint-01.md`.
 
 ## Gates vigentes
 
-- **ADR bloque 7 ABIERTO** (subida de audio a S3): bloquea ts-13..ts-16, ts-31 y las migraciones de `productions`, `songs`, `versions`, `comments` y `studio_sessions` (`CLAUDE.md` §5). Debe cerrarse antes del 19-oct para no desplazar R1. Afecta también a ts-08..ts-12, que necesitan esas migraciones, y al cierre del ERD (ts-38).
-- **Discrepancias pendientes** (sin ticket, ver roadmap): criterio de HU-02, versión del SDK de Auth0, ClickUp → Jira y SP de HU-28.
+- **ADR bloque 7 CERRADO** desde 2026-08-18. D7.1-D7.7 ya no bloquean el backlog; los gates vivos son el ERD (`TS-49`/`TS-54`), el alcance de sprint y la infraestructura S3 (`TS-42`).
+- **Discrepancias documentales:** el criterio de HU-02 ya se corrigió; la versión del SDK de Auth0 y ClickUp → Jira se arrastran a la tesis en `TS-53`. La estimación/RNF de HU-28 se confirma en su refinación.
 
 ## Capacidad y refinamiento progresivo
 
@@ -127,12 +127,12 @@ La capacidad, la estimación en SP y el flujo continuo entre sprints están defi
 
 S1 se desglosa primero. S2-S8 conservan su alcance y ventana objetivo con los tickets ya creados, y su checklist se escribe antes de iniciar cada sprint, a partir de la capacidad observada. La ausencia de una checklist o de un sprint activo no elimina un requisito.
 
-## Preparación de importación
+## Registro histórico de preparación de la importación
 
-- Proyecto: `TS`, Jira Cloud, vacío al 2026-09-22.
+- El proyecto `TS` de Jira Cloud estaba vacío al 2026-09-22; la importación ya se completó y el mapa vigente está en [jira-key-map.md](jira-key-map.md).
 - Lote inicial único: **49 filas** (11 épicas + 28 Story + 10 Task). Las casillas de checklist no generan filas.
 - Etiquetas por ticket: `local-<id>`, `release-rN`, `target-sN`, `capa-*`, `riesgo-*`, `backlog-oficial`.
 - Enlaces Blocks: se generan desde la columna "Bloqueado por". Si el importador no los resuelve, se hace una segunda pasada con las claves reales.
 - La tabla `local_id → import_id → TS-<n>` y el resultado de la importación se registran en `imports/`. El procedimiento completo está en [backlog-format.md](backlog-format.md#preparación-del-csv).
 
-Siguiente refinamiento: `sprints/sprint-01.md` con las checklists de ts-01..ts-04, ts-29 y ts-38, y después el CSV del lote inicial.
+La preparación produjo `sprints/sprint-01.md` y el CSV del lote inicial. Este bloque se conserva como historial; no se debe volver a importar el lote.

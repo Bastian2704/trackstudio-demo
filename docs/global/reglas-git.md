@@ -34,7 +34,7 @@ Del plan CI/CD del proyecto: `feature/* → develop (staging) → main (producci
 | `fix/<slug>`             | Corrección menor no atada a una historia.                 | `develop` | `develop` por PR                                       |
 | `hotfix/<slug>`          | Urgencia en producción.                                   | `main`    | `main` **y** `develop`                                 |
 
-- **Nunca `push` directo a `main` ni a `develop`.** Todo entra por PR con 1 review (y CI verde cuando el workflow exista — T-11). `main` y `develop` tienen branch protection (T-03).
+- **Nunca `push` directo a `main` ni a `develop`.** Todo entra por PR con 1 review y CI verde (`TS-13`). `main` y `develop` tienen rulesets activos con esos requisitos.
 - Las features nacen de `develop` y vuelven por PR hacia `develop`. A `main` solo se llega por PR desde `develop` con aprobación manual (se ejerce plenamente en Sprint 8 / R3).
 
 ---
@@ -130,6 +130,6 @@ git push -u origin develop
 
 ## 6. Deudas y trampas registradas
 
-- **Clave de Jira pendiente.** El formato usa `TS-<id>`, pero la clave real del proyecto y el mapeo HU↔issue se confirman cuando se puebla el tablero (T-08). Hasta entonces, si el agente no conoce el `<id>` real, **lo pide y frena**; no lo infiere.
+- **Mapa vigente.** Las claves reales están en [`docs/backlog/jira-key-map.md`](../backlog/jira-key-map.md) y se verifican contra Jira antes de crear una rama. No se infieren desde el CSV ni desde claves históricas.
 - **Trampa del import a Jira (aprendida del proyecto de referencia):** al importar el backlog por CSV, el `Issue Id` del CSV **no** es el `TS-<id>` que asigna el tablero. Nombrar ramas/commits con el ID del CSV lleva a colisiones. Usar siempre el ID **del tablero**, verificado, no el del archivo de importación.
 - **Repo público:** antes de cada PR, revisar que el diff no arrastre `.env`, secretos ni datos reales del cliente. `.env` está en `.gitignore` (verificado); mantenerlo así.
