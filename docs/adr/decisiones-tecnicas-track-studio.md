@@ -329,31 +329,21 @@ No se incorpora PgBouncer ni pooler externo. La arquitectura es single-tenant pa
 
 → *ISO 25010: fiabilidad (recuperabilidad), integridad de datos. Cubre: RNF-04, RNF-05.*
 
-### Estado del ERD — **PENDIENTE**
+### Estado del ERD — **PARCIAL** (`TS-54`, 2026-10-01)
 
-**Entidades definidas:**
+El modelo mínimo del Sprint 1 para `users` y `artists` está aprobado. Su fuente de verdad detallada es [`docs/erd/modelo-minimo-sprint-1.md`](../erd/modelo-minimo-sprint-1.md), que fija atributos, tipos, nulabilidad, restricciones, índices y relaciones.
 
-```
-users                    (cuentas de login, nacen al registrarse en Auth0)
-  id (uuid, PK), auth0_sub, email, role, timestamps
+Decisiones de alcance aprobadas en `TS-54`:
 
-artists                  (entidad de catálogo, creada por el productor)
-  id (uuid, PK), name, email, status (enum),
-  user_id (uuid, FK → users, NULLABLE),
-  invitation_token, invited_at, invitation_expires_at,
-  created_by (uuid, FK → users),
-  timestamps, deleted_at
+- `users.email` es nullable y único: el access token no garantiza ese claim y la identidad local puede nacer desde `auth0_sub`.
+- `users` no persiste `role`: el claim del JWT continúa siendo la única fuente autoritativa (D4.8).
+- `production_access` conserva el diseño lógico de D6.5/D6.7, pero su modelo físico y migración se difieren hasta modelar `productions`; no forma parte de `TS-15`.
 
-production_access        (pivote con historial)
-  id (uuid, PK), production_id (FK), user_id (FK),
-  granted_at, revoked_at, granted_by (FK)
-```
-
-**Entidades pendientes de modelar:** `productions`, `songs`, `versions`, `comments`, `studio_sessions`.
+**El ERD completo continúa pendiente en `TS-49`:** faltan `productions`, `songs`, `versions`, `comments`, `studio_sessions` y el modelo físico de `production_access`.
 
 **Desbloqueado (2026-08-18):** el bloque 7 (subida a S3 y versionado secuencial) ya cerró — ver D7.1-D7.7. La estructura de `versions` ya puede modelarse: incluye como mínimo `id` (uuid), `song_id` (FK), `version_number`, `s3_key` (patrón de D7.3), `content_type`, `size_bytes`, `etag` (D7.4), timestamps y `deleted_at`.
 
-**Decisiones de formato pendientes:** notación (Crow's Foot recomendada), herramienta (dbdiagram.io/DBML, Mermaid o draw.io), enfoque design-first.
+**Decisiones de formato del ERD completo pendientes:** herramienta definitiva y enfoque design-first. El subconjunto de `TS-54` usa Mermaid dentro del documento versionado.
 
 ---
 
