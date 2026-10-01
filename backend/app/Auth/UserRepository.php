@@ -26,10 +26,10 @@ final class UserRepository extends UserRepositoryAbstract implements UserReposit
             $role = Role::tryFrom($roles[0]);
         }
 
-        $usuario = new StatelessUser($user);
-        $usuario->setAttribute('role', $role);
+        $authUser = new StatelessUser($user);
+        $authUser->setAttribute('role', $role);
 
-        return $usuario;
+        return $authUser;
     }
 
     /**
