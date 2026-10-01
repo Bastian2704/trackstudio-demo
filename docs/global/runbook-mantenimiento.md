@@ -78,4 +78,4 @@ Pausar los monitores evita alertas falsas. Además, el tiempo que un monitor est
 
 ## 3. Registro de disponibilidad (RNF-04)
 
-> *Pendiente: fijar la periodicidad (mensual o por sprint) contrastando con el texto real de RNF-04 de la tesis. Ver HANDOFF_v7 §5.*
+> *Pendiente: fijar la periodicidad (mensual o por sprint) contrastando con el texto real de RNF-04 de la tesis. Registrar la decisión en `TS-53`.*

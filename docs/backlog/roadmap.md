@@ -42,8 +42,8 @@ Las ventanas son **máximas**, no fijas.
 | Sprint | Ventana máxima       | Historias | SP  | Demostrable al cierre                                                                          | Riesgo o dependencia principal                                                                                          |
 | ------ | -------------------- | --------- | --- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | S1     | 21 sep - 2 oct       | HU-01..04 | 16  | Monorepo, CI front/back, login Auth0 y endpoint protegido con RBAC (403 al rol artista).       | Riesgo bajo.       |
-| S2     | 5 oct - 16 oct       | HU-05..09 | 13  | Alta, edición, listado y estado de artistas; producciones con reglas de formato.              | ERD de `artists`/`productions`. La migración de `productions` sigue bloqueada mientras el bloque 7 del ADR esté ABIERTO. |
-| S3     | 19 oct - 30 oct      | HU-10..13 | 13  | Canciones por producción con borrado confirmado; subida de audio WAV/MP3 ≤ 500 MB con progreso. | **Gate:** bloque 7 del ADR DECIDIDO antes de iniciar S3. Bucket S3 e IAM los configura el humano.                    |
+| S2     | 5 oct - 16 oct       | HU-05..09 | 13  | Alta, edición, listado y estado de artistas; producciones con reglas de formato.              | ERD aprobado de `artists`/`productions`; el ERD, no el bloque 7, es el gate vigente. |
+| S3     | 19 oct - 30 oct      | HU-10..13 | 13  | Canciones por producción con borrado confirmado; subida de audio WAV/MP3 ≤ 500 MB con progreso. | **Gate:** ERD de canciones/versiones aprobado; bucket S3 e IAM de `TS-42` configurados por el humano. |
 | S4     | 2 nov - 13 nov       | HU-14..16 | 13  | Versionado secuencial, reproductor embebido y URLs prefirmadas con expiración. **Cierre R1.**  | Expiración y refresco de URLs; integridad por hash (RNF-02, RNF-05).                                                    |
 | S5     | 16 nov - 27 nov      | HU-17..19 | 13  | Comentarios con marca de tiempo sobre la línea de tiempo, navegación y borrado propio.        | Sincronización reproductor-comentarios. Hasta HU-20, el rol artista se prueba con accesos sintéticos sembrados.         |
 | S6     | 30 nov - 11 dic      | HU-20..23 | 11  | Invitación y revocación de artista, vista restringida y calendario sin solapes. **Cierre R2.** | Resend (infraestructura humana) para la invitación por correo; pruebas de rechazo a recursos ajenos (RNF-01).           |
@@ -95,13 +95,13 @@ El backlog conserva completos RF-01 a RF-07. La asignación a un sprint es una p
 
 | Periodo | Entregable                                                                                                                   |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| S1-S2   | Cerrar el bloque 7 del ADR (subida de audio a S3) y el ERD. Corregir la versión del SDK de Auth0 y la tabla de versiones (D2.1). |
+| S1-S2   | Aprobar el ERD por hitos (`TS-54` en S1, `TS-49` completo después) y arrastrar al documento de tesis las decisiones cerradas del SDK de Auth0 y D7.x. |
 | S3-S6   | Sección "Diseño de la solución" (C4 niveles 2-4, ERD, persistencia) y "Desarrollo de la solución" con evidencia por sprint.   |
 | S7-S8   | "Pruebas y evaluación" (trazabilidad RF/RNF → pruebas → evidencia), "Resultados y discusión", conclusiones y resumen/abstract. |
 
 ## Gates y dependencias externas
 
-- **ADR bloque 7 ABIERTO:** bloquea HU-13..16 y las migraciones de `productions`, `songs`, `versions`, `comments` y `studio_sessions`. Debe cerrarse antes del 19 de octubre para no desplazar R1.
+- **ADR bloque 7 CERRADO desde 2026-08-18:** D7.1-D7.7 ya definen la frontera de audio/S3. Los gates vigentes son el ERD aprobado y la infraestructura manual de `TS-42`.
 - **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo humano. El agente los señala como dependencia y se detiene.
 - **Producción:** el merge a `main` requiere aprobación manual (plan CI/CD).
 
@@ -110,9 +110,9 @@ El backlog conserva completos RF-01 a RF-07. La asignación a un sprint es una p
 | Discrepancia                                                                                    | Dónde                          | Acción                                          |
 | ----------------------------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
 | ~~HU-02 dice "el merge a main despliega a staging"; el plan CI/CD y `reglas-git.md` dicen `develop` → staging.~~ | Anexo C vs plan CI/CD | **Cerrada en Jira el 2026-09-30** (TS-13, ts-02.08): el criterio ya dice "el merge a develop despliega a staging". Pendiente arrastrar la corrección al Anexo C del documento de tesis. |
-| Restricción "Auth0 SDK v4.x para Laravel"; lo instalado es `auth0/login` v7.                    | Limitaciones vs backend        | Actualizar documento y ADR (D2.1).              |
-| La tabla de costos cita ClickUp como gestor SCRUM; el tablero es Jira.                          | Tabla 21                       | Actualizar el documento.                        |
-| HU-28 sin SP ni RF/RNF.                                                                          | Anexo C                        | Estimar (supuesto: 2 SP) y enlazar RNF-06.      |
+| Restricción "Auth0 SDK v4.x para Laravel"; lo instalado es `auth0/login` v7.                    | Tesis vs backend               | ADR D2.1 ya corregido; actualizar tesis en `TS-53`. |
+| La tabla de costos cita ClickUp como gestor SCRUM; el tablero es Jira.                          | Tabla 21                       | Actualizar la tesis en `TS-53`.                 |
+| HU-28 sin SP ni RF/RNF.                                                                          | Anexo C                        | Confirmar estimación y enlazar RNF-06 en la refinación correspondiente. |
 
 ## Gobierno en Jira
 
@@ -123,10 +123,10 @@ Epic -> Story o Task con checklist detallada
 Sub-task solo cuando necesita seguimiento propio
 ```
 
-Release y sprint son atributos de planificación, no padres. Las capacidades visibles son Story; el trabajo técnico, de infraestructura o de decisión es Task. El proyecto `TS` está vacío: todo se crea desde el catálogo de `jira-backlog.md`, con el formato de `backlog-format.md`.
+Release y sprint son atributos de planificación, no padres. Las capacidades visibles son Story; el trabajo técnico, de infraestructura o de decisión es Task. El proyecto `TS` está poblado y Jira es la fuente de verdad; el mapa vigente está en [`jira-key-map.md`](jira-key-map.md).
 
 ## Siguiente paso
 
-1. Desglosar S1 en `docs/backlog/sprints/sprint-01.md` y preparar el CSV del lote inicial (`docs/backlog/imports/`).
-2. Cerrar lo pendiente de S1 (HU-04, staging) registrando la evidencia del trabajo ya integrado.
-3. Impulsar el cierre del bloque 7 del ADR durante S1-S2.
+1. Cerrar la verificación de `TS-12` y `TS-13` con sus PR/runs pendientes.
+2. Completar `TS-14`, `TS-15`, `TS-53` y `TS-54` para lograr el objetivo del Sprint 1.
+3. Mantener `TS-42`, `TS-44`, `TS-46` y `TS-49` como padres de alcance futuro/transversal, sin contarlos como entregables completos de S1.

@@ -104,7 +104,7 @@ Las Task usan casillas propias de su naturaleza (decisión, infraestructura, doc
 | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Spec, test, implementación o comprobación dentro del mismo resultado.                                       | Casilla de la checklist.                                               |
 | Una capa de la historia que lleva otra persona con estado, plazo o bloqueo propios.                         | Sub-task bajo esa Story (p. ej. `ts-13-frontend`).                  |
-| Decisión o infraestructura que bloquea varias historias (cerrar bloque 7 del ADR, ERD, bucket S3, Resend). | Task independiente bajo la épica, con enlaces Blocks.                  |
+| Decisión o infraestructura que bloquea varias historias (ERD, bucket S3, Resend). | Task independiente bajo la épica, con enlaces Blocks.                  |
 | Dos resultados aceptables por separado o una historia que no cabe en un sprint.                             | Dos Story bajo la misma épica, cada una con alcance y criterios propios. |
 | Defecto descubierto en pruebas, review o staging que necesita seguimiento.                                  | Bug enlazado a la entrega afectada.                                    |
 
@@ -146,7 +146,7 @@ Todos los tickets entran al backlog oficial sin assignee ni evidencia. Siguen si
 - `blocked_by` contiene dependencias de entrega: el sucesor no se da por terminado antes que el predecesor. Se permiten specs y tests en rojo aislados cuando la dependencia no afecta a esa actividad.
 - El orden entre casillas se conserva en la Description; no se exporta como enlaces Blocks.
 - Parent expresa pertenencia; no crea un bloqueo. No se crean ciclos entre un ticket y sus hijos.
-- **Gate del ADR:** una historia que depende de un bloque ABIERTO no es Ready. Hoy el bloque 7 (subida de audio a S3) bloquea HU-13..16 y las migraciones de `productions`, `songs`, `versions`, `comments` y `studio_sessions` (`CLAUDE.md` §5). Mientras siga así, tampoco se escriben su spec de implementación ni sus tests.
+- **Gate del ADR:** una historia que depende de un bloque ABIERTO no es Ready. El bloque 7 (subida de audio a S3) está cerrado desde 2026-08-18; para HU-13..16 los gates vigentes son el ERD, el alcance del sprint y la infraestructura `TS-42`.
 - **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo humano. Se registran como Dependencia externa o como Task enlazada; el agente no los toca.
 - **Compuertas del método:** C1 (sin spec aprobada no hay tests), C2 (sin test en rojo no hay código), C3 (todo test se prueba rompiéndolo), C4 (frontera real para contratos externos) y C5 (sin tests no hay tarea terminada). Marcar casillas no las sustituye.
 - **Done:** código integrado en `develop` por PR con pipeline verde, tests pasando, AC cumplidos, RNF aplicables verificados y revisión en el Sprint Review. El release se libera cuando todas sus historias cumplen Done.

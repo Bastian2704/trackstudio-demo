@@ -50,7 +50,7 @@ Las skills de Boost (laravel-best-practices, testing-best-practices, etc.) son c
 
 ## 2. Cadena de calidad antes de pedir commit
 
-Una tarea de backend no está lista para el bloque de git hasta que, **dentro del contenedor**, pasan en este orden (es el mismo orden del job de CI, T-11):
+Una tarea de backend no está lista para el bloque de git hasta que, **dentro del contenedor**, pasan en este orden (es el mismo orden del job de CI de `TS-13`):
 
 1. `sail pint --test` → sin diferencias de formato.
 2. `sail php vendor/bin/phpstan analyse` → `[OK] No errors`.
@@ -93,7 +93,7 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 > Actualizado 2026-09-17: el **bloque 7 del ADR (audio/S3) está CERRADO** desde el 2026-08-18. Estos vetos siguen vigentes por **alcance de Sprint 1** y por el **ERD completo, diferido deliberadamente** — ver `CLAUDE.md` raíz §5, que es su dueño.
 
 - No tocar S3, subida de archivos ni presigned URLs.
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 **solo** `users`, `artists`, `production_access` (T-31).
+- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 solo se migra el modelo mínimo aprobado en `TS-54`; `TS-15` decide si `production_access` se difiere.
 - No implementar hash de integridad; **sí** se pueden **definir** las interfaces de frontera (`HashVerifierContract`).
 - No construir lógica de los módulos funcionales más allá del endpoint de humo del Sprint 1.
 
