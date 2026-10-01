@@ -7,13 +7,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Sentry\ClientBuilder;
-use Sentry\Event;
-use Sentry\SentrySdk;
-use Sentry\State\Hub;
-use Sentry\Transport\Result;
-use Sentry\Transport\ResultStatus;
-use Sentry\Transport\TransportInterface;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,57 +95,20 @@ it('acompaña cada error con un trace_id con forma de ULID', function () {
 });
 
 it('correlaciona el trace_id de un 500 con el evento de Sentry', function () {
-    // Primera barrera del rojo verificada: sin el SDK, esta clase no existía.
-    // Después de instalarlo, el test siguió rojo hasta registrar la integración
-    // y pasar el mismo ULID al evento que a la respuesta.
-    expect(class_exists(ClientBuilder::class))->toBeTrue();
+    // Tuvo dos rojos antes del verde: sin el SDK instalado, y con el SDK pero sin
+    // registrar la integración ni pasar al evento el mismo ULID de la respuesta.
+    $eventos = capturarEventosDeSentry();
 
-    /** @var ArrayObject<int, Event> $eventos */
-    $eventos = new ArrayObject;
+    config(['app.debug' => false]);
 
-    $transporte = new class($eventos) implements TransportInterface
-    {
-        /** @param ArrayObject<int, Event> $eventos */
-        public function __construct(private ArrayObject $eventos) {}
+    $respuesta = $this->getJson('/api/v1/__test/error-interno');
 
-        public function send(Event $event): Result
-        {
-            $this->eventos->append($event);
+    $respuesta->assertStatus(500)->assertJsonPath('code', 'INTERNAL_ERROR');
 
-            return new Result(ResultStatus::success(), $event);
-        }
+    expect($eventos)->toHaveCount(1);
 
-        public function close(?int $timeout = null): Result
-        {
-            return new Result(ResultStatus::success());
-        }
-    };
-
-    $cliente = ClientBuilder::create([
-        'dsn' => 'https://public@example.com/1',
-        'default_integrations' => false,
-    ])->setTransport($transporte)->getClient();
-
-    $hubAnterior = SentrySdk::getCurrentHub();
-    SentrySdk::setCurrentHub(new Hub($cliente));
-
-    try {
-        config(['app.debug' => false]);
-
-        $respuesta = $this->getJson('/api/v1/__test/error-interno');
-
-        $respuesta->assertStatus(500)->assertJsonPath('code', 'INTERNAL_ERROR');
-
-        expect($eventos)->toHaveCount(1);
-
-        /** @var Event $evento */
-        $evento = $eventos[0];
-
-        expect($evento->getTags())
-            ->toHaveKey('trace_id', $respuesta->json('trace_id'));
-    } finally {
-        SentrySdk::setCurrentHub($hubAnterior);
-    }
+    expect($eventos[0]->getTags())
+        ->toHaveKey('trace_id', $respuesta->json('trace_id'));
 });
 
 it('no filtra el mensaje interno de un 500 cuando debug está apagado', function () {
