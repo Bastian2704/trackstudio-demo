@@ -13,7 +13,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 final class UserRepository extends UserRepositoryAbstract implements UserRepositoryContract
 {
     /**
-     * @param  array<string, mixed>  $user  Access token claims, already validated by the guard
+     * @param  array<string, mixed>  $user  Claims del access token, ya validados por el guard
      */
     public function fromAccessToken(array $user): Authenticatable
     {
@@ -33,7 +33,7 @@ final class UserRepository extends UserRepositoryAbstract implements UserReposit
     }
 
     /**
-     * @param  array<string, mixed>  $user  Session claims
+     * @param  array<string, mixed>  $user  Claims de sesión (no se usan: la API es stateless y no tiene sesión)
      */
     public function fromSession(array $user): ?Authenticatable
     {
