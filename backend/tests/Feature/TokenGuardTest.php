@@ -42,6 +42,17 @@ it('rechaza con 401 UNAUTHENTICATED la petición sin token', function () {
         ->assertJsonPath('status', 401);
 });
 
+it('rechaza con 401 UNAUTHENTICATED aunque el cliente no pida JSON', function () {
+    // `get`, no `getJson`: sin `Accept: application/json`, Laravel calcula la
+    // redirección del invitado a route('login'), que la API no tiene, y responde
+    // 500. Lo destapó staging (ts-03.09) con un curl sin cabeceras.
+    $respuesta = $this->get(RUTA_PROTEGIDA_DE_PRUEBA);
+
+    $respuesta->assertUnauthorized()
+        ->assertHeaderMissing('Location')
+        ->assertJsonPath('code', 'UNAUTHENTICATED');
+});
+
 it('rechaza con 401 UNAUTHENTICATED un Authorization header con basura', function () {
     $this->getJson(RUTA_PROTEGIDA_DE_PRUEBA, ['Authorization' => 'Bearer no-soy-un-jwt'])
         ->assertUnauthorized()
