@@ -5,10 +5,8 @@ import { useRoles } from '@/hooks/useRole'
 import LogoutButton from '@/components/LogoutButton'
 
 interface Me {
-  id: string
-  email: string
-  name: string
-  role: string
+  sub: string
+  role: 'productor' | 'artista' | null
 }
 
 export default function MePage() {
@@ -38,14 +36,16 @@ export default function MePage() {
         {query.isPending && <p>Cargando…</p>}
         {query.isError && (
           <p className="text-destructive">
-            {query.error.response?.data?.code ?? query.error.message} — el backend aún no expone
-            este endpoint.
+            {query.error.response?.data?.code ?? query.error.message}
           </p>
         )}
         {query.data && (
-          <pre className="overflow-x-auto rounded bg-muted p-3 text-sm">
-            {JSON.stringify(query.data, null, 2)}
-          </pre>
+          <dl className="space-y-1 text-sm">
+            <dt className="text-muted-foreground">sub</dt>
+            <dd>{query.data.sub}</dd>
+            <dt className="text-muted-foreground">role</dt>
+            <dd>{query.data.role ?? '—'}</dd>
+          </dl>
         )}
       </section>
     </main>
