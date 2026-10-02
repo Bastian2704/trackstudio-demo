@@ -13,7 +13,6 @@ function App() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // TODO: verify whether loginWithRedirect() rejections are already surfaced via useAuth0().error
     const authId = attachAuthInterceptor(getAccessTokenSilently)
     const errorId = attachErrorInterceptor({
       onUnauthenticated: () => void loginWithRedirect(),
@@ -34,7 +33,7 @@ function App() {
     return (
       <div className="app-container">
         <div className="loading-state">
-          <div className="loading-text">Loading...</div>
+          <div className="loading-text">Cargando…</div>
         </div>
       </div>
     )
@@ -44,8 +43,8 @@ function App() {
     return (
       <div className="app-container">
         <div className="error-state">
-          <div className="error-title">Oops!</div>
-          <div className="error-message">Something went wrong</div>
+          <div className="error-title">¡Algo salió mal!</div>
+          <div className="error-message">No se pudo completar el inicio de sesión</div>
           <div className="error-sub-message">{error.message}</div>
         </div>
       </div>
