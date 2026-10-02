@@ -1,7 +1,7 @@
-import type { AxiosAdapter } from 'axios'
+import { AxiosError, type AxiosAdapter, type AxiosResponse } from 'axios'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { api, attachAuthInterceptor } from '@/lib/api'
+import { api, attachAuthInterceptor, attachErrorInterceptor, type ApiErrorBody } from '@/lib/api'
 
 /*
  * TS-14 (HU-03) — ts-03.06, spec frontend §4 tests 3, 4 y 5.
@@ -12,6 +12,7 @@ import { api, attachAuthInterceptor } from '@/lib/api'
 const adaptadorOriginal = api.defaults.adapter
 let adaptador: ReturnType<typeof vi.fn<AxiosAdapter>>
 let interceptorId: number | undefined
+let interceptorErroresId: number | undefined
 
 beforeEach(() => {
   adaptador = vi.fn<AxiosAdapter>((config) =>
@@ -22,7 +23,9 @@ beforeEach(() => {
 
 afterEach(() => {
   if (interceptorId !== undefined) api.interceptors.request.eject(interceptorId)
+  if (interceptorErroresId !== undefined) api.interceptors.response.eject(interceptorErroresId)
   interceptorId = undefined
+  interceptorErroresId = undefined
   api.defaults.adapter = adaptadorOriginal
 })
 
@@ -59,5 +62,75 @@ describe('attachAuthInterceptor', () => {
     await expect(api.get('/api/v1/me')).rejects.toThrow('login_required')
 
     expect(adaptador).not.toHaveBeenCalled()
+  })
+})
+
+function errorDeApi(code: string, message: string): AxiosError<ApiErrorBody> {
+  const response: AxiosResponse<ApiErrorBody> = {
+    data: {
+      type: `https://trackstudio.site/errors/${code.toLowerCase().replaceAll('_', '-')}`,
+      title: 'Error de prueba',
+      status: code === 'UNAUTHENTICATED' ? 401 : 403,
+      code,
+      detail: 'Detalle que tampoco controla el flujo',
+      instance: '/api/v1/rbac-check',
+      trace_id: '01KTESTTRACE00000000000000',
+    },
+    status: code === 'UNAUTHENTICATED' ? 401 : 403,
+    statusText: 'Error',
+    headers: {},
+    config: { headers: {} } as AxiosResponse<ApiErrorBody>['config'],
+  }
+
+  return new AxiosError(message, 'ERR_BAD_RESPONSE', undefined, undefined, response)
+}
+
+describe('attachErrorInterceptor', () => {
+  it('despacha FORBIDDEN por code e ignora message', async () => {
+    const onUnauthenticated = vi.fn()
+    const onForbidden = vi.fn()
+    interceptorErroresId = attachErrorInterceptor({ onUnauthenticated, onForbidden })
+
+    for (const message of ['Access denied', 'Texto completamente distinto']) {
+      const error = errorDeApi('FORBIDDEN', message)
+      api.defaults.adapter = vi.fn<AxiosAdapter>(() => Promise.reject(error))
+
+      await expect(api.post('/api/v1/rbac-check')).rejects.toBe(error)
+    }
+
+    expect(onForbidden).toHaveBeenCalledTimes(2)
+    expect(onUnauthenticated).not.toHaveBeenCalled()
+  })
+
+  it('despacha UNAUTHENTICATED por code', async () => {
+    const onUnauthenticated = vi.fn()
+    const onForbidden = vi.fn()
+    const error = errorDeApi('UNAUTHENTICATED', 'El texto no forma parte del contrato')
+    api.defaults.adapter = vi.fn<AxiosAdapter>(() => Promise.reject(error))
+    interceptorErroresId = attachErrorInterceptor({ onUnauthenticated, onForbidden })
+
+    await expect(api.get('/api/v1/me')).rejects.toBe(error)
+
+    expect(onUnauthenticated).toHaveBeenCalledTimes(1)
+    expect(onForbidden).not.toHaveBeenCalled()
+  })
+
+  it('no despacha errores sin code RBAC conocido', async () => {
+    const onUnauthenticated = vi.fn()
+    const onForbidden = vi.fn()
+    interceptorErroresId = attachErrorInterceptor({ onUnauthenticated, onForbidden })
+
+    const errores = [
+      errorDeApi('INTERNAL_ERROR', 'Error conocido pero no de autenticación'),
+      new AxiosError('Network Error', 'ERR_NETWORK'),
+    ]
+
+    for (const error of errores) {
+      api.defaults.adapter = vi.fn<AxiosAdapter>(() => Promise.reject(error))
+      await expect(api.get('/api/v1/me')).rejects.toBe(error)
+    }
+
+    expect(onUnauthenticated).not.toHaveBeenCalled()
+    expect(onForbidden).not.toHaveBeenCalled()
   })
 })
