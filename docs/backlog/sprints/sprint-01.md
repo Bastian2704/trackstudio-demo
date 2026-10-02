@@ -176,7 +176,7 @@ Checklist de ejecución:
 - [ ] `ts-04.06` Tests frontend (agente). Hecho cuando: tests Vitest del interceptor (despacha por `code`, ignora `message`), de `RequireRole` (el artista no accede a rutas del productor) y del token fuera de `localStorage`/`sessionStorage`. Como el código ya existe en parte, el rojo se demuestra rompiéndolo (C3). Orden interno: ts-04.05, ts-02.04.
 - [ ] `ts-04.07` Código frontend hasta verde (humano). Hecho cuando: `RequireRole`, `useRole`, `Forbidden` e interceptor (ya presentes desde PR #6) completan lo que pidan los tests; `tsc --noEmit`, ESLint y Prettier limpios. Orden interno: ts-04.06.
 - [ ] `ts-04.08` Review frontend. Hecho cuando: igual que ts-04.04 para la capa frontend. Orden interno: ts-04.07.
-- [ ] `ts-04.10` Usuarios sintéticos con rol (humano). Hecho cuando: un usuario productor y uno artista de prueba en Auth0, con el rol presente en el claim del token; sin datos reales. Orden interno: ts-03.10.
+- [x] `ts-04.10` Usuarios sintéticos con rol (humano). Hecho cuando: un usuario productor y uno artista de prueba en Auth0, con el rol presente en el claim del token; sin datos reales. Verificado el 2026-10-02 con tokens reales: productor → `["productor"]`, artista → `["artista"]` en `https://trackstudio.site/roles`. Orden interno: ts-03.10.
 - [ ] `ts-04.09` Integración y demo del sprint. Hecho cuando: PR a `develop` con CI verde; en staging el artista recibe 403 `FORBIDDEN` y ve la pantalla sin permiso, el productor recibe 2xx y sin token hay 401; RNF-01 verificado; handoff actualizado. Orden interno: ts-04.04, ts-04.08, ts-04.10, ts-02.07.
 
 ### ts-38 - Diseñar y cerrar el ERD del modelo de datos
