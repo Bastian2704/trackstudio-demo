@@ -93,7 +93,7 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 > Actualizado 2026-09-17: el **bloque 7 del ADR (audio/S3) está CERRADO** desde el 2026-08-18. Estos vetos siguen vigentes por **alcance de Sprint 1** y por el **ERD completo, diferido deliberadamente** — ver `CLAUDE.md` raíz §5, que es su dueño.
 
 - No tocar S3, subida de archivos ni presigned URLs.
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions`. En Sprint 1 solo se migra el modelo mínimo aprobado en `TS-54`; `TS-15` decide si `production_access` se difiere.
+- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions` ni `production_access`. En Sprint 1 solo se migra el modelo mínimo de `users` y `artists` aprobado en `TS-54`; `production_access` quedó diferida hasta modelar `productions` y no forma parte de `TS-15`.
 - No implementar hash de integridad; **sí** se pueden **definir** las interfaces de frontera (`HashVerifierContract`).
 - No construir lógica de los módulos funcionales más allá del endpoint de humo del Sprint 1.
 
