@@ -7,6 +7,7 @@ import RequireRole from './routes/RequireRole'
 import Home from './routes/Home'
 import Forbidden from './routes/Forbidden'
 import MePage from './routes/Me.tsx'
+import ProducerOnly from './routes/ProducerOnly.tsx'
 
 function App() {
   const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
@@ -17,9 +18,7 @@ function App() {
     const errorId = attachErrorInterceptor({
       onUnauthenticated: () => void loginWithRedirect(),
       onForbidden: () => {
-        // TODO: Temporary console.warn, create a screen of denied access
-
-        console.warn('Acceso denegado (403)')
+        void navigate('/403', { replace: true })
       },
     })
 
@@ -58,6 +57,9 @@ function App() {
       <Route element={<RequireAuth />}>
         <Route element={<RequireRole allowed={['productor', 'artista']} />}>
           <Route path="/me" element={<MePage />} />
+        </Route>
+        <Route element={<RequireRole allowed={['productor']} />}>
+          <Route path="/productor" element={<ProducerOnly />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
