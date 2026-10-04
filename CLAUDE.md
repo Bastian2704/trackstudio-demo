@@ -85,14 +85,15 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ---
 
-## 5. Qué NO hacer todavía (alcance del Sprint 1 + ERD diferido)
+## 5. Qué NO hacer todavía (alcance vigente de Sprint 2)
 
-> **Por qué existe este bloque, actualizado el 2026-09-17:** antes vetaba por el **bloque 7 del ADR**, que estaba `ABIERTO`. Ese bloque se **cerró el 2026-08-18** (D7.1-D7.7). Los cuatro vetos siguen vigentes, pero ahora por dos motivos distintos: el **alcance acordado del Sprint 1** y el **ERD completo, que el equipo difirió deliberadamente** (no está bloqueado por nada — se retoma cuando se decida). Si se levanta un veto, se levanta aquí primero.
+> **Actualizado el 2026-10-02:** la baseline de 12 semanas habilita HU-05..HU-09 en S2. El bloque 7 del ADR continúa **CERRADO** (D7.1-D7.7); no es un bloqueo. El gate vigente para datos es el slice aprobado del ERD en `TS-49`. Si se levanta otro veto, se levanta aquí primero.
 
-- No tocar S3, subida de archivos ni presigned URLs. *(Alcance de Sprint 1. La decisión técnica ya existe —bloque 7—, lo que falta es que le toque el turno.)*
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions` ni `production_access`. En Sprint 1 **solo** el modelo mínimo de `users` y `artists` aprobado en `TS-54`; `production_access` quedó diferida hasta modelar `productions` y no forma parte de `TS-15` (`ts-04.03`). *(ERD diferido + alcance de Sprint 1.)*
-- No implementar hash de integridad (sí se pueden **definir** las interfaces de frontera). *(Alcance de Sprint 1.)*
-- No construir interfaz de los módulos funcionales más allá del endpoint de humo del Sprint 1. *(Alcance de Sprint 1.)*
+- Se permiten en S2 las migraciones e interfaces de `artists` y `productions` que estén cubiertas por una spec aprobada y por el slice correspondiente del ERD. No se inventa el esquema desde la implementación.
+- No tocar todavía subida de archivos, S3 de aplicación, versiones de audio ni presigned URLs. Son alcance de S3-S4 y requieren sus gates de ERD e infraestructura (`TS-42`).
+- No crear migraciones de `songs`, `versions`, `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
+- No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.
+- No construir interfaces funcionales fuera de artistas y producciones. Las pantallas de humo existentes de S1 se conservan; canciones, audio, comentarios, acceso del artista y sesiones esperan su sprint.
 
 ---
 
