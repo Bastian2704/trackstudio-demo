@@ -88,14 +88,11 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 - **`auth0_sub` en `users`: único e indexado** (clave de búsqueda por request; corrección registrada en el handoff de backend sobre una omisión de D6.7).
 - Factories con Faker para todos los modelos; seeder de prod solo la cuenta real del productor; seeder de dev/staging con dataset **en español** y al menos una canción con cuatro versiones paralelas — **D6.8**.
 
-## 6. Qué NO hacer todavía (backend) — alcance del Sprint 1 + ERD diferido
+## 6. Qué NO hacer todavía (backend) — alcance vigente de Sprint 2
 
-> Actualizado 2026-09-17: el **bloque 7 del ADR (audio/S3) está CERRADO** desde el 2026-08-18. Estos vetos siguen vigentes por **alcance de Sprint 1** y por el **ERD completo, diferido deliberadamente** — ver `CLAUDE.md` raíz §5, que es su dueño.
+> **Dueño único: `CLAUDE.md` raíz §5** (actualizado por `TS-60` el 2026-10-02). La lista de vetos vigente vive allí y no se copia aquí: dos copias se separan en silencio (metodología §0). Si un veto se levanta, se levanta primero en el raíz.
 
-- No tocar S3, subida de archivos ni presigned URLs.
-- No crear migraciones de `productions`, `songs`, `versions`, `comments`, `studio_sessions` ni `production_access`. En Sprint 1 solo se migra el modelo mínimo de `users` y `artists` aprobado en `TS-54`; `production_access` quedó diferida hasta modelar `productions` y no forma parte de `TS-15`.
-- No implementar hash de integridad; **sí** se pueden **definir** las interfaces de frontera (`HashVerifierContract`).
-- No construir lógica de los módulos funcionales más allá del endpoint de humo del Sprint 1.
+Regla propia de esta capa: una migración o un modelo Eloquent solo nace de un **ERD aprobado en `docs/erd/`** (S1: `modelo-minimo-sprint-1.md`, cerrado; S2: `modelo-sprint-2.md`, que prevalece donde lo modifica) **y** de una spec aprobada. No se inventa el esquema desde la implementación.
 
 ## 7. Nomenclatura
 

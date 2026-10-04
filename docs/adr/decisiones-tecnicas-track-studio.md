@@ -270,6 +270,9 @@ Enlazadas por `user_id` **nullable**. El productor crea el artista (nombre + cor
 
 ### D6.4 — Enlace cuenta↔artista por token de invitación
 Al crear el artista se genera un token único con expiración; el correo (Resend) incluye el enlace de registro. Al volver del registro en Auth0, el token identifica inequívocamente el registro a enlazar. El email se usa como validación secundaria, nunca como mecanismo único (el artista podría registrarse con otro correo y el enlace fallaría silenciosamente). Campos en `artists`: `invitation_token`, `invited_at`, `invitation_expires_at`.
+
+> **Nota de 2026-10-04 (`TS-16`):** el token se emite al **invitar**, no al registrar. HU-05 (S2) crea el artista con estado `invitado` y los tres campos de invitación en `NULL`; el envío por Resend llega en S5 (`ts-32`) y la invitación forma parte de HU-20. Generar el token en el alta dejaría tokens sin enviar que caducarían antes de usarse. El mecanismo de esta decisión no cambia: solo el momento de emisión.
+
 → *ISO 25010: seguridad (autenticidad). Cubre: RF-01, RF-06.*
 
 ### D6.5 — Acceso a producciones vía pivote `production_access`
@@ -292,7 +295,7 @@ Campos: `production_id`, `user_id`, `granted_at`, `revoked_at`, `granted_by`. **
 
 ### D6.7 — Estrategia de índices
 - Índice explícito en **cada FK** (PostgreSQL no los crea automáticamente; omitirlos degrada los JOINs y golpea RNF-03).
-- Únicos de negocio como mecanismo de integridad: `(song_id, version_number)` garantiza el versionado secuencial de HU-14; `email` único en `users`; `invitation_token` único.
+- Únicos de negocio como mecanismo de integridad: `(song_id, version_number)` garantiza el versionado secuencial de HU-14; `email` único en `users`; `invitation_token` único; `name` y `email` de `artists` únicos entre los artistas vigentes (`TS-16`; definición exacta en [`docs/erd/modelo-sprint-2.md`](../erd/modelo-sprint-2.md) §2.1).
 - **Índice único parcial** sobre `(production_id, user_id) WHERE revoked_at IS NULL` — permite historial completo de accesos e impide simultáneamente dos accesos activos duplicados.
 - Índice en `studio_sessions.starts_at` para consultas por rango del calendario.
 - Contención deliberada: no se indexa más allá de lo anterior, para no penalizar escrituras ni consumir el límite de 5 GB.
@@ -338,6 +341,7 @@ Decisiones de alcance aprobadas en `TS-54`:
 - `users.email` es nullable y único: el access token no garantiza ese claim y la identidad local puede nacer desde `auth0_sub`.
 - `users` no persiste `role`: el claim del JWT continúa siendo la única fuente autoritativa (D4.8).
 - `production_access` conserva el diseño lógico de D6.5/D6.7, pero su modelo físico y migración se difieren hasta modelar `productions`; no forma parte de `TS-15`.
+- **Ampliación `TS-16` (2026-10-04):** `artists.name` y `artists.email` son únicos entre los artistas vigentes. Las ampliaciones de S2 viven en [`docs/erd/modelo-sprint-2.md`](../erd/modelo-sprint-2.md) (§2.1), que prevalece sobre el modelo de S1 donde lo modifica.
 
 **El ERD completo continúa pendiente en `TS-49`:** faltan `productions`, `songs`, `versions`, `comments`, `studio_sessions` y el modelo físico de `production_access`.
 
