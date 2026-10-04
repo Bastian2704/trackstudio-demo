@@ -6,6 +6,7 @@ use App\Auth\UserRepository;
 use Auth0\Laravel\Entities\CredentialEntity;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as DefinicionDeRuta;
 use Illuminate\Support\Facades\Route;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -265,4 +266,44 @@ function capturarEventosDeSentry(): ArrayObject
         ->call(test()->target);
 
     return $eventos;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-05 (docs/specs/backend/HU-05.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `ArtistResource` (spec §3.5). Ni una más: D4.2 filtra, no vuelca. */
+const CAMPOS_DE_ARTISTA = ['id', 'name', 'email', 'status', 'created_at', 'updated_at'];
+
+/** ISO 8601 con offset explícito (D3.2), p. ej. `2026-10-05T14:03:11+00:00`. */
+const FORMATO_ISO_8601_CON_OFFSET = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/';
+
+/**
+ * Cuerpo válido de alta/edición de artista. Cada test cambia solo lo que prueba.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeArtista(array $cambios = []): array
+{
+    return array_merge([
+        'name' => 'Luna Rivera',
+        'email' => 'luna.rivera@ejemplo.test',
+    ], $cambios);
+}
+
+/**
+ * Un 404 por ruta inexistente y un 404 del route model binding tienen el mismo
+ * cuerpo D3.1. Sin esta precondición, los tests de «no encontrado» nacerían
+ * verdes antes de que exista la ruta (compuerta C2).
+ */
+function exigirRuta(string $metodo, string $uri): void
+{
+    $registrada = collect(app('router')->getRoutes()->getRoutes())->contains(
+        fn (DefinicionDeRuta $ruta): bool => $ruta->uri() === $uri && in_array($metodo, $ruta->methods(), true),
+    );
+
+    expect($registrada)->toBeTrue("La ruta {$metodo} {$uri} no está registrada.");
 }

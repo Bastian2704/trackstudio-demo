@@ -32,9 +32,13 @@ it('clasifica y protege todas las rutas de la API', function () {
         ->sortKeys()
         ->all();
 
+    // TS-16 (docs/specs/backend/HU-05.md §3.1): artistas, solo productor vía ArtistPolicy.
     expect($inventario)->toBe([
+        'GET api/v1/artists/{artist}' => ['auth:auth0-api', 'can:view,artist'],
         'GET api/v1/health' => [],
         'GET api/v1/me' => ['auth:auth0-api'],
+        'POST api/v1/artists' => ['auth:auth0-api', 'can:create,App\\Models\\Artist'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
+        'PUT api/v1/artists/{artist}' => ['auth:auth0-api', 'can:update,artist'],
     ]);
 });

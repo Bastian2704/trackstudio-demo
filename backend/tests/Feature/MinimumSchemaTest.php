@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\Artist;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -173,4 +175,64 @@ it('mantiene fuera las tablas diferidas y de autenticación local', function () 
     expect(Schema::hasTable('production_access'))->toBeFalse()
         ->and(Schema::hasTable('password_reset_tokens'))->toBeFalse()
         ->and(Schema::hasTable('sessions'))->toBeFalse();
+});
+
+/*
+|--------------------------------------------------------------------------
+| TS-16 — Unicidad de artistas vigentes (docs/erd/modelo-sprint-2.md §2.1)
+|--------------------------------------------------------------------------
+|
+| Un índice único parcial no es una restricción (`pg_constraint`), así que la
+| prueba anterior no lo ve: se inspecciona `pg_indexes` y se ejercita con
+| INSERT reales. Cada intento fallido va en su propia transacción anidada
+| (savepoint) para no abortar la transacción de RefreshDatabase.
+|
+*/
+
+it('define índices únicos parciales sobre lower(name) y lower(email) de artistas vigentes', function () {
+    $indices = collect(DB::select(
+        <<<'SQL'
+            SELECT indexname, indexdef
+            FROM pg_indexes
+            WHERE schemaname = current_schema()
+              AND tablename = 'artists'
+        SQL,
+    ))->pluck('indexdef', 'indexname');
+
+    foreach (['artists_name_lower_unique' => 'name', 'artists_email_lower_unique' => 'email'] as $indice => $columna) {
+        expect($indices)->toHaveKey($indice);
+
+        expect($indices[$indice])
+            ->toContain('CREATE UNIQUE INDEX')
+            ->toContain('lower(')
+            ->toContain($columna)
+            ->toContain('WHERE (deleted_at IS NULL)');
+    }
+});
+
+it('rechaza en la base de datos un nombre de artista vigente repetido con otro casing', function () {
+    Artist::factory()->create(['name' => 'Luna Rivera']);
+
+    expect(fn () => DB::transaction(fn () => Artist::factory()->create(['name' => 'LUNA RIVERA'])))
+        ->toThrow(UniqueConstraintViolationException::class);
+});
+
+it('rechaza en la base de datos un email de artista vigente repetido con otro casing', function () {
+    Artist::factory()->create(['email' => 'luna.rivera@ejemplo.test']);
+
+    expect(fn () => DB::transaction(fn () => Artist::factory()->create(['email' => 'LUNA.RIVERA@EJEMPLO.TEST'])))
+        ->toThrow(UniqueConstraintViolationException::class);
+});
+
+it('libera nombre y email en la base de datos cuando el artista se borra', function () {
+    $original = Artist::factory()->create(datosDeArtista());
+
+    // Precondición: mientras está vigente, el duplicado se rechaza.
+    expect(fn () => DB::transaction(fn () => Artist::factory()->create(datosDeArtista())))
+        ->toThrow(UniqueConstraintViolationException::class);
+
+    $original->delete();
+    Artist::factory()->create(datosDeArtista());
+
+    expect(Artist::withTrashed()->count())->toBe(2);
 });
