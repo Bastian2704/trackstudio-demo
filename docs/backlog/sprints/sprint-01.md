@@ -1,9 +1,11 @@
 # Sprint 1 - Backlog desglosado
 
-**Estado:** baseline de planificación creada el 2026-09-22 y reconciliada con Jira el 2026-09-30. Jira manda sobre estado, checklist, sprint y criterios de aceptación; este archivo conserva el desglose y la trazabilidad.
+**Estado:** baseline de planificación creada el 2026-09-22 y verificada nuevamente en Jira el 2026-10-02. Jira manda sobre estado, checklist, sprint y criterios de aceptación; este archivo conserva el desglose y la trazabilidad.
 **Ventana máxima:** 2026-09-21 a 2026-10-02. **Release:** R1 - Núcleo interno (MVP).
 **Selección funcional:** `TS-12`..`TS-15` (16 SP) y `TS-40`. El hito mínimo del ERD está en `TS-54`; `TS-50`, `TS-51` y `TS-52` son trabajo completado trazado retrospectivamente; `TS-53` contiene la evidencia de tesis de S1.
 **Formato:** [campos y reglas de expansión](../backlog-format.md) · catálogo en [jira-backlog.md](../jira-backlog.md) · secuencia en [roadmap.md](../roadmap.md).
+
+> **Transición verificada el 2026-10-02:** TS-15 quedó en `Listo`, incluidos usuarios sintéticos e integración/staging. El contrato RBAC está disponible para [`sprint-02.md`](sprint-02.md).
 
 ## Objetivo y baseline aprobada
 
@@ -15,31 +17,31 @@ Buena parte del sprint ya está integrada en `develop` (PR #1 a #9). Esas casill
 
 ## Registros de nivel Story y Task
 
-| ID local | Tipo  | Épica padre      | Prioridad | SP  | Título                                         | Bloqueado por  |
-| -------- | ----- | ---------------- | --------- | --- | ---------------------------------------------- | -------------- |
-| ts-01    | Story | ts-epic-infra    | P0        | 3   | HU-01 Configurar entorno y repositorios        | —              |
-| ts-29    | Task  | ts-epic-infra    | P0        | —   | Configurar staging (Railway desde `develop` + Vercel preview) | —   |
-| ts-02    | Story | ts-epic-infra    | P0        | 5   | HU-02 Pipeline CI/CD con despliegue a staging  | ts-01, ts-29   |
-| ts-03    | Story | ts-epic-identity | P0        | 5   | HU-03 Autenticación con Auth0                  | ts-01          |
-| ts-04    | Story | ts-epic-identity | P0        | 3   | HU-04 Control de acceso basado en roles        | ts-03          |
-| ts-38    | Task  | ts-epic-infra    | P0        | —   | Diseñar y cerrar el ERD del modelo de datos    | —              |
+| ID local | Tipo  | Épica padre      | Prioridad | SP  | Título                                                        | Bloqueado por |
+| -------- | ----- | ---------------- | --------- | --- | ------------------------------------------------------------- | ------------- |
+| ts-01    | Story | ts-epic-infra    | P0        | 3   | HU-01 Configurar entorno y repositorios                       | —             |
+| ts-29    | Task  | ts-epic-infra    | P0        | —   | Configurar staging (Railway desde `develop` + Vercel preview) | —             |
+| ts-02    | Story | ts-epic-infra    | P0        | 5   | HU-02 Pipeline CI/CD con despliegue a staging                 | ts-01, ts-29  |
+| ts-03    | Story | ts-epic-identity | P0        | 5   | HU-03 Autenticación con Auth0                                 | ts-01         |
+| ts-04    | Story | ts-epic-identity | P0        | 3   | HU-04 Control de acceso basado en roles                       | ts-03         |
+| ts-38    | Task  | ts-epic-infra    | P0        | —   | Diseñar y cerrar el ERD del modelo de datos                   | —             |
 
 Cada ID de la última columna bloquea la entrega del registro de la primera. ts-38 no bloquea a ningún ticket de S1: bloquea ts-08, ts-10, ts-13, ts-17 y ts-22 (ver catálogo), y dentro de S1 solo se relaciona con ts-04 por orden interno de casillas. Se permite adelantar specs y tests en rojo de un sucesor cuando la dependencia no afecta a esa actividad.
 
 ## Estado reconciliado (2026-09-30)
 
-| Hecho                                                                                                                                     | Evidencia                                       |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Monorepo `backend/` (Laravel 13 + Sail) y `frontend/` (React + Vite + TS); Husky, ESLint, Prettier; plantilla de PR                        | PR #1-#5; `.github/PULL_REQUEST_TEMPLATE.md`    |
-| Ramas `main` y `develop` existen; modelo de ramas en `docs/global/reglas-git.md`                                                          | `git branch -a`                                 |
-| CI frontend (format, lint, build) en verde                                                                                                | PR #7; run 34368239813                          |
-| CI backend (Pint, Larastan, tests sobre **SQLite**) en verde                                                                              | PR #8; runs 34491523296 y 34863307630 (PR #9)   |
-| CI backend contra PostgreSQL                                                                                                              | PR #10 mergeado; run 36505635906                |
-| Frontend: `Auth0Provider` con token en memoria, login/logout, interceptor axios (Bearer + mapeo de `code`), `RequireAuth`, `RequireRole`, `useRole`, `Forbidden` | PR #6                         |
-| Auth0 backend en fase Red: `auth0/login` instalado en `origin/feature/TS-14-auth0-auth`, guard y `/me` aún por implementar                 | TS-14; rama remota 3 commits adelante           |
-| Vitest y variables de entorno documentadas; corrección menor de formato preparada en este cambio                                         | PR #18, PR #19                                  |
-| Staging alcanzable; falta probar con un merge nuevo el autodeploy simultáneo de Railway y Vercel                                          | TS-13, `ts-02.07`                               |
-| Specs `docs/specs/{backend,frontend}/HU-04.md` en **borrador**                                                                            | Cabecera de estado de cada spec                 |
+| Hecho                                                                                                                                                            | Evidencia                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Monorepo `backend/` (Laravel 13 + Sail) y `frontend/` (React + Vite + TS); Husky, ESLint, Prettier; plantilla de PR                                              | PR #1-#5; `.github/PULL_REQUEST_TEMPLATE.md`  |
+| Ramas `main` y `develop` existen; modelo de ramas en `docs/global/reglas-git.md`                                                                                 | `git branch -a`                               |
+| CI frontend (format, lint, build) en verde                                                                                                                       | PR #7; run 34368239813                        |
+| CI backend (Pint, Larastan, tests sobre **SQLite**) en verde                                                                                                     | PR #8; runs 34491523296 y 34863307630 (PR #9) |
+| CI backend contra PostgreSQL                                                                                                                                     | PR #10 mergeado; run 36505635906              |
+| Frontend: `Auth0Provider` con token en memoria, login/logout, interceptor axios (Bearer + mapeo de `code`), `RequireAuth`, `RequireRole`, `useRole`, `Forbidden` | PR #6                                         |
+| Auth0 backend en fase Red: `auth0/login` instalado en `origin/feature/TS-14-auth0-auth`, guard y `/me` aún por implementar                                       | TS-14; rama remota 3 commits adelante         |
+| Vitest y variables de entorno documentadas; corrección menor de formato preparada en este cambio                                                                 | PR #18, PR #19                                |
+| Staging alcanzable; falta probar con un merge nuevo el autodeploy simultáneo de Railway y Vercel                                                                 | TS-13, `ts-02.07`                             |
+| Specs `docs/specs/{backend,frontend}/HU-04.md` en **borrador**                                                                                                   | Cabecera de estado de cada spec               |
 
 ## Condiciones externas y exclusiones
 
@@ -86,7 +88,7 @@ Checklist de ejecución:
 
 Objetivo: disponer de un entorno de staging que se actualice con cada merge a `develop` y donde se demuestre el sprint.
 
-Alcance: servicio backend en Railway, proyecto frontend en Vercel y su conexión con Auth0. Sin dominio propio (ts-30, S2) ni producción (ts-33, S7).
+Alcance: servicio backend en Railway, proyecto frontend en Vercel y su conexión con Auth0. Sin dominio propio (ts-30, S2) ni producción (ts-33, originalmente S7 y replanificada a S5-S6).
 
 Hecho cuando: frontend y backend de staging alcanzables, desplegados desde `develop`, con login Auth0 funcionando y sin secretos en el repo.
 
@@ -168,16 +170,16 @@ Dependencia externa: usuarios sintéticos con rol en Auth0 (equipo humano), casi
 
 Checklist de ejecución:
 
-- [ ] `ts-04.01` Aprobar la spec backend. Hecho cuando: la spec normalizada se aprueba y aplica la decisión de `TS-54` sobre `production_access`, cuya FK apunta a `productions`, tabla fuera del alcance del Sprint 1. Orden interno: TS-54.
-- [ ] `ts-04.02` Tests backend en rojo (agente). Hecho cuando: `RbacTest` (401 sin token, 403 al artista, 2xx al productor), `ErrorShapeTest` (forma D3.1 y `code`) y un test que recorre las rutas `/api/v1` y exige middleware de autenticación y rol en el 100 %, todos vistos fallar. Orden interno: ts-04.01, ts-03.03.
-- [ ] `ts-04.03` Código backend hasta verde (humano). Hecho cuando: manejador centralizado D3.1, `unauthenticated()` sobrescrito, Policy, endpoint de escritura de prueba y solo las migraciones permitidas, conforme al ERD aprobado en ts-38.06; tests en verde; Larastan y Pint limpios. Orden interno: ts-04.02, ts-38.06.
-- [ ] `ts-04.04` Review backend. Hecho cuando: hallazgos resueltos o justificados; cada test probado en rojo según la columna C3 de la spec. Orden interno: ts-04.03.
-- [ ] `ts-04.05` Aprobar la spec frontend. Hecho cuando: la spec pasa a aprobada con referencias `T-xx` sustituidas y enlace coherente con la backend. Orden interno: independiente.
-- [ ] `ts-04.06` Tests frontend (agente). Hecho cuando: tests Vitest del interceptor (despacha por `code`, ignora `message`), de `RequireRole` (el artista no accede a rutas del productor) y del token fuera de `localStorage`/`sessionStorage`. Como el código ya existe en parte, el rojo se demuestra rompiéndolo (C3). Orden interno: ts-04.05, ts-02.04.
-- [ ] `ts-04.07` Código frontend hasta verde (humano). Hecho cuando: `RequireRole`, `useRole`, `Forbidden` e interceptor (ya presentes desde PR #6) completan lo que pidan los tests; `tsc --noEmit`, ESLint y Prettier limpios. Orden interno: ts-04.06.
-- [ ] `ts-04.08` Review frontend. Hecho cuando: igual que ts-04.04 para la capa frontend. Orden interno: ts-04.07.
+- [x] `ts-04.01` Aprobar la spec backend. Hecho cuando: la spec normalizada se aprueba y aplica la decisión de `TS-54` sobre `production_access`, cuya FK apunta a `productions`, tabla fuera del alcance del Sprint 1. Orden interno: TS-54.
+- [x] `ts-04.02` Tests backend en rojo (agente). Hecho cuando: `RbacTest` (401 sin token, 403 al artista, 2xx al productor), `ErrorShapeTest` (forma D3.1 y `code`) y un test que recorre las rutas `/api/v1` y exige middleware de autenticación y rol en el 100 %, todos vistos fallar. Orden interno: ts-04.01, ts-03.03.
+- [x] `ts-04.03` Código backend hasta verde (humano). Hecho cuando: manejador centralizado D3.1, `unauthenticated()` sobrescrito, Policy, endpoint de escritura de prueba y solo las migraciones permitidas, conforme al ERD aprobado en ts-38.06; tests en verde; Larastan y Pint limpios. Orden interno: ts-04.02, ts-38.06.
+- [x] `ts-04.04` Review backend. Hecho cuando: hallazgos resueltos o justificados; cada test probado en rojo según la columna C3 de la spec. Orden interno: ts-04.03.
+- [x] `ts-04.05` Aprobar la spec frontend. Hecho cuando: la spec pasa a aprobada con referencias `T-xx` sustituidas y enlace coherente con la backend. Orden interno: independiente.
+- [x] `ts-04.06` Tests frontend (agente). Hecho cuando: tests Vitest del interceptor (despacha por `code`, ignora `message`), de `RequireRole` (el artista no accede a rutas del productor) y del token fuera de `localStorage`/`sessionStorage`. Como el código ya existe en parte, el rojo se demuestra rompiéndolo (C3). Orden interno: ts-04.05, ts-02.04.
+- [x] `ts-04.07` Código frontend hasta verde (humano). Hecho cuando: `RequireRole`, `useRole`, `Forbidden` e interceptor (ya presentes desde PR #6) completan lo que pidan los tests; `tsc --noEmit`, ESLint y Prettier limpios. Orden interno: ts-04.06.
+- [x] `ts-04.08` Review frontend. Hecho cuando: igual que ts-04.04 para la capa frontend. Orden interno: ts-04.07.
 - [x] `ts-04.10` Usuarios sintéticos con rol (humano). Hecho cuando: un usuario productor y uno artista de prueba en Auth0, con el rol presente en el claim del token; sin datos reales. Verificado el 2026-10-02 con tokens reales: productor → `["productor"]`, artista → `["artista"]` en `https://trackstudio.site/roles`. Orden interno: ts-03.10.
-- [ ] `ts-04.09` Integración y demo del sprint. Hecho cuando: PR a `develop` con CI verde; en staging el artista recibe 403 `FORBIDDEN` y ve la pantalla sin permiso, el productor recibe 2xx y sin token hay 401; RNF-01 verificado; handoff actualizado. Orden interno: ts-04.04, ts-04.08, ts-04.10, ts-02.07.
+- [x] `ts-04.09` Integración y demo del sprint. Hecho cuando: PR a `develop` con CI verde; en staging el artista recibe 403 `FORBIDDEN` y ve la pantalla sin permiso, el productor recibe 2xx y sin token hay 401; RNF-01 verificado; handoff actualizado. Orden interno: ts-04.04, ts-04.08, ts-04.10, ts-02.07.
 
 ### ts-38 - Diseñar y cerrar el ERD del modelo de datos
 
@@ -196,9 +198,9 @@ Checklist de ejecución:
 - [ ] `ts-38.01` Inventariar entidades. Hecho cuando: cada tabla candidata tiene su RF y sus HU de origen; lo que venga solo de los prototipos queda fuera y anotado. Orden interno: según dependencias del ticket.
 - [ ] `ts-38.02` Definir atributos y restricciones. Hecho cuando: cada tabla tiene columnas, tipos, nulabilidad y unicidad, con PK/FK en UUID (D6.1) y nombres según D6.6. Cubre `auth0_sub` único, unicidad de artista (HU-05), estados del artista (HU-07), formato de producción (HU-09), posición de canción (HU-11) y número de versión secuencial (HU-14). Orden interno: ts-38.01.
 - [ ] `ts-38.03` Definir relaciones, cardinalidades y borrados. Hecho cuando: cada FK declara su cardinalidad y su comportamiento al borrar, incluida la cascada canción → versiones → comentarios (HU-12). Orden interno: ts-38.02.
-- [ ] `ts-38.04` Decidir `production_access` para S1. Hecho cuando: queda decidido si ts-04 crea `production_access` ahora (su FK apunta a `productions`, vetada por §5) o la difiere a HU-20. La decisión se registra y se aplica en ts-04.01. Orden interno: ts-38.03.
+- [x] `ts-38.04` Decidir `production_access` para S1. Hecho cuando: queda decidido si ts-04 crea `production_access` ahora (su FK apunta a `productions`, vetada por §5) o la difiere a HU-20. La decisión se registra y se aplica en ts-04.01. Orden interno: ts-38.03.
 - [ ] `ts-38.05` Definir índices y reglas de integridad. Hecho cuando: índices según D6.7, incluido el único parcial `(production_id, user_id) WHERE revoked_at IS NULL`, y la regla de no solapamiento de sesiones (HU-22) indica dónde se garantiza (BD o servicio). Orden interno: ts-38.03.
-- [ ] `ts-38.06` Aprobar `users` y `artists` en `TS-54`. Hecho cuando: el humano aprueba esas tablas y `TS-15` puede migrarlas desde este diseño. Orden interno: ts-38.04, ts-38.05.
+- [x] `ts-38.06` Aprobar `users` y `artists` en `TS-54`. Hecho cuando: el humano aprueba esas tablas y `TS-15` puede migrarlas desde este diseño. Orden interno: ts-38.04, ts-38.05.
 - [ ] `ts-38.07` Aplicar D7.x a `versions`. Hecho cuando: los atributos de almacenamiento e integridad (clave del objeto, tamaño, tipo MIME y hash) quedan trazados a D7.1-D7.7, sin valores inventados. Orden interno: ts-38.06.
 - [ ] `ts-38.08` Versionar el diagrama. Hecho cuando: el ERD vive en `docs/erd/` en un formato de texto que se revisa por diff (por ejemplo Mermaid `erDiagram`) y cada tabla enlaza sus RF/HU. Orden interno: ts-38.07.
 - [ ] `ts-38.09` Cerrar el ERD. Hecho cuando: todas las entidades están completas, el humano aprueba el ERD entero, se desbloquean las historias dependientes y el handoff lo registra. Puede cerrarse en S2. Orden interno: ts-38.08.
@@ -207,11 +209,11 @@ Checklist de ejecución:
 
 El objetivo se cumple cuando ts-01..ts-04 y ts-29 cumplen Done y ts-38 llega al menos a ts-38.06. Done significa: código en `develop` por PR con CI verde, tests pasando, AC verificados en staging y revisión en el Sprint Review. Un pipeline fallido, una spec sin aprobar o una casilla de AC abierta impiden declarar cumplido el objetivo, aunque el sprint cierre por calendario.
 
-El inventario contiene 6 tickets y 53 casillas: ts-01 (7), ts-29 (7), ts-02 (9), ts-03 (11), ts-04 (10) y ts-38 (9). Hay 7 casillas ya cumplidas con evidencia. No es una estimación en horas.
+El inventario contiene 6 tickets y 53 casillas: ts-01 (7), ts-29 (7), ts-02 (9), ts-03 (11), ts-04 (10) y ts-38 (9). TS-15 y el hito TS-54 quedaron cerrados en Jira el 2026-10-02; el estado restante se consulta en Jira. No es una estimación en horas.
 
 Capacidad nominal: 2 desarrolladores × 80 h = 160 h para 16 SP. Specs, tests, reviews, integración y correcciones consumen esa misma capacidad. Las esperas de infraestructura humana (Auth0, Railway, Vercel, GitHub) se registran aparte, sin horas ficticias.
 
-Camino crítico: `TS-14 ts-03.03` → review backend/frontend → `TS-54` → `TS-15` → demo. La validación JWT bloquea RBAC; en paralelo, `TS-54` debe aprobar el modelo mínimo antes de las migraciones de `TS-15`.
+El camino crítico `TS-14` → `TS-54` → `TS-15` → demo quedó completado. S2 continúa con TS-49 → TS-19 y TS-16 → TS-18/TS-17 como secuencias principales.
 
 ## Pendientes y discrepancias
 
@@ -222,4 +224,4 @@ Camino crítico: `TS-14 ts-03.03` → review backend/frontend → `TS-54` → `T
 - **HU-02.** Corregir el AC antes de importar (casilla ts-02.08).
 - **S2.** ts-30 (dominio y DNS) y la primera actualización de ts-35 (tesis, evidencia del sprint).
 
-Siguiente paso: cerrar las evidencias pendientes de `TS-12`/`TS-13` y continuar `TS-14`; después completar `TS-54` antes de `TS-15`.
+Siguiente paso: integrar la replanificación de TS-60 y ejecutar [`sprint-02.md`](sprint-02.md), comenzando por TS-49 y TS-16.
