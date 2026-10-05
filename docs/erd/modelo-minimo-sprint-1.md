@@ -2,6 +2,7 @@
 
 > **Jira:** `TS-54` · **Aprobado:** 2026-10-01 · **Alcance consumidor:** `TS-15` (`ts-04.01` y `ts-04.03`)
 > **Estado:** aprobado para `users` y `artists`; no cierra el ERD completo de `TS-49`.
+> **Documento cerrado (S1).** Las ampliaciones de S2 viven en [`modelo-sprint-2.md`](modelo-sprint-2.md), que prevalece donde modifica este documento (p. ej. la unicidad de `artists.name`/`artists.email`).
 
 ## 1. Alcance
 

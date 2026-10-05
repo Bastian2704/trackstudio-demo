@@ -98,7 +98,7 @@ enum ProductionFormat: string
   - Crear: `create_artists_table`, `create_production_access_table`.
   - Alterar: `add_auth0_sub_to_users_table`, `add_revoked_at_to_production_access_table`.
 - **Una intención por migración.** No mezclar crear tabla A y alterar tabla B en el mismo archivo.
-- **Nombres de objetos de BD** (tablas, columnas, FKs, índices, únicos): gobernados por **D6.6/D6.7**, no aquí. Recordatorio de lo que aplica ya en Sprint 1:
+- **Nombres de objetos de BD** (tablas, columnas, FKs, índices, únicos): gobernados por **D6.6/D6.7**, no aquí. Recordatorio de lo que aplica:
   - Tablas plural `snake_case`; pivotes en singular y orden alfabético (`production_access`); columnas `snake_case`; FK `{singular}_id`; booleanos `is_`/`has_`.
   - PK/FK en UUID (`$table->uuid('id')->primary()` / `foreignUuid()`).
   - Índice explícito en cada FK. Únicos de negocio y el único parcial de `production_access` según D6.7.
