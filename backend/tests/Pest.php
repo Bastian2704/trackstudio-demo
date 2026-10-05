@@ -28,7 +28,8 @@ use Tests\TestCase;
 | Feature y Unit extienden el TestCase de Laravel: los tests de Unit de este
 | proyecto necesitan el contenedor (leen `config()`), así que también arrancan
 | la aplicación. Ver `backend/docs/nomenclatura.md` §8 para qué va en cada
-| carpeta. `RefreshDatabase` sigue apagado: HU-03 no toca la base de datos.
+| carpeta. `RefreshDatabase` no se activa aquí de forma global: lo declara
+| con `uses()` cada archivo que toca la base de datos.
 |
 */
 
