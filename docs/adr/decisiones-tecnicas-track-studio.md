@@ -28,7 +28,7 @@
 - **Criterio 6 (pantalla en Figma):** el prototipo de alta fidelidad existe para practicamente todas las pantallas en caso de ser necesario crear una nueva se confirmará.
 - **Criterio 7 (instrumento de medición de RNF):** depende de que 11.5 (plan de medición por RNF) deje de estar `ABIERTO` — hoy no hay instrumento definido para varios RNF, así que ninguna historia que los evidencie puede certificarse Ready con este criterio todavía.
 
-El criterio 4 sigue siendo el que más protege el cronograma, y es dinámico: mejora automáticamente a medida que se cierran los puntos `ABIERTO`/`PARCIAL` de este documento — con el cierre del bloque 7, las historias de audio (HU-13 a HU-16) ya dejaron de estar bloqueadas por ese criterio específico (aunque sigan bloqueadas por el ERD, deliberadamente diferido).
+El criterio 4 sigue siendo el que más protege el cronograma, y es dinámico: mejora automáticamente a medida que se cierran los puntos `ABIERTO`/`PARCIAL` de este documento — con el cierre del bloque 7, las historias de audio (HU-13 a HU-16) ya dejaron de estar bloqueadas por ese criterio específico (y desde el 2026-10-06 tampoco por el ERD, cerrado en `TS-49`).
 
 ---
 
@@ -193,6 +193,8 @@ Controladores delgados (reciben Form Request, llaman al Service, devuelven Resou
 
 ### D4.6 — Enums nativos de PHP casteados en Eloquent
 Backed enums (PHP 8.1+) para formato de producción, estados de artista y estados de sesión. Validados con `Rule::enum()` en los Form Requests.
+
+> **Ampliación de 2026-10-06 (`TS-49`):** el ERD completo añade el estado de canción (`por_hacer`/`en_progreso`/`finalizada`) y el estado de subida de versión (`pendiente`/`verificada`/`fallida`). Los estados de sesión quedan en `solicitada`/`confirmada`/`cancelada`. En BD todos se guardan como `varchar` + `CHECK`, con valores en español ([`docs/erd/modelo-completo.md`](../erd/modelo-completo.md) §2, I6).
 → *ISO 25010: fiabilidad (madurez). Cubre: RF-01, RF-02, RF-07.*
 
 ### D4.7 — Pruebas: Pest
@@ -276,7 +278,9 @@ Al crear el artista se genera un token único con expiración; el correo (Resend
 → *ISO 25010: seguridad (autenticidad). Cubre: RF-01, RF-06.*
 
 ### D6.5 — Acceso a producciones vía pivote `production_access`
-Campos: `production_id`, `user_id`, `granted_at`, `revoked_at`, `granted_by`. **La revocación no borra la fila**, marca `revoked_at` — esto produce historial auditable de accesos, evidencia directa de RNF-01. La consulta de acceso vigente es: existe fila con `revoked_at IS NULL`.
+Campos: `production_id`, `artist_id`, `granted_at`, `revoked_at`, `granted_by`. **La revocación no borra la fila**, marca `revoked_at` — esto produce historial auditable de accesos, evidencia directa de RNF-01. La consulta de acceso vigente es: existe fila con `revoked_at IS NULL`.
+
+> **Enmienda de 2026-10-06 (`TS-49`):** el sujeto del acceso pasa de `user_id` a **`artist_id`**. HU-20 otorga el acceso y envía la invitación en el mismo paso, cuando el artista puede no tener todavía cuenta en Auth0. Con `user_id` habría hecho falta un usuario ficticio o una FK nullable. Para resolver el acceso, la cadena es: usuario → `artists.user_id` → `production_access.artist_id`. Solo recibe acceso el artista dueño de la producción, y esa regla la aplica el Service, no el esquema. Diseño físico en [`docs/erd/modelo-completo.md`](../erd/modelo-completo.md) §3.7.
 → *Cubre: RF-06, HU-20, HU-21.*
 
 ### D6.6 — Convenciones de nombres: estándar de Laravel
@@ -296,8 +300,9 @@ Campos: `production_id`, `user_id`, `granted_at`, `revoked_at`, `granted_by`. **
 ### D6.7 — Estrategia de índices
 - Índice explícito en **cada FK** (PostgreSQL no los crea automáticamente; omitirlos degrada los JOINs y golpea RNF-03).
 - Únicos de negocio como mecanismo de integridad: `(song_id, version_number)` garantiza el versionado secuencial de HU-14; `email` único en `users`; `invitation_token` único; `name` y `email` de `artists` únicos entre los artistas vigentes (`TS-16`; definición exacta en [`docs/erd/modelo-sprint-2.md`](../erd/modelo-sprint-2.md) §2.1).
-- **Índice único parcial** sobre `(production_id, user_id) WHERE revoked_at IS NULL` — permite historial completo de accesos e impide simultáneamente dos accesos activos duplicados.
+- **Índice único parcial** sobre `(production_id, artist_id) WHERE revoked_at IS NULL` — permite historial completo de accesos e impide simultáneamente dos accesos activos duplicados (sujeto `artist_id` desde la enmienda de D6.5 del 2026-10-06).
 - Índice en `studio_sessions.starts_at` para consultas por rango del calendario.
+- **Ampliación de 2026-10-06 (`TS-49`):** únicos parciales `(artist_id, lower(name))` en `productions` y `(production_id, lower(name))` en `songs`, ambos `WHERE deleted_at IS NULL`. Índice compuesto `(version_id, timestamp_ms)` en `comments`, que cubre la FK y el orden de HU-18. **Restricción de exclusión** en `studio_sessions` sobre `tstzrange(starts_at, ends_at, '[)')` para las sesiones `confirmada`: impide los solapes incluso con escrituras concurrentes y no requiere `btree_gist`. Inventario completo en [`docs/erd/modelo-completo.md`](../erd/modelo-completo.md) §6.
 - Contención deliberada: no se indexa más allá de lo anterior, para no penalizar escrituras ni consumir el límite de 5 GB.
 
 → *ISO 25010: eficiencia (comportamiento temporal), fiabilidad (integridad). Cubre: RNF-03, RNF-05.*
@@ -332,22 +337,32 @@ No se incorpora PgBouncer ni pooler externo. La arquitectura es single-tenant pa
 
 → *ISO 25010: fiabilidad (recuperabilidad), integridad de datos. Cubre: RNF-04, RNF-05.*
 
-### Estado del ERD — **PARCIAL** (`TS-54`, 2026-10-01)
+### Estado del ERD — **CERRADO** (`TS-49`, 2026-10-06)
 
-El modelo mínimo del Sprint 1 para `users` y `artists` está aprobado. Su fuente de verdad detallada es [`docs/erd/modelo-minimo-sprint-1.md`](../erd/modelo-minimo-sprint-1.md), que fija atributos, tipos, nulabilidad, restricciones, índices y relaciones.
+El ERD completo de las ocho entidades está aprobado. Fuentes de verdad:
 
-Decisiones de alcance aprobadas en `TS-54`:
+- [`docs/erd/modelo-completo.md`](../erd/modelo-completo.md): diseño objetivo de `users`, `artists`, `productions`, `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, con invariantes, diagrama Mermaid, trazabilidad RF/HU e inventario de restricciones.
+- [`docs/erd/modelo-minimo-sprint-1.md`](../erd/modelo-minimo-sprint-1.md) (`TS-54`, congelado) y [`docs/erd/modelo-sprint-2.md`](../erd/modelo-sprint-2.md) (delta de S2): mandan para `users`, `artists` y `productions`.
+
+Cerrar el ERD **no autoriza migrar**. Cada tabla se crea en la historia que la consume, con su spec aprobada y sus tests en rojo (`modelo-completo.md` §7), y mientras tanto sigue vigente el veto de `CLAUDE.md` §5.
+
+Decisiones aprobadas en `TS-54`, que se mantienen:
 
 - `users.email` es nullable y único: el access token no garantiza ese claim y la identidad local puede nacer desde `auth0_sub`.
 - `users` no persiste `role`: el claim del JWT continúa siendo la única fuente autoritativa (D4.8).
-- `production_access` conserva el diseño lógico de D6.5/D6.7, pero su modelo físico y migración se difieren hasta modelar `productions`; no forma parte de `TS-15`.
-- **Ampliación `TS-16` (2026-10-04):** `artists.name` y `artists.email` son únicos entre los artistas vigentes. Las ampliaciones de S2 viven en [`docs/erd/modelo-sprint-2.md`](../erd/modelo-sprint-2.md) (§2.1), que prevalece sobre el modelo de S1 donde lo modifica.
+- **Ampliación `TS-16` (2026-10-04):** `artists.name` y `artists.email` son únicos entre los artistas vigentes (`modelo-sprint-2.md` §2.1).
 
-**El ERD completo continúa pendiente en `TS-49`:** faltan `productions`, `songs`, `versions`, `comments`, `studio_sessions` y el modelo físico de `production_access`.
+Decisiones aprobadas en `TS-49` (2026-10-05/06):
 
-**Desbloqueado (2026-08-18):** el bloque 7 (subida a S3 y versionado secuencial) ya cerró — ver D7.1-D7.7. La estructura de `versions` ya puede modelarse: incluye como mínimo `id` (uuid), `song_id` (FK), `version_number`, `s3_key` (patrón de D7.3), `content_type`, `size_bytes`, `etag` (D7.4), timestamps y `deleted_at`.
-
-**Decisiones de formato del ERD completo pendientes:** herramienta definitiva y enfoque design-first. El subconjunto de `TS-54` usa Mermaid dentro del documento versionado.
+- **`productions`** (slice aprobado el 2026-10-05, antes de `TS-19`): pertenece siempre a un artista, el formato es `sencillo | ep | album`, el nombre es único por artista entre las producciones vigentes y no guarda totales.
+- **Reglas de formato por número de canciones, no por duración:** sencillo 1, EP 2–6, álbum ≥ 7. Solo bloquean los máximos. Sustituye el AC «EP no supera 30 min» de HU-09 (`TS-20`).
+- **Catálogo de estados del artista:** se mantiene `invitado`/`activo`/`inactivo` (D6.3). Se corrigen los AC de HU-07 (`TS-18`).
+- **`production_access` contra `artist_id`** (enmienda de D6.5 y D6.7), y solo para el artista dueño, como regla del Service.
+- **La duración del audio vive solo en `versions.duration_ms`** (la reporta el frontend al confirmar la subida). Solo acota la marca de tiempo de los comentarios.
+- **`versions`:** la fila se crea al firmar, en estado `pendiente`, y la verificación de D7.4 la pasa a `verificada` o `fallida`. El único `(song_id, version_number)` es total, así que los números no se reutilizan aunque haya huecos. `label` es opcional y, si falta, se muestra «v{n}».
+- **`comments`:** no se pueden editar y se borran físicamente (D4.5 no los incluye).
+- **`studio_sessions`:** siempre pertenecen a una producción. Una restricción de exclusión impide solapar sesiones `confirmada`, y la cancelación es un estado, no un borrado.
+- **Formato del ERD:** Mermaid dentro de documentos Markdown versionados en `docs/erd/`, con enfoque design-first (se diseña y aprueba antes de migrar).
 
 ---
 
@@ -456,7 +471,7 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — faltan filas de `productions`/`songs`/`versions`/`comments` hasta cerrar el ERD |
+| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — faltan filas de `productions`/`songs`/`versions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
 | 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
@@ -464,7 +479,7 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 ### D8.1 — Matriz RBAC: rol × recurso × acción (iniciada 2026-08-18)
 
-Documentación formal de las reglas de autorización que ya implican D4.2 (API Resources filtrando por rol) y D4.8 (Policies por recurso). Se llenan las filas de las entidades ya definidas (`artists`, `production_access`, D6.2/D6.5); las de `productions`, `songs`, `versions`, `comments` quedan pendientes hasta cerrar el ERD.
+Documentación formal de las reglas de autorización que ya implican D4.2 (API Resources filtrando por rol) y D4.8 (Policies por recurso). Se llenan las filas de las entidades ya definidas (`artists`, `production_access`, D6.2/D6.5); las de `productions`, `songs`, `versions`, `comments` quedaban pendientes hasta cerrar el ERD (cerrado el 2026-10-06, `TS-49`; su llenado es trabajo propio de 8.1).
 
 | Recurso | Acción | Productor | Artista |
 |---|---|:---:|:---:|
@@ -585,13 +600,13 @@ Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y 
 
 ~~Bloque 7 completo~~ — **cerrado 2026-08-18** (D7.1-D7.7). ~~9.3 Observabilidad~~ — **cerrado 2026-08-18** (D9.3).
 
-**Diferido deliberadamente (2026-08-18):** ERD completo (`productions`, `songs`, `comments`, `studio_sessions`) — ya desbloqueado por el cierre del bloque 7, `versions` ya tiene su estructura mínima (ver "Estado del ERD"). Se retoma cuando el equipo decida, no bloqueado por nada más.
+~~**Diferido deliberadamente (2026-08-18):** ERD completo~~ — **cerrado 2026-10-06** en `TS-49` (ver "Estado del ERD" y [`docs/erd/modelo-completo.md`](../erd/modelo-completo.md)).
 
 **⚠️ Recordatorios — pausados en esta conversación (2026-08-18), retomar la decisión (no solo el trámite) cuando se trabaje cada uno:**
 
 1. ⚠️ **9.2 — Migraciones en deploy.** ¿Automáticas al desplegar o manuales con aprobación? Es decisión de riesgo: automáticas son más rápidas pero pueden aplicar un cambio de esquema roto sin intervención humana en producción.
 2. ⚠️ **9.4 — Rollback.** ¿Cuál es el procedimiento concreto en Railway/Vercel si un despliegue falla? Definir *antes* de que ocurra el primer incidente real, no durante.
-3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `productions`/`songs`/`versions`/`comments` una vez cerrado el ERD (D8.1 ya cubre lo que se puede llenar hoy).
+3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `productions`/`songs`/`versions`/`comments`/`studio_sessions`. El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
 4. ⚠️ **1.6 — Definition of Ready, certificación completa.** Confirmar si el prototipo de Figma existe para todas las pantallas (criterio 6), y cerrar 11.5 (criterio 7) para que deje de ser `PARCIAL`.
 5. ⚠️ **11.5 — Plan de medición de RNF, resto de RNF.** RNF-04 ya tiene instrumento (D9.3); falta confirmar el redactado exacto de RNF-03 en la tesis (ver D7.1) y definir instrumento para RNF-01, RNF-02, RNF-05, RNF-06, RNF-07.
 6. ~~**3.6 — Nivel de adhesión a RFC 9457.**~~ — **cerrado 2026-09-17**: completo, con `type` derivado del `code` sobre `trackstudio.site` (ver D3.1).
