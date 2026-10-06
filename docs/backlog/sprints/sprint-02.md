@@ -31,7 +31,7 @@ Las Tasks no se convierten artificialmente a SP. Si su esfuerzo real amenaza el 
 | TS-17 | ts-06    | Story |   2 | HU-06 Listar artistas con estado y producciones | TS-16 y TS-19 para aceptación completa     |
 | TS-18 | ts-07    | Story |   2 | HU-07 Cambiar el estado de un artista           | TS-16                                      |
 | TS-19 | ts-08    | Story |   3 | HU-08 Registrar, editar y eliminar producciones | TS-16 y slice `productions` de TS-49       |
-| TS-20 | ts-09    | Story |   3 | HU-09 Validar restricciones de formato          | TS-19; contrato de duración de EP aprobado |
+| TS-20 | ts-09    | Story |   3 | HU-09 Validar restricciones de formato          | TS-19; contrato de formato aprobado en TS-49 |
 | TS-41 | ts-30    | Task  |   — | Configurar dominio y DNS                        | Acción humana externa                      |
 | TS-46 | ts-35    | Task  |   — | Tesis: evidencia de desarrollo por sprint       | Evidencia de las entregas                  |
 | TS-49 | ts-38    | Task  |   — | Diseñar y cerrar el ERD                         | Aprobación humana del diseño               |
@@ -60,7 +60,7 @@ flowchart TD
 Orden recomendado:
 
 1. Mantener alineado en Jira el alcance ya cargado en `TS Sprint 2`.
-2. Aprobar primero el slice de `productions` en TS-49 y resolver en la spec HU-09 de dónde sale la duración del EP antes de que existan canciones/audio.
+2. Aprobar primero el slice de `productions` en TS-49 (hecho el 2026-10-05). Las reglas de formato de HU-09 cuentan canciones, no minutos (decisión del 2026-10-05), así que ya no dependen de la duración del audio.
 3. Ejecutar TS-16 con el ciclo SDD/TDD completo.
 4. Tras TS-16, avanzar TS-18 y TS-19 en paralelo; TS-17 puede comenzar, pero su integración completa espera TS-19.
 5. Ejecutar TS-20 después de TS-19.
@@ -127,7 +127,7 @@ Alcance del sprint: transiciones entre activo, suspendido y bloqueado, con persi
 
 Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. Excluye las reglas detalladas de formato (TS-20), portada y porcentaje de avance.
 
-- [ ] `ts-08.10` Aprobar en TS-49 el slice de `productions`: atributos, FK a `artists`, formato, borrado, índices y trazabilidad a RF-02. Orden interno: ts-38.02, ts-38.03 y ts-38.05.
+- [x] `ts-08.10` Aprobar en TS-49 el slice de `productions`: atributos, FK a `artists`, formato, borrado, índices y trazabilidad a RF-02. Orden interno: ts-38.02, ts-38.03 y ts-38.05. **Hecho el 2026-10-05:** `docs/erd/modelo-sprint-2.md` §5.
 - [ ] `ts-08.01` Spec backend aprobada con CRUD, asociación, autorización, borrado y errores D3.1. Orden interno: ts-08.10 y ts-05.01.
 - [ ] `ts-08.02` Tests backend en rojo para alta/edición/borrado, artista inexistente, formato inválido, permisos y no encontrado. Orden interno: ts-08.01.
 - [ ] `ts-08.03` Código backend hasta verde (humano); migración basada en TS-49, Larastan y Pint limpios. Orden interno: ts-08.02.
@@ -140,9 +140,9 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 
 ### TS-20 / ts-09 - HU-09 Validar restricciones de formato
 
-Alcance del sprint: reglas de sencillo, EP y álbum en alta y edición. La spec debe resolver la fuente y momento de cálculo de duración del EP sin inventar prematuramente el modelo de canciones/audio de S3.
+Alcance del sprint: reglas de sencillo, EP y álbum en alta y edición. Las reglas cuentan canciones, no minutos: sencillo 1, EP 2–6, álbum ≥ 7, y solo bloquean los máximos (TS-49, `modelo-sprint-2.md` §5.1.5). En S2 no existe `songs`, así que lo único verificable es que el formato sea válido. El bloqueo al añadir canciones llega con HU-10 (S3).
 
-- [ ] `ts-09.10` Decisión de contrato. Hecho cuando: producto y equipo aprueban cómo se representa/verifica el límite de 30 minutos del EP en S2 y qué validación se completa cuando existan canciones en S3. La decisión queda en spec/Jira antes de tests. Orden interno: TS-49 y AC vigentes.
+- [x] `ts-09.10` Decisión de contrato. **Resuelta el 2026-10-05 en TS-49:** el límite de 30 minutos se sustituye por el número de canciones (sencillo 1, EP 2–6, álbum ≥ 7, solo máximos bloqueantes). Falta reflejarlo en los AC de TS-20 en Jira y en la RF-02 de la tesis. Orden interno: TS-49 y AC vigentes.
 - [ ] `ts-09.01` Spec backend aprobada con matriz de reglas por formato, alta/edición y errores D3.1. Orden interno: ts-09.10 y ts-08.01.
 - [ ] `ts-09.02` Tests backend en rojo para límites, casos válidos, alta, edición y autorización. Orden interno: ts-09.01.
 - [ ] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-09.02.
@@ -159,11 +159,11 @@ Alcance del sprint: reglas de sencillo, EP y álbum en alta y edición. La spec 
 
 TS-54 ya aprobó el modelo mínimo de `users`/`artists`. S2 debe completar el diseño restante sin crear migraciones fuera del alcance vigente.
 
-- [ ] Confirmar en Jira qué casillas `ts-38.01`..`ts-38.06` ya están satisfechas por TS-54 y la evidencia versionada.
-- [ ] Completar `ts-38.02`, `ts-38.03` y `ts-38.05` para `productions` antes de TS-19.
-- [ ] Completar el inventario y diseño de `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, aplicando D6.x y D7.x.
-- [ ] `ts-38.08` Versionar el ERD completo en `docs/erd/` con trazabilidad RF/HU.
-- [ ] `ts-38.09` Obtener aprobación humana, actualizar dependencias y cerrar TS-49.
+- [ ] Confirmar en Jira qué casillas `ts-38.01`..`ts-38.06` ya están satisfechas por TS-54 y la evidencia versionada. (Documentalmente están cubiertas en `docs/erd/modelo-completo.md`; falta marcar Jira.)
+- [x] Completar `ts-38.02`, `ts-38.03` y `ts-38.05` para `productions` antes de TS-19 (2026-10-05).
+- [x] Completar el inventario y diseño de `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, aplicando D6.x y D7.x (2026-10-06).
+- [x] `ts-38.08` Versionar el ERD completo en `docs/erd/` con trazabilidad RF/HU: `docs/erd/modelo-completo.md`.
+- [ ] `ts-38.09` Obtener aprobación humana, actualizar dependencias y cerrar TS-49. Aprobación obtenida el 2026-10-06 y ADR actualizado (ERD CERRADO). Faltan: integrar el PR, actualizar Jira (TS-18, TS-20 y las notas obsoletas del bloque 7) y cerrar TS-49.
 
 ### TS-41 / ts-30 - Dominio y DNS
 
@@ -204,7 +204,7 @@ Estas son HU-24..HU-26 en Jira; no deben confundirse con los IDs locales de las 
 - TS-16 integrado o listo para integrar.
 - Slice `productions` aprobado.
 - TS-18 y TS-19 tienen camino libre; TS-17 conoce su dependencia de TS-19.
-- Contrato de duración de EP resuelto antes de implementar TS-20.
+- Contrato de formato de TS-20 resuelto (por número de canciones, 2026-10-05).
 - La reserva transversal tiene evidencia; no fue absorbida informalmente.
 
 ### Cierre
@@ -227,7 +227,7 @@ El sprint puede cerrar por calendario con trabajo pendiente, pero el objetivo no
 | Riesgo                                     | Señal                                               | Respuesta                                                                            |
 | ------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | TS-49 retrasa TS-19                        | Slice `productions` no aprobado en el primer tercio | Tratarlo como camino crítico y congelar cambios no esenciales del esquema.           |
-| HU-09 no tiene fuente de duración          | La spec intenta inventar canciones/audio en S2      | Resolver contrato en `ts-09.10`; no implementar hasta aprobarlo.                     |
+| HU-09 no tiene fuente de duración          | La spec intenta inventar canciones/audio en S2      | Mitigado el 2026-10-05: las reglas cuentan canciones, no minutos (`ts-09.10`).      |
 | TS-17 se da por terminado sin producciones | Solo se demuestra una lista vacía                   | Mantener dependencia de cierre con TS-19 y escenario de staging con asociación real. |
 | Tasks sin SP desplazan funcionalidad       | TS-41/46/49 absorben trabajo no visible             | Revisar capacidad a mitad de sprint y escalar capacidad/espera, no alcance.          |
 | QA vuelve a dejarse para el final          | No hay evidencia TS-35..TS-37 al corte              | Proteger la reserva de 2 SP equivalentes y revisar el inventario en el cierre.       |

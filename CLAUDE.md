@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: las historias de audio HU-13..HU-16 siguen sin ser "Ready", pero por el **ERD completo, diferido deliberadamente**, no por el bloque 7.)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 

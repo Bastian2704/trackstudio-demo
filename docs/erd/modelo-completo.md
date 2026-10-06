@@ -2,7 +2,7 @@
 
 > **Jira:** `TS-49` (`ts-38.01`..`ts-38.09`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado) y [`modelo-sprint-2.md`](modelo-sprint-2.md) (delta de S2, slice de `productions` aprobado el 2026-10-05)
-> **Estado:** **propuesta pendiente de aprobación humana** (corte 2 de `TS-49`).
+> **Estado:** **aprobado por el humano el 2026-10-06.** Cierra el ERD (`ts-38.09`).
 
 ## 1. Alcance y precedencia
 
@@ -440,6 +440,6 @@ El DDL derivado de §3 se ejecutó el 2026-10-05 contra el PostgreSQL de Sail de
 ## 9. Aprobación
 
 - **Propuesta:** 2026-10-05 (corte 2 de `TS-49`).
-- **Aprobado por:** _pendiente_.
+- **Aprobado por:** el humano (Bastian2704), 2026-10-06.
 
 Al aprobarse, se actualizan en la misma rama: D6.5/D6.7/D4.6 y el «Estado del ERD» del ADR (pasa a CERRADO), `sprint-02.md` y Jira (`TS-49`, `TS-18`, `TS-20` y las notas obsoletas del bloque 7 en `TS-21`..`TS-33`).
