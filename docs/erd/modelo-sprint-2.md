@@ -2,7 +2,7 @@
 
 > **Jira:** `TS-16` (HU-05) · `TS-49`, slice de `productions` (`ts-08.10`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado)
-> **Estado:** la ampliación de `artists` (§2–§4) se integró con `TS-16` (PR #30). El slice de `productions` (§5) es una **propuesta pendiente de aprobación humana**.
+> **Estado:** la ampliación de `artists` (§2–§4) se integró con `TS-16` (PR #30). El slice de `productions` (§5) quedó **aprobado por el humano el 2026-10-05** (`ts-08.10`).
 
 ## 1. Alcance
 
@@ -43,7 +43,7 @@ Solo se listan las filas que cambian respecto a S1.
 
 `add_unique_name_and_email_indexes_to_artists_table`, con una sola intención: crea los dos índices de §2.1 y no toca columnas ni otras tablas. Su `down()` elimina exactamente esos dos índices.
 
-## 5. Slice de `productions` (`TS-49`, propuesta del 2026-10-05)
+## 5. Slice de `productions` (`TS-49`, aprobado el 2026-10-05)
 
 Cubre RF-02: HU-08 (`TS-19`) y HU-09 (`TS-20`). Los AC de HU-08 exigen que la producción esté siempre asociada a un artista existente, que tenga un formato álbum/EP/sencillo y que su identificador lo genere el sistema.
 
