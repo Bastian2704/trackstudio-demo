@@ -7,7 +7,7 @@
 
 ## 1. Resumen ejecutivo
 
-El ERD de las ocho entidades está **aprobado** y el ADR lo marca **CERRADO**. El slice de `productions` se aprobó el 2026-10-05, así que `TS-19` está desbloqueada, y el modelo completo se aprobó el 2026-10-06. No se creó ninguna migración: cada tabla la materializa su historia (`modelo-completo.md` §7). Quedan pendientes los cambios en Jira de TS-18, TS-20 y las notas obsoletas del bloque 7, el PR y cerrar TS-49.
+El ERD de las ocho entidades está **aprobado** y el ADR lo marca **CERRADO**. El slice de `productions` se aprobó el 2026-10-05, así que `TS-19` está desbloqueada, y el modelo completo se aprobó el 2026-10-06. No se creó ninguna migración: cada tabla la materializa su historia (`modelo-completo.md` §7). Jira se actualizó el 2026-10-06 (ver §2). Quedan el PR y el cierre de TS-49 (`ts-38.09`).
 
 ## 2. Qué se hizo
 
@@ -16,6 +16,7 @@ El ERD de las ocho entidades está **aprobado** y el ADR lo marca **CERRADO**. E
 | 1 | `docs/erd/modelo-sprint-2.md` §5: slice de `productions` | Aprobado 2026-10-05, commit `9e66de6`. Comentarios publicados en TS-49 y TS-19 en Jira. |
 | 2 | `docs/erd/modelo-completo.md`: 8 entidades, invariantes I1–I9, Mermaid, trazabilidad RF/HU, inventario de restricciones y plan de materialización | Aprobado 2026-10-06, commit `6407b12` (más la marca de aprobación en este corte). |
 | 3 | ADR: D4.6 (enums nuevos), D6.5 (enmienda a `artist_id`), D6.7 (únicos, índice de comments, exclusión), «Estado del ERD» → CERRADO, D8.1 y resumen de abiertos; `sprint-02.md` (casillas TS-49, `ts-08.10`, `ts-09.10`); `CLAUDE.md` §1 | En el árbol de trabajo, pendiente de commit. |
+| 3 (Jira) | TS-49: casillas `ts-38.01`..`ts-38.08` y comentario de cierre. TS-20: AC por número de canciones y `ts-09.10` marcada. TS-18: AC `invitado/activo/inactivo`. TS-21..TS-28 y TS-33: «bloque 7 ABIERTO» sustituido por el gate vigente con enlace a su sección del ERD (TS-24 conserva la dependencia de `ts-31`). | Publicado 2026-10-06 con confirmación del humano. |
 
 **Verificación:** el DDL completo se ejecutó en el PostgreSQL de Sail dentro de `BEGIN … ROLLBACK`. Las 12 operaciones que debían fallar fallaron por la restricción esperada y las 5 que debían pasar pasaron (`modelo-completo.md` §8). La base quedó vacía.
 
@@ -45,19 +46,19 @@ Todas las tomó el humano:
 ## 5. Drift detectado
 
 - **`docs/rbac-matrix.md` no existe**, aunque `CLAUDE.md` §3 lo lista en la estructura. La matriz vive en D8.1 del ADR. Dueño: `CLAUDE.md`. Hay que quitar la entrada o crear el archivo.
-- **AC de Jira desactualizados:** TS-18 (estados suspendido/bloqueado), TS-20 (EP ≤ 30 min) y TS-21..TS-28 y TS-33 (dicen que el bloque 7 está ABIERTO). Dueño: Jira. Los cambios están propuestos y pendientes de confirmación.
+- ~~**AC de Jira desactualizados** (TS-18, TS-20, TS-21..TS-28, TS-33)~~ — corregidos el 2026-10-06.
 - **Tesis:** la RF-02 sigue con el límite de 30 minutos. Se arrastra junto con la corrección del SDK de Auth0 (`TS-46`, `ts-35.s2.03`).
 
 ## 6. Bloqueos y pendientes
 
-- Jira: checklist de TS-49 (`ts-38.01`..`ts-38.09`), AC de TS-18/TS-20 y notas del bloque 7. Requiere confirmación del humano antes de publicar.
+- Jira: solo falta `ts-38.09` y pasar TS-49 a «Listo» cuando el PR esté integrado.
 - D8.1: faltan las filas de `productions`/`songs`/`versions`/`comments`/`studio_sessions`. El insumo es la sección «Autorización» de cada entidad.
 - Siguen abiertos en el ADR, sin bloquear esto: 9.2, 9.4, 11.5 y 8.5.
 
 ## 7. Próximos pasos
 
 1. Commit del corte 3 y PR de `feature/TS-49-cerrar-erd` → `develop`.
-2. Publicar los cambios de Jira y cerrar TS-49 cuando el PR esté integrado.
+2. Cuando el PR esté integrado: marcar `ts-38.09` y pasar TS-49 a «Listo».
 3. Spec backend de HU-08 (`TS-19`, `ts-08.01`) sobre `modelo-sprint-2.md` §5. Decidir ahí si se permite crear producciones para un artista `inactivo`.
 4. En paralelo: spec frontend de HU-05 (`ts-05.05`), pendiente desde v14.
 
