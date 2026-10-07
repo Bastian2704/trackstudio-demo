@@ -308,3 +308,41 @@ function exigirRuta(string $metodo, string $uri): void
 
     expect($registrada)->toBeTrue("La ruta {$metodo} {$uri} no está registrada.");
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-08 (docs/specs/backend/HU-08.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `ProductionResource` (spec §3.7). */
+const CAMPOS_DE_PRODUCCION = ['id', 'artist_id', 'name', 'format', 'created_at', 'updated_at'];
+
+/**
+ * Cuerpo válido de alta de producción. Cada test cambia solo lo que prueba.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeProduccion(string $artistId, array $cambios = []): array
+{
+    return array_merge([
+        'artist_id' => $artistId,
+        'name' => 'Sesiones del álbum',
+        'format' => 'album',
+    ], $cambios);
+}
+
+/**
+ * Cuerpo PUT válido. `artist_id` no forma parte del contrato editable.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeEdicionDeProduccion(array $cambios = []): array
+{
+    return array_merge([
+        'name' => 'Sesiones remasterizadas',
+        'format' => 'ep',
+    ], $cambios);
+}
