@@ -225,3 +225,18 @@ it('rechaza con 403 FORBIDDEN a un artista y no crea nada', function () {
     expect(Artist::query()->count())->toBe(0)
         ->and(User::query()->count())->toBe(0);
 });
+
+/*
+ * Enmienda §3.8 (#26): el frontend pinta `errors.<campo>[0]` tal cual
+ * (spec frontend HU-05 §3.5), así que el texto exacto es contrato.
+ */
+it('responde los errores de validación en español', function (array $datos, string $campo, string $mensaje) {
+    Artist::factory()->create(datosDeArtista());
+    impersonarToken(claimsDeToken('productor'));
+
+    $respuesta = $this->postJson('/api/v1/artists', $datos);
+
+    $respuesta->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath("errors.{$campo}.0", $mensaje);
+})->with('mensajes de validación en español');

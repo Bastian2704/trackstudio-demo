@@ -8,6 +8,8 @@ import Home from './routes/Home'
 import Forbidden from './routes/Forbidden'
 import MePage from './routes/Me.tsx'
 import ProducerOnly from './routes/ProducerOnly.tsx'
+import ArtistCreatePage from './routes/artists/ArtistCreatePage.tsx'
+import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
 
 function App() {
   const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
@@ -60,6 +62,8 @@ function App() {
         </Route>
         <Route element={<RequireRole allowed={['productor']} />}>
           <Route path="/productor" element={<ProducerOnly />} />
+          <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
+          <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

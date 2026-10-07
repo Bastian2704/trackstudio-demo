@@ -137,3 +137,21 @@ it('rechaza con 403 FORBIDDEN a un artista sin modificar la fila', function () {
 
     expectArtistaIntacto($artista);
 });
+
+/*
+ * Enmienda §3.8 (#27): la edición hereda los mensajes del alta, incluido el
+ * de email duplicado.
+ */
+it('responde los errores de validación en español al editar', function (array $datos, string $campo, string $mensaje) {
+    $artista = Artist::factory()->create(datosDeArtista());
+    Artist::factory()->create(['name' => 'Mar Salinas', 'email' => 'mar.salinas@ejemplo.test']);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->putJson("/api/v1/artists/{$artista->id}", $datos)
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath("errors.{$campo}.0", $mensaje);
+})->with([
+    'nombre vacío' => [['name' => '', 'email' => 'luna.rivera@ejemplo.test'], 'name', 'El campo nombre es obligatorio.'],
+    'email ajeno' => [['name' => 'Luna Rivera', 'email' => 'Mar.Salinas@Ejemplo.Test'], 'email', 'Ya existe un artista con ese email.'],
+]);

@@ -87,4 +87,35 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
   })
+
+  /*
+   * TS-16 (HU-05) — ts-05.06, spec frontend §4 test 12.
+   */
+  function contextoConRol(rol: string) {
+    const roleClaim = import.meta.env.VITE_AUTH0_ROLE_CLAIM
+    return contextoAuth0({
+      isLoading: false,
+      isAuthenticated: true,
+      error: undefined,
+      user: { [roleClaim]: [rol] },
+      getAccessTokenSilently: vi.fn().mockResolvedValue('token-de-prueba'),
+      loginWithRedirect: vi.fn().mockResolvedValue(undefined),
+      logout: vi.fn().mockResolvedValue(undefined),
+    })
+  }
+
+  it.each([['/artistas/nuevo'], ['/artistas/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/editar']])(
+    'las rutas de artistas son solo del productor: artista en %s',
+    async (ruta) => {
+      renderApp(contextoConRol('artista'), ruta)
+
+      expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+    },
+  )
+
+  it('las rutas de artistas son solo del productor: productor en /artistas/nuevo', async () => {
+    renderApp(contextoConRol('productor'), '/artistas/nuevo')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar artista' })).toBeTruthy()
+  })
 })
