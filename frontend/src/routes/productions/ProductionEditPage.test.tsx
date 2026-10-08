@@ -92,13 +92,8 @@ function formato() {
   return screen.getByLabelText<HTMLSelectElement>('Formato')
 }
 
-/*
- * `hidden: true` porque un diálogo modal abierto oculta el resto de la página
- * al árbol de accesibilidad; la spec no fija si el aviso de error vive dentro
- * o fuera del diálogo.
- */
 function textoEnRol(rol: 'alert' | 'status', texto: string) {
-  return screen.queryAllByRole(rol, { hidden: true }).some((el) => el.textContent?.includes(texto))
+  return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
 }
 
 async function esperarPrecarga() {
@@ -215,7 +210,7 @@ describe('ProductionEditPage', () => {
     })
   })
 
-  it('no elimina dos veces mientras borra', async () => {
+  it('no elimina dos veces ni cierra el diálogo mientras borra', async () => {
     let completar: (respuesta: RespuestaSimulada) => void = () => undefined
     const peticiones = simularApi(
       conPrecarga(
@@ -236,6 +231,9 @@ describe('ProductionEditPage', () => {
     await user.click(confirmar())
     expect(borrados(peticiones)).toHaveLength(1)
 
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('alertdialog')).toBeTruthy()
+
     completar(problema(500, 'INTERNAL_ERROR'))
     await waitFor(() =>
       expect(textoEnRol('alert', 'No se pudo eliminar la producción. Inténtalo de nuevo.')).toBe(
@@ -248,20 +246,24 @@ describe('ProductionEditPage', () => {
     { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
     { caso: 'error de red', respuesta: 'error de red' as const },
     { caso: '404 RESOURCE_NOT_FOUND', respuesta: problema(404, 'RESOURCE_NOT_FOUND') },
-  ])('un error al eliminar se avisa y conserva la pantalla: $caso', async ({ respuesta }) => {
-    simularApi(conPrecarga(() => respuesta))
-    const user = renderEdicion()
-    await esperarPrecarga()
+  ])(
+    'un error al eliminar cierra el diálogo, avisa y conserva la pantalla: $caso',
+    async ({ respuesta }) => {
+      simularApi(conPrecarga(() => respuesta))
+      const user = renderEdicion()
+      await esperarPrecarga()
 
-    await abrirDialogo(user)
-    await user.click(confirmar())
+      await abrirDialogo(user)
+      await user.click(confirmar())
 
-    await waitFor(() =>
-      expect(textoEnRol('alert', 'No se pudo eliminar la producción. Inténtalo de nuevo.')).toBe(
-        true,
-      ),
-    )
-    expect(screen.getByRole('heading', { name: 'Editar producción', hidden: true })).toBeTruthy()
-    expect(nombre().value).toBe('Sesiones del álbum')
-  })
+      await waitFor(() =>
+        expect(textoEnRol('alert', 'No se pudo eliminar la producción. Inténtalo de nuevo.')).toBe(
+          true,
+        ),
+      )
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+      expect(screen.getByRole('heading', { name: 'Editar producción' })).toBeTruthy()
+      expect(nombre().value).toBe('Sesiones del álbum')
+    },
+  )
 })
