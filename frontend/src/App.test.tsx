@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '@/App'
 import { attachErrorInterceptor } from '@/lib/api'
+import { restaurarApi, simularApi } from '@/test/api'
 import { contextoAuth0 } from '@/test/auth0'
 
 /*
@@ -31,6 +32,7 @@ vi.mock('@/lib/api', async (importOriginal) => {
 
 afterEach(() => {
   cleanup()
+  restaurarApi()
   vi.clearAllMocks()
   vi.restoreAllMocks()
 })
@@ -138,5 +140,25 @@ describe('App', () => {
     )
 
     expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
+  })
+
+  /*
+   * TS-17 (HU-06) — ts-06.06, spec frontend §4 test 15.
+   */
+  it.each([
+    { rol: 'artista', encabezado: '403 · Acceso denegado' },
+    { rol: 'productor', encabezado: 'Artistas' },
+  ])('el listado de artistas es solo del productor: $rol', async ({ rol, encabezado }) => {
+    simularApi(() => ({
+      status: 200,
+      data: {
+        data: [],
+        links: { first: null, last: null, prev: null, next: null },
+        meta: { current_page: 1, from: null, last_page: 1, per_page: 15, to: null, total: 0 },
+      },
+    }))
+    renderApp(contextoConRol(rol), '/artistas')
+
+    expect(await screen.findByRole('heading', { name: encabezado })).toBeTruthy()
   })
 })

@@ -141,4 +141,17 @@ describe('ArtistEditPage', () => {
     expect(screen.queryByLabelText('Nombre')).toBeNull()
     expect(screen.queryByLabelText('Email')).toBeNull()
   })
+
+  /*
+   * TS-17 (HU-06) — ts-06.06, spec frontend HU-06 §4 test 14.
+   */
+  it('enlaza de vuelta al listado', async () => {
+    simularApi(conPrecarga(() => ({ status: 500 })))
+    renderEdicion()
+
+    await esperarPrecarga()
+    expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
+      '/artistas',
+    )
+  })
 })

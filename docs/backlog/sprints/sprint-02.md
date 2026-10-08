@@ -103,7 +103,7 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 - [x] `ts-06.02` Tests backend en rojo para orden, estado, asociaciones, vacío y permisos. Orden interno: ts-06.01.
 - [x] `ts-06.03` Código backend hasta verde (humano), sin N+1 y con Larastan/Pint limpios. Orden interno: ts-06.02 y backend TS-19 disponible para la asociación completa.
 - [x] `ts-06.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-06.03.
-- [ ] `ts-06.05` Spec frontend aprobada para lista, estados vacío/carga/error y representación de producciones asociadas. Orden interno: ts-06.01.
+- [x] `ts-06.05` Spec frontend aprobada para lista, estados vacío/carga/error y representación de producciones asociadas. Orden interno: ts-06.01.
 - [ ] `ts-06.06` Tests frontend en rojo para datos, orden visible, vacío, error y permisos. Orden interno: ts-06.05.
 - [ ] `ts-06.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-06.06.
 - [ ] `ts-06.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-06.07.
