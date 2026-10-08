@@ -3,17 +3,11 @@ import type { AxiosError } from 'axios'
 import { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 
+import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
 import ArtistForm from './ArtistForm'
 import { fetchArtist, updateArtist } from './artistApi'
 import type { Artist, ArtistInput } from './artistSchema'
-
-function noticeFrom(state: unknown): string | null {
-  if (typeof state === 'object' && state !== null && 'notice' in state) {
-    return typeof state.notice === 'string' ? state.notice : null
-  }
-  return null
-}
 
 export default function ArtistEditPage() {
   const { id = '' } = useParams()

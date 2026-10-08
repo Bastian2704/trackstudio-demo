@@ -128,10 +128,10 @@ Alcance del sprint: transiciones entre activo, suspendido y bloqueado, con persi
 Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. Excluye las reglas detalladas de formato (TS-20), portada y porcentaje de avance.
 
 - [x] `ts-08.10` Aprobar en TS-49 el slice de `productions`: atributos, FK a `artists`, formato, borrado, índices y trazabilidad a RF-02. Orden interno: ts-38.02, ts-38.03 y ts-38.05. **Hecho el 2026-10-05:** `docs/erd/modelo-sprint-2.md` §5.
-- [ ] `ts-08.01` Spec backend aprobada con CRUD, asociación, autorización, borrado y errores D3.1. Orden interno: ts-08.10 y ts-05.01.
-- [ ] `ts-08.02` Tests backend en rojo para alta/edición/borrado, artista inexistente, formato inválido, permisos y no encontrado. Orden interno: ts-08.01.
-- [ ] `ts-08.03` Código backend hasta verde (humano); migración basada en TS-49, Larastan y Pint limpios. Orden interno: ts-08.02.
-- [ ] `ts-08.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-08.03.
+- [x] `ts-08.01` Spec backend aprobada con CRUD, asociación, autorización, borrado y errores D3.1. **Hecho el 2026-10-07:** `docs/specs/backend/HU-08.md`. Orden interno: ts-08.10 y ts-05.01.
+- [x] `ts-08.02` Tests backend en rojo para alta/edición/borrado, artista inexistente, formato inválido, permisos y no encontrado. **Hecho el 2026-10-07:** 69 casos TS-19 fallan por tabla/modelo/rutas ausentes; la suite previa conserva su verde con `APP_LOCALE=es`. Orden interno: ts-08.01.
+- [x] `ts-08.03` Código backend hasta verde (humano); migración basada en TS-49, Larastan y Pint limpios. **Hecho el 2026-10-07:** CRUD singular de producciones implementado; Pint y PHPStan pasan; batería TS-19 verde (77 tests, 379 aserciones). Orden interno: ts-08.02.
+- [x] `ts-08.04` Review backend con C3 y hallazgos cerrados. **Hecho el 2026-10-07:** 34 mutaciones demostraron el rojo de esquema, rutas, Policy, validación, unicidad, Resource, persistencia y soft delete; suite completa verde con `APP_LOCALE=es` (205 tests, 974 aserciones; 1 skip de token Auth0 real). Orden interno: ts-08.03.
 - [ ] `ts-08.05` Spec frontend aprobada para CRUD, selección de artista/formato, confirmación de borrado y estados asíncronos. Orden interno: ts-08.01.
 - [ ] `ts-08.06` Tests frontend en rojo para CRUD, errores, confirmación y permisos. Orden interno: ts-08.05.
 - [ ] `ts-08.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-08.06.

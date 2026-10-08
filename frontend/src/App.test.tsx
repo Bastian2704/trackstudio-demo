@@ -118,4 +118,25 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Registrar artista' })).toBeTruthy()
   })
+
+  /*
+   * TS-19 (HU-08) — ts-08.06, spec frontend §4 test 18.
+   */
+  it.each([
+    ['/artistas/9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d/producciones/nueva'],
+    ['/producciones/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/editar'],
+  ])('las rutas de producciones son solo del productor: artista en %s', async (ruta) => {
+    renderApp(contextoConRol('artista'), ruta)
+
+    expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+  })
+
+  it('las rutas de producciones son solo del productor: productor en el alta', async () => {
+    renderApp(
+      contextoConRol('productor'),
+      '/artistas/9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d/producciones/nueva',
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
+  })
 })

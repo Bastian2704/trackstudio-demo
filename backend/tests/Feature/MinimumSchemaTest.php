@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Artist;
+use App\Models\Production;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -235,4 +236,91 @@ it('libera nombre y email en la base de datos cuando el artista se borra', funct
     Artist::factory()->create(datosDeArtista());
 
     expect(Artist::withTrashed()->count())->toBe(2);
+});
+
+/*
+|--------------------------------------------------------------------------
+| TS-19 — Slice aprobado de productions (modelo-sprint-2.md §5)
+|--------------------------------------------------------------------------
+*/
+
+it('crea productions con el contrato exacto aprobado', function () {
+    expect(Schema::hasTable('productions'))->toBeTrue();
+
+    expect(columnasPostgresql('productions'))->toBe([
+        ['column_name' => 'id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'artist_id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'name', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 255],
+        ['column_name' => 'format', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 10],
+        ['column_name' => 'created_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'updated_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'deleted_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+    ]);
+});
+
+it('protege relaciones, formato e índices de productions en PostgreSQL', function () {
+    expect(restriccionesPostgresql('productions', 'p'))->toBe(['PRIMARY KEY (id)'])
+        ->and(clavesForaneasPostgresql('productions'))->toBe([
+            ['column_name' => 'artist_id', 'foreign_table' => 'artists', 'foreign_column' => 'id', 'delete_rule' => 'NO ACTION'],
+        ]);
+
+    $checks = restriccionesPostgresql('productions', 'c');
+    expect($checks)->toHaveCount(1)
+        ->and($checks[0])->toContain('format')
+        ->toContain('sencillo')
+        ->toContain('ep')
+        ->toContain('album');
+
+    $formatDefault = DB::scalar(
+        <<<'SQL'
+            SELECT column_default
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'productions'
+              AND column_name = 'format'
+        SQL,
+    );
+
+    expect($formatDefault)->toBeNull();
+
+    $indices = collect(DB::select(
+        <<<'SQL'
+            SELECT indexname, indexdef
+            FROM pg_indexes
+            WHERE schemaname = current_schema()
+              AND tablename = 'productions'
+        SQL,
+    ))->pluck('indexdef', 'indexname');
+
+    expect($indices)->toHaveKey('productions_artist_id_index')
+        ->and($indices['productions_artist_id_index'])->toContain('(artist_id)')
+        ->and($indices)->toHaveKey('productions_artist_id_name_lower_unique')
+        ->and($indices['productions_artist_id_name_lower_unique'])
+        ->toContain('CREATE UNIQUE INDEX')
+        ->toContain('artist_id')
+        ->toContain('lower(')
+        ->toContain('name')
+        ->toContain('WHERE (deleted_at IS NULL)');
+});
+
+it('impide en PostgreSQL repetir el nombre vigente dentro del mismo artista', function () {
+    $artist = Artist::factory()->create();
+    Production::factory()->create(['artist_id' => $artist->id, 'name' => 'Demos']);
+
+    expect(fn () => DB::transaction(fn () => Production::factory()->create([
+        'artist_id' => $artist->id,
+        'name' => 'DEMOS',
+    ])))->toThrow(UniqueConstraintViolationException::class);
+});
+
+it('permite en PostgreSQL el mismo nombre para otro artista o tras soft delete', function () {
+    $firstArtist = Artist::factory()->create();
+    $secondArtist = Artist::factory()->create();
+    $original = Production::factory()->create(['artist_id' => $firstArtist->id, 'name' => 'Demos']);
+
+    Production::factory()->create(['artist_id' => $secondArtist->id, 'name' => 'DEMOS']);
+    $original->delete();
+    Production::factory()->create(['artist_id' => $firstArtist->id, 'name' => 'demos']);
+
+    expect(Production::withTrashed()->count())->toBe(3);
 });

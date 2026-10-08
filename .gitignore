@@ -21,6 +21,8 @@ backend/Homestead.yaml
 backend/Homestead.json
 backend/.vagrant
 
+.php-cs-fixer.cache
+
 # Frontend (frontend/)
 frontend/dist/
 frontend/.vite/

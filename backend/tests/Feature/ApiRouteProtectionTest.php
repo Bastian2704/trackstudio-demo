@@ -32,13 +32,31 @@ it('clasifica y protege todas las rutas de la API', function () {
         ->sortKeys()
         ->all();
 
-    // TS-16 (docs/specs/backend/HU-05.md §3.1): artistas, solo productor vía ArtistPolicy.
+    // TS-16 y TS-19: artistas y producciones, solo productor vía sus Policies.
     expect($inventario)->toBe([
+        'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
         'GET api/v1/artists/{artist}' => ['auth:auth0-api', 'can:view,artist'],
         'GET api/v1/health' => [],
         'GET api/v1/me' => ['auth:auth0-api'],
+        'GET api/v1/productions/{production}' => ['auth:auth0-api', 'can:view,production'],
         'POST api/v1/artists' => ['auth:auth0-api', 'can:create,App\\Models\\Artist'],
+        'POST api/v1/productions' => ['auth:auth0-api', 'can:create,App\\Models\\Production'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
         'PUT api/v1/artists/{artist}' => ['auth:auth0-api', 'can:update,artist'],
+        'PUT api/v1/productions/{production}' => ['auth:auth0-api', 'can:update,production'],
     ]);
 });
+
+it('restringe a UUID las rutas parametrizadas de producciones', function (string $method) {
+    $route = collect(app('router')->getRoutes()->getRoutes())->first(
+        fn (Route $candidate): bool => $candidate->uri() === 'api/v1/productions/{production}'
+            && in_array($method, $candidate->methods(), true),
+    );
+
+    expect($route)->not->toBeNull()
+        ->and($route->wheres)->toHaveKey('production');
+})->with([
+    'consulta' => ['GET'],
+    'edición' => ['PUT'],
+    'borrado' => ['DELETE'],
+]);
