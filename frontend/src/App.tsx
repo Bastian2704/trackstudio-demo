@@ -10,6 +10,8 @@ import MePage from './routes/Me.tsx'
 import ProducerOnly from './routes/ProducerOnly.tsx'
 import ArtistCreatePage from './routes/artists/ArtistCreatePage.tsx'
 import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
+import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
+import ProductionEditPage from './routes/productions/ProductionEditPage.tsx'
 
 function App() {
   const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
@@ -64,6 +66,8 @@ function App() {
           <Route path="/productor" element={<ProducerOnly />} />
           <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
           <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
+          <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />
+          <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
