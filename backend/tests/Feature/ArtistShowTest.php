@@ -30,7 +30,9 @@ it('muestra el artista al productor sin datos de invitación ni vínculos intern
         ->assertJsonPath('data.email', 'luna.rivera@ejemplo.test')
         ->assertJsonPath('data.status', 'invitado');
 
-    expect(array_keys($respuesta->json('data')))->toEqualCanonicalizing(CAMPOS_DE_ARTISTA)
+    // TS-17: `productions` solo aparece en el listado (HU-06 §3.4).
+    expect($respuesta->json('data'))->not->toHaveKey('productions')
+        ->and(array_keys($respuesta->json('data')))->toEqualCanonicalizing(CAMPOS_DE_ARTISTA)
         ->and($respuesta->json('data.created_at'))->toMatch(FORMATO_ISO_8601_CON_OFFSET)
         ->and($respuesta->getContent())->not->toContain((string) $artista->invitation_token)
         ->and($respuesta->getContent())->not->toContain($artista->created_by);
