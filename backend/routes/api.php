@@ -27,6 +27,12 @@ Route::post('/artists', [ArtistController::class, 'store'])
         'can:create,'.Artist::class,
     ]);
 
+Route::get('/artists', [ArtistController::class, 'index'])
+    ->middleware([
+        'auth:auth0-api',
+        'can:viewAny,'.Artist::class,
+    ]);
+
 Route::get('/artists/{artist}', [ArtistController::class, 'show'])
     ->whereUuid('artist')
     ->middleware([

@@ -15,6 +15,7 @@ export interface PeticionRegistrada {
   method: string
   url: string
   body: unknown
+  params?: unknown
 }
 
 export type RespuestaSimulada = { status: number; data?: unknown } | 'error de red'
@@ -31,6 +32,7 @@ export function simularApi(
       method: (config.method ?? 'get').toUpperCase(),
       url: config.url ?? '',
       body: typeof config.data === 'string' ? JSON.parse(config.data) : config.data,
+      ...(config.params !== undefined && { params: config.params as unknown }),
     }
     peticiones.push(peticion)
 
