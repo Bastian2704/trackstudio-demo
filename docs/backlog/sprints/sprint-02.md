@@ -99,10 +99,10 @@ Alcance del sprint: alta y edición por productor sobre el modelo `artists` ya a
 
 Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluye métricas del dashboard y estadísticas no respaldadas por RF.
 
-- [ ] `ts-06.01` Spec backend aprobada con consulta, orden, forma de respuesta, autorización y comportamiento sin resultados. Orden interno: ts-05.01; puede prepararse antes de cerrar TS-19.
-- [ ] `ts-06.02` Tests backend en rojo para orden, estado, asociaciones, vacío y permisos. Orden interno: ts-06.01.
-- [ ] `ts-06.03` Código backend hasta verde (humano), sin N+1 y con Larastan/Pint limpios. Orden interno: ts-06.02 y backend TS-19 disponible para la asociación completa.
-- [ ] `ts-06.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-06.03.
+- [x] `ts-06.01` Spec backend aprobada con consulta, orden, forma de respuesta, autorización y comportamiento sin resultados. Orden interno: ts-05.01; puede prepararse antes de cerrar TS-19.
+- [x] `ts-06.02` Tests backend en rojo para orden, estado, asociaciones, vacío y permisos. Orden interno: ts-06.01.
+- [x] `ts-06.03` Código backend hasta verde (humano), sin N+1 y con Larastan/Pint limpios. Orden interno: ts-06.02 y backend TS-19 disponible para la asociación completa.
+- [x] `ts-06.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-06.03.
 - [ ] `ts-06.05` Spec frontend aprobada para lista, estados vacío/carga/error y representación de producciones asociadas. Orden interno: ts-06.01.
 - [ ] `ts-06.06` Tests frontend en rojo para datos, orden visible, vacío, error y permisos. Orden interno: ts-06.05.
 - [ ] `ts-06.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-06.06.
@@ -132,10 +132,10 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 - [x] `ts-08.02` Tests backend en rojo para alta/edición/borrado, artista inexistente, formato inválido, permisos y no encontrado. **Hecho el 2026-10-07:** 69 casos TS-19 fallan por tabla/modelo/rutas ausentes; la suite previa conserva su verde con `APP_LOCALE=es`. Orden interno: ts-08.01.
 - [x] `ts-08.03` Código backend hasta verde (humano); migración basada en TS-49, Larastan y Pint limpios. **Hecho el 2026-10-07:** CRUD singular de producciones implementado; Pint y PHPStan pasan; batería TS-19 verde (77 tests, 379 aserciones). Orden interno: ts-08.02.
 - [x] `ts-08.04` Review backend con C3 y hallazgos cerrados. **Hecho el 2026-10-07:** 34 mutaciones demostraron el rojo de esquema, rutas, Policy, validación, unicidad, Resource, persistencia y soft delete; suite completa verde con `APP_LOCALE=es` (205 tests, 974 aserciones; 1 skip de token Auth0 real). Orden interno: ts-08.03.
-- [ ] `ts-08.05` Spec frontend aprobada para CRUD, selección de artista/formato, confirmación de borrado y estados asíncronos. Orden interno: ts-08.01.
-- [ ] `ts-08.06` Tests frontend en rojo para CRUD, errores, confirmación y permisos. Orden interno: ts-08.05.
-- [ ] `ts-08.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-08.06.
-- [ ] `ts-08.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-08.07.
+- [x] `ts-08.05` Spec frontend aprobada para CRUD, selección de artista/formato, confirmación de borrado y estados asíncronos. Orden interno: ts-08.01.
+- [x] `ts-08.06` Tests frontend en rojo para CRUD, errores, confirmación y permisos. Orden interno: ts-08.05.
+- [x] `ts-08.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-08.06.
+- [x] `ts-08.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-08.07.
 - [ ] `ts-08.09` Integración y cierre. Hecho cuando: CRUD completo demostrado en staging, asociación válida, CI y AC verdes. Orden interno: ts-08.04, ts-08.08 y TS-15 integrado.
 
 ### TS-20 / ts-09 - HU-09 Validar restricciones de formato
