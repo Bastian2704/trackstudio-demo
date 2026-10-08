@@ -117,11 +117,16 @@ it('incluye las producciones vigentes de cada artista', function () {
     $artista = Artist::factory()->create(['status' => ArtistStatus::Activo, 'created_at' => now()]);
     $otroArtista = Artist::factory()->create(['status' => ArtistStatus::Activo, 'created_at' => now()->subDay()]);
 
-    // Mismo patrón que los artistas: `id` y orden de inserción contrarios al esperado.
-    [$idReciente, $idEmpateMayor, $idEmpateMenor, $idBorrada] = array_reverse(uuidsAscendentes(4));
-    $mismaFecha = now()->subDays(3);
-    $empateMenor = Production::factory()->ep()->for($artista)->create(['id' => $idEmpateMenor, 'created_at' => $mismaFecha]);
-    $empateMayor = Production::factory()->album()->for($artista)->create(['id' => $idEmpateMayor, 'created_at' => $mismaFecha]);
+    // Mismo patrón que los artistas: la reciente tiene el `id` menor y las
+    // empatadas se insertan en orden ascendente de `id`, el contrario al esperado.
+    // Con solo dos empatadas la base acertaba el orden por casualidad (C3, M7).
+    $ids = uuidsAscendentes(7);
+    [$idReciente, $idBorrada] = $ids;
+    $idsEmpatados = array_slice($ids, 2);
+    $mismaFecha = now()->subDays(3)->toImmutable();
+    $empatadas = collect($idsEmpatados)
+        ->map(fn (string $id): Production => Production::factory()->ep()->for($artista)->create(['id' => $id, 'created_at' => $mismaFecha]))
+        ->reverse();
     $reciente = Production::factory()->sencillo()->for($artista)->create(['id' => $idReciente, 'created_at' => now()->subHour()]);
     Production::factory()->for($artista)->create(['id' => $idBorrada, 'created_at' => now()])->delete();
     $ajena = Production::factory()->ep()->for($otroArtista)->create();
@@ -136,7 +141,7 @@ it('incluye las producciones vigentes de cada artista', function () {
     ];
 
     expect(idsDelListado($respuesta->json('data')))->toBe([$artista->id, $otroArtista->id])
-        ->and($respuesta->json('data.0.productions'))->toEqual([$forma($reciente), $forma($empateMayor), $forma($empateMenor)])
+        ->and($respuesta->json('data.0.productions'))->toEqual([$forma($reciente), ...$empatadas->map($forma)->all()])
         ->and($respuesta->json('data.1.productions'))->toEqual([$forma($ajena)]);
 });
 
@@ -195,7 +200,7 @@ it('responde 200 con data vacía cuando no hay artistas', function () {
 
     $this->getJson('/api/v1/artists')
         ->assertOk()
-        ->assertExactJsonPath('data', [])
+        ->assertJsonPath('data', [])
         ->assertJsonPath('meta.total', 0)
         ->assertJsonPath('meta.from', null)
         ->assertJsonPath('meta.to', null);
