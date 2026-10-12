@@ -2,6 +2,12 @@ import { z } from 'zod'
 
 export const PRODUCTION_FORMATS = ['sencillo', 'ep', 'album'] as const
 
+export const FORMAT_LABELS: Record<(typeof PRODUCTION_FORMATS)[number], string> = {
+  sencillo: 'Sencillo',
+  ep: 'EP',
+  album: 'Álbum',
+}
+
 export const productionInputSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio.'),
   format: z.string().pipe(z.enum(PRODUCTION_FORMATS, 'Selecciona un formato.')),

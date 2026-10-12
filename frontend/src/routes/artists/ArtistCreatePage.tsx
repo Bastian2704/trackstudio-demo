@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 import ArtistForm from './ArtistForm'
 import { createArtist } from './artistApi'
@@ -17,6 +17,9 @@ export default function ArtistCreatePage() {
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-8">
+      <Link to="/artistas" className="text-sm underline">
+        Volver al listado
+      </Link>
       <h1 className="text-xl font-semibold">Registrar artista</h1>
       <ArtistForm submitLabel="Registrar" onSubmit={(input) => mutation.mutateAsync(input)} />
     </main>

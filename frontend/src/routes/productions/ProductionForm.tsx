@@ -9,18 +9,13 @@ import { Label } from '@/components/ui/label'
 import type { ApiErrorBody } from '@/lib/api'
 import {
   PRODUCTION_FORMATS,
+  FORMAT_LABELS,
   productionInputSchema,
   type ProductionFormValues,
   type ProductionInput,
 } from './productionSchema'
 
 const FIELDS = ['name', 'format'] as const
-
-const FORMAT_LABELS: Record<ProductionInput['format'], string> = {
-  sencillo: 'Sencillo',
-  ep: 'EP',
-  album: 'Álbum',
-}
 
 interface ProductionFormProps {
   values?: ProductionFormValues
