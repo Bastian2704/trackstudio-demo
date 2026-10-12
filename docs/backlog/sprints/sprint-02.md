@@ -111,7 +111,7 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 
 ### TS-18 / ts-07 - HU-07 Cambiar el estado de un artista
 
-Alcance del sprint: transiciones entre activo, suspendido y bloqueado, con persistencia y evidencia auditable según el contrato que apruebe la spec.
+Alcance del sprint: el productor desactiva y reactiva artistas dentro del catálogo `invitado`/`activo`/`inactivo` (D6.3); la reactivación deriva el estado de `user_id`. Persistencia y auditoría por log estructurado (`docs/specs/backend/HU-07.md` §3.4 y §3.6).
 
 - [ ] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
 - [ ] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
