@@ -563,7 +563,7 @@ Todas las demás rutas de `/api/v1` exigen el token de Auth0 (D4.8).
 
 | # | Cuenta | Estado | Nota |
 |---|---|---|---|
-| 10.1 | Resend | PENDIENTE | Dominio confirmado: `trackstudio.site`. Verificar DNS (24–48 h) una vez creada la cuenta — **el de mayor lead time** |
+| 10.1 | Resend | **HECHO** (DNS verificado 2026-10-08, TS-41) | Dominio `trackstudio.site` verificado: DKIM, `send` (CNAME) y DMARC. Registros en `docs/global/dns-trackstudio-site.md` |
 | 10.2 | Auth0 | **HECHO** (confirmado 2026-08-19) | Tenant + API + app SPA + 2 roles + Action que inyecta roles con namespace `https://trackstudio.site/roles` (D4.8) |
 | 10.3 | AWS | PENDIENTE | Bucket + IAM mínimo + CORS |
 | 10.4 | Railway + Vercel | PENDIENTE | — |

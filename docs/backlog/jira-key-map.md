@@ -27,6 +27,7 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-53` | Task relacionada con `TS-46` | Evidencia SCRUM del Sprint 1 en la tesis                                         | Por hacer                            |
 | `TS-54` | Task relacionada con `TS-49` | Modelo mínimo `users`/`artists` y decisión sobre `production_access`             | Listo (2026-10-02)                   |
 | `TS-60` | Task de `TS-1`               | Replanificar el roadmap a seis sprints sin reducir alcance                       | En curso; `TS Sprint 1` (2026-10-02) |
+| `TS-63` | Task de `TS-1`, bloquea `TS-44` | DNS de producción (`@`, `www`, `api`); sale de dividir `TS-41`                | Por hacer (2026-10-08)               |
 
 ## Claves históricas
 

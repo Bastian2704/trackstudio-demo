@@ -169,10 +169,12 @@ TS-54 ya aprobó el modelo mínimo de `users`/`artists`. S2 debe completar el di
 
 Trabajo humano de infraestructura. No bloquea el CRUD de S2, pero sí Resend y la preparación productiva.
 
-- [ ] `ts-30.01` Confirmar propiedad y acceso administrativo de `trackstudio.site`.
-- [ ] `ts-30.02` Definir registros para frontend, API y verificación de proveedores sin exponer secretos. Orden interno: ts-30.01.
-- [ ] `ts-30.03` Configurar DNS y verificar resolución/TLS desde una red externa. Orden interno: ts-30.02.
-- [ ] `ts-30.04` Registrar evidencia no sensible en Jira y actualizar los consumidores TS-43/TS-44. Orden interno: ts-30.03.
+**Dividida el 2026-10-08:** TS-41 se queda con Resend y la documentación. El DNS de producción (`@`, `www`, `api`) pasa a **TS-63**, que bloquea a TS-44. Staging no tiene subdominio propio.
+
+- [x] `ts-30.01` Confirmar propiedad y acceso administrativo de `trackstudio.site`.
+- [x] `ts-30.02` Definir registros para frontend, API y verificación de proveedores sin exponer secretos: [`docs/global/dns-trackstudio-site.md`](../../global/dns-trackstudio-site.md). Orden interno: ts-30.01.
+- [x] `ts-30.03` Configurar DNS y verificar resolución desde una red externa (Resend, 2026-10-08; producción y TLS en TS-63). Orden interno: ts-30.02.
+- [x] `ts-30.04` Registrar evidencia no sensible en Jira (comentario en TS-41) y actualizar los consumidores TS-43/TS-44. Orden interno: ts-30.03.
 
 ### TS-46 / ts-35 - Evidencia de desarrollo
 
