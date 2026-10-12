@@ -141,4 +141,42 @@ describe('ArtistEditPage', () => {
     expect(screen.queryByLabelText('Nombre')).toBeNull()
     expect(screen.queryByLabelText('Email')).toBeNull()
   })
+
+  /*
+   * TS-17 (HU-06) — ts-06.06, spec frontend HU-06 §4 test 14.
+   */
+  it('enlaza de vuelta al listado', async () => {
+    simularApi(conPrecarga(() => ({ status: 500 })))
+    renderEdicion()
+
+    await esperarPrecarga()
+    expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
+      '/artistas',
+    )
+  })
+
+  /*
+   * TS-17 (HU-06) — ts-06.08, spec frontend HU-06 §4 test 16 (hallazgo C3).
+   */
+  it.each<{ caso: string; respuesta: RespuestaSimulada; error: () => Promise<HTMLElement> }>([
+    {
+      caso: '404 RESOURCE_NOT_FOUND',
+      respuesta: problema(404, 'RESOURCE_NOT_FOUND'),
+      error: () => screen.findByRole('heading', { name: 'Artista no encontrado' }),
+    },
+    {
+      caso: '500 INTERNAL_ERROR',
+      respuesta: problema(500, 'INTERNAL_ERROR'),
+      error: () => screen.findByRole('alert'),
+    },
+  ])('enlaza de vuelta al listado si la precarga falla: $caso', async ({ respuesta, error }) => {
+    simularApi(() => respuesta)
+    renderEdicion()
+
+    // Mientras carga, la rama normal ya pinta el enlace: hay que esperar al error.
+    await error()
+    expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
+      '/artistas',
+    )
+  })
 })

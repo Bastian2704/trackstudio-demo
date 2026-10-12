@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Artist;
+use App\Models\Production;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +28,10 @@ final class ArtistResource extends JsonResource
             'status' => $this->resource->status->value,
             'created_at' => $this->resource->created_at?->toIso8601String(),
             'updated_at' => $this->resource->updated_at?->toIso8601String(),
+            'productions' => $this->whenLoaded('productions', fn () => $this->resource->productions->map(fn (Production $production): array => ['id' => $production->id,
+                'name' => $production->name,
+                'format' => $production->format->value,
+            ])->all()),
         ];
     }
 }

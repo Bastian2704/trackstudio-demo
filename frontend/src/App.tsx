@@ -10,6 +10,7 @@ import MePage from './routes/Me.tsx'
 import ProducerOnly from './routes/ProducerOnly.tsx'
 import ArtistCreatePage from './routes/artists/ArtistCreatePage.tsx'
 import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
+import ArtistListPage from './routes/artists/ArtistListPage.tsx'
 import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
 import ProductionEditPage from './routes/productions/ProductionEditPage.tsx'
 
@@ -64,6 +65,7 @@ function App() {
         </Route>
         <Route element={<RequireRole allowed={['productor']} />}>
           <Route path="/productor" element={<ProducerOnly />} />
+          <Route path="/artistas" element={<ArtistListPage />} />
           <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
           <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
           <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />

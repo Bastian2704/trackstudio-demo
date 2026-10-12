@@ -22,6 +22,12 @@ final class ArtistPolicy
         return $this->isProducer($user);
     }
 
+    public function viewAny(
+        StatelessUserContract $user
+    ): bool {
+        return $this->isProducer($user);
+    }
+
     public function update(
         StatelessUserContract $user,
         Artist $artist

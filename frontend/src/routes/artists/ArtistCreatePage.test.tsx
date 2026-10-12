@@ -229,4 +229,15 @@ describe('ArtistCreatePage', () => {
     expect(campo('Nombre').value).toBe('Luna Rivera')
     expect(campo('Email').value).toBe('luna.rivera@ejemplo.test')
   })
+
+  /*
+   * TS-17 (HU-06) — ts-06.06, spec frontend HU-06 §4 test 14.
+   */
+  it('enlaza de vuelta al listado', () => {
+    renderAlta()
+
+    expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
+      '/artistas',
+    )
+  })
 })

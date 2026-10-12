@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
@@ -32,6 +32,9 @@ export default function ArtistEditPage() {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
       <main className="mx-auto max-w-lg space-y-6 p-8">
+        <Link to="/artistas" className="text-sm underline">
+          Volver al listado
+        </Link>
         <h1 className="text-xl font-semibold">
           {notFound ? 'Artista no encontrado' : 'Editar artista'}
         </h1>
@@ -42,6 +45,9 @@ export default function ArtistEditPage() {
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-8">
+      <Link to="/artistas" className="text-sm underline">
+        Volver al listado
+      </Link>
       <h1 className="text-xl font-semibold">Editar artista</h1>
       {notice && (
         <p role="status" className="text-sm">
