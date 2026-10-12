@@ -106,7 +106,7 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 - [x] `ts-06.05` Spec frontend aprobada para lista, estados vacío/carga/error y representación de producciones asociadas. Orden interno: ts-06.01.
 - [x] `ts-06.06` Tests frontend en rojo para datos, orden visible, vacío, error y permisos. Orden interno: ts-06.05.
 - [x] `ts-06.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-06.06.
-- [ ] `ts-06.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-06.07.
+- [x] `ts-06.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-06.07.
 - [ ] `ts-06.09` Integración y cierre. Hecho cuando: listado completo demostrado en staging con al menos un artista con producción y uno sin producción; CI y AC verdes. Orden interno: ts-06.04, ts-06.08 y ts-08.09.
 
 ### TS-18 / ts-07 - HU-07 Cambiar el estado de un artista
