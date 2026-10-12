@@ -44,11 +44,13 @@ function conPrecarga(alGuardar: (peticion: PeticionRegistrada) => RespuestaSimul
     peticion.method === 'GET' ? { status: 200, data: { data: artista() } } : alGuardar(peticion)
 }
 
-function renderEdicion() {
-  const queryClient = new QueryClient({
+function nuevoQueryClient() {
+  return new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
+}
 
+function renderEdicion(queryClient = nuevoQueryClient()) {
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[`/artistas/${ID}/editar`]}>
@@ -178,5 +180,214 @@ describe('ArtistEditPage', () => {
     expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
       '/artistas',
     )
+  })
+})
+
+/*
+ * TS-18 (HU-07) — ts-07.06, spec frontend HU-07 §4 tests 1 a 8.
+ *
+ * Contrato de PUT /api/v1/artists/{artist}/status: spec backend HU-07 §3.1,
+ * §3.3 (cuerpo `{ active }`), §3.4 (estado resultante) y §3.8.
+ */
+const URL_ESTADO = `${URL_ARTISTA}/status`
+const AVISO_ERROR_ESTADO = 'No se pudo cambiar el estado del artista. Inténtalo de nuevo.'
+
+type Estado = 'invitado' | 'activo' | 'inactivo'
+
+/** La precarga responde con el artista en `estado`; el cambio de estado lo decide cada caso. */
+function conEstado(
+  estado: Estado,
+  alCambiar: (peticion: PeticionRegistrada) => RespuestaSimulada | Promise<RespuestaSimulada>,
+) {
+  return (peticion: PeticionRegistrada) =>
+    peticion.method === 'GET'
+      ? { status: 200, data: { data: artista({ status: estado }) } }
+      : alCambiar(peticion)
+}
+
+/** «Estado: {etiqueta}» en un mismo elemento, sin fijar cómo se marca la etiqueta. */
+function estadoVisible(etiqueta: string) {
+  return screen.queryAllByText((_, el) => el?.textContent === `Estado: ${etiqueta}`).length > 0
+}
+
+function textoEnRol(rol: 'alert' | 'status', texto: string) {
+  return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
+}
+
+function cambiosDeEstado(peticiones: PeticionRegistrada[]) {
+  return peticiones.filter((p) => p.url === URL_ESTADO)
+}
+
+function botonEstado(nombre: 'Desactivar artista' | 'Reactivar artista') {
+  return screen.findByRole<HTMLButtonElement>('button', { name: nombre })
+}
+
+function confirmarDesactivar() {
+  return screen.getByRole<HTMLButtonElement>('button', { name: 'Desactivar' })
+}
+
+async function abrirDialogoDesactivar(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await botonEstado('Desactivar artista'))
+  return screen.findByRole('alertdialog')
+}
+
+describe('ArtistEditPage — estado del artista', () => {
+  it.each<{ estado: Estado; etiqueta: string; boton: 'Desactivar artista' | 'Reactivar artista' }>([
+    { estado: 'invitado', etiqueta: 'Invitado', boton: 'Desactivar artista' },
+    { estado: 'activo', etiqueta: 'Activo', boton: 'Desactivar artista' },
+    { estado: 'inactivo', etiqueta: 'Inactivo', boton: 'Reactivar artista' },
+  ])(
+    'muestra el estado actual y la acción que corresponde: $estado',
+    async ({ estado, etiqueta, boton }) => {
+      simularApi(conEstado(estado, () => ({ status: 500 })))
+      renderEdicion()
+
+      expect(await botonEstado(boton)).toBeTruthy()
+      expect(estadoVisible(etiqueta)).toBe(true)
+      const otro = boton === 'Desactivar artista' ? 'Reactivar artista' : 'Desactivar artista'
+      expect(screen.queryByRole('button', { name: otro })).toBeNull()
+    },
+  )
+
+  it('pide confirmación al desactivar y cancelar no envía', async () => {
+    const peticiones = simularApi(conEstado('activo', () => ({ status: 500 })))
+    const user = renderEdicion()
+
+    const dialogo = await abrirDialogoDesactivar(user)
+    expect(dialogo.textContent).toContain('¿Desactivar artista?')
+    expect(dialogo.textContent).toContain(
+      'No podrás registrar producciones nuevas para este artista hasta reactivarlo.',
+    )
+    expect(cambiosDeEstado(peticiones)).toHaveLength(0)
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(cambiosDeEstado(peticiones)).toHaveLength(0)
+    expect(estadoVisible('Activo')).toBe(true)
+  })
+
+  it('desactiva tras confirmar', async () => {
+    const peticiones = simularApi(
+      conEstado('activo', () => ({ status: 200, data: { data: artista({ status: 'inactivo' }) } })),
+    )
+    const queryClient = nuevoQueryClient()
+    const listado = ['artists', 'list', 1]
+    queryClient.setQueryData(listado, { data: [], meta: {} })
+    const user = renderEdicion(queryClient)
+
+    await abrirDialogoDesactivar(user)
+    await user.click(confirmarDesactivar())
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    await waitFor(() => expect(textoEnRol('status', 'Artista desactivado.')).toBe(true))
+    expect(estadoVisible('Inactivo')).toBe(true)
+    expect(await botonEstado('Reactivar artista')).toBeTruthy()
+    expect(peticiones.filter((p) => p.method !== 'GET')).toEqual([
+      { method: 'PUT', url: URL_ESTADO, body: { active: false } },
+    ])
+    expect(queryClient.getQueryState(listado)?.isInvalidated).toBe(true)
+  })
+
+  it('reactiva sin confirmación y pinta el estado que devuelve el servidor', async () => {
+    const peticiones = simularApi(
+      conEstado('inactivo', () => ({
+        status: 200,
+        data: { data: artista({ status: 'invitado' }) },
+      })),
+    )
+    const user = renderEdicion()
+
+    await user.click(await botonEstado('Reactivar artista'))
+
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    await waitFor(() => expect(textoEnRol('status', 'Artista reactivado.')).toBe(true))
+    expect(estadoVisible('Invitado')).toBe(true)
+    expect(peticiones.filter((p) => p.method !== 'GET')).toEqual([
+      { method: 'PUT', url: URL_ESTADO, body: { active: true } },
+    ])
+  })
+
+  it('no envía dos veces ni cierra el diálogo mientras desactiva', async () => {
+    let completar: (respuesta: RespuestaSimulada) => void = () => undefined
+    const peticiones = simularApi(
+      conEstado(
+        'activo',
+        () =>
+          new Promise<RespuestaSimulada>((resolve) => {
+            completar = resolve
+          }),
+      ),
+    )
+    const user = renderEdicion()
+
+    await abrirDialogoDesactivar(user)
+    await user.click(confirmarDesactivar())
+    await waitFor(() => expect(cambiosDeEstado(peticiones)).toHaveLength(1))
+
+    expect(confirmarDesactivar().disabled).toBe(true)
+    await user.click(confirmarDesactivar())
+    expect(cambiosDeEstado(peticiones)).toHaveLength(1)
+
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('alertdialog')).toBeTruthy()
+
+    completar({ status: 200, data: { data: artista({ status: 'inactivo' }) } })
+    await waitFor(() => expect(textoEnRol('status', 'Artista desactivado.')).toBe(true))
+  })
+
+  it('no envía dos veces mientras reactiva', async () => {
+    let completar: (respuesta: RespuestaSimulada) => void = () => undefined
+    const peticiones = simularApi(
+      conEstado(
+        'inactivo',
+        () =>
+          new Promise<RespuestaSimulada>((resolve) => {
+            completar = resolve
+          }),
+      ),
+    )
+    const user = renderEdicion()
+
+    const boton = await botonEstado('Reactivar artista')
+    await user.click(boton)
+    await waitFor(() => expect(cambiosDeEstado(peticiones)).toHaveLength(1))
+
+    expect(boton.disabled).toBe(true)
+    await user.click(boton)
+    expect(cambiosDeEstado(peticiones)).toHaveLength(1)
+
+    completar({ status: 200, data: { data: artista({ status: 'activo' }) } })
+    await waitFor(() => expect(textoEnRol('status', 'Artista reactivado.')).toBe(true))
+  })
+
+  it.each([
+    { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
+    { caso: 'error de red', respuesta: 'error de red' as const },
+    { caso: '404 RESOURCE_NOT_FOUND', respuesta: problema(404, 'RESOURCE_NOT_FOUND') },
+  ])('un error al cambiar el estado avisa y no cambia nada: $caso', async ({ respuesta }) => {
+    simularApi(conEstado('activo', () => respuesta))
+    const user = renderEdicion()
+
+    await abrirDialogoDesactivar(user)
+    await user.click(confirmarDesactivar())
+
+    await waitFor(() => expect(textoEnRol('alert', AVISO_ERROR_ESTADO)).toBe(true))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(estadoVisible('Activo')).toBe(true)
+    expect(await botonEstado('Desactivar artista')).toBeTruthy()
+  })
+
+  it('no muestra la sección de estado si la precarga falla', async () => {
+    simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
+    renderEdicion()
+
+    // Mientras carga no hay sección: hay que esperar al error antes de afirmar la ausencia.
+    expect(await screen.findByRole('heading', { name: 'Artista no encontrado' })).toBeTruthy()
+    expect(
+      screen.queryAllByText((_, el) => el?.textContent?.startsWith('Estado:') === true),
+    ).toEqual([])
+    expect(screen.queryByRole('button', { name: 'Desactivar artista' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Reactivar artista' })).toBeNull()
   })
 })
