@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\ArtistStatus;
+use App\Http\Requests\ChangeArtistStatusRequest;
 use App\Http\Requests\StoreArtistRequest;
 use App\Http\Requests\UpdateArtistRequest;
 use App\Http\Resources\ArtistResource;
@@ -67,6 +68,23 @@ final class ArtistController extends Controller
             $this->artists->updateArtist(
                 $artist,
                 $request->validated()
+            )
+        );
+    }
+
+    public function changeStatus(ChangeArtistStatusRequest $request, Artist $artist): ArtistResource
+    {
+        $productor = $request->user();
+
+        if (! $productor instanceof StatelessUserContract) {
+            throw new AuthenticationException;
+        }
+
+        return new ArtistResource(
+            $this->artists->changeStatus(
+                $productor,
+                $artist,
+                $request->boolean('active')
             )
         );
     }
