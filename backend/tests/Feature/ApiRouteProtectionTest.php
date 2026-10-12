@@ -32,7 +32,7 @@ it('clasifica y protege todas las rutas de la API', function () {
         ->sortKeys()
         ->all();
 
-    // TS-16, TS-17 y TS-19: artistas y producciones, solo productor vía sus Policies.
+    // TS-16..TS-19: artistas y producciones, solo productor vía sus Policies.
     expect($inventario)->toBe([
         'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
         'GET api/v1/artists' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Artist'],
@@ -44,6 +44,7 @@ it('clasifica y protege todas las rutas de la API', function () {
         'POST api/v1/productions' => ['auth:auth0-api', 'can:create,App\\Models\\Production'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
         'PUT api/v1/artists/{artist}' => ['auth:auth0-api', 'can:update,artist'],
+        'PUT api/v1/artists/{artist}/status' => ['auth:auth0-api', 'can:changeStatus,artist'],
         'PUT api/v1/productions/{production}' => ['auth:auth0-api', 'can:update,production'],
     ]);
 });

@@ -113,8 +113,8 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 
 Alcance del sprint: el productor desactiva y reactiva artistas dentro del catálogo `invitado`/`activo`/`inactivo` (D6.3); la reactivación deriva el estado de `user_id`. Persistencia y auditoría por log estructurado (`docs/specs/backend/HU-07.md` §3.4 y §3.6).
 
-- [ ] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
-- [ ] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
+- [x] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
+- [x] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
 - [ ] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
 - [ ] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
 - [ ] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
