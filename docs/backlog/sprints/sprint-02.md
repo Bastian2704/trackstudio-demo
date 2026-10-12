@@ -115,8 +115,8 @@ Alcance del sprint: el productor desactiva y reactiva artistas dentro del catál
 
 - [x] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
 - [x] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
-- [ ] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
-- [ ] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
+- [x] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
+- [x] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
 - [ ] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
 - [ ] `ts-07.06` Tests frontend en rojo para estados, acción, error y permisos. Orden interno: ts-07.05.
 - [ ] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
