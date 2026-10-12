@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { noticeFrom } from '@/lib/notice'
 import { FORMAT_LABELS } from '../productions/productionSchema'
 import { fetchArtists } from './artistApi'
 import type { Artist, ArtistPage } from './artistSchema'
@@ -95,8 +94,6 @@ function ArtistTable({ data, meta }: ArtistPage) {
 
 export default function ArtistListPage() {
   const [searchParams] = useSearchParams()
-  const location = useLocation()
-  const notice = noticeFrom(location.state)
   const page = pageFrom(searchParams.get('page'))
 
   const query = useQuery({
@@ -132,11 +129,6 @@ export default function ArtistListPage() {
           Nuevo artista
         </Link>
       </div>
-      {notice && (
-        <p role="status" className="text-sm">
-          {notice}
-        </p>
-      )}
       {body}
     </main>
   )
