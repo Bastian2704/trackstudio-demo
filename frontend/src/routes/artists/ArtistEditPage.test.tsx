@@ -390,4 +390,26 @@ describe('ArtistEditPage — estado del artista', () => {
     expect(screen.queryByRole('button', { name: 'Desactivar artista' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Reactivar artista' })).toBeNull()
   })
+
+  it('el diálogo no reaparece al reactivar tras desactivar', async () => {
+    simularApi(
+      conEstado('activo', (peticion) => ({
+        status: 200,
+        data: {
+          data: artista({
+            status: (peticion.body as { active: boolean }).active ? 'activo' : 'inactivo',
+          }),
+        },
+      })),
+    )
+    const user = renderEdicion()
+
+    await abrirDialogoDesactivar(user)
+    await user.click(confirmarDesactivar())
+    await user.click(await botonEstado('Reactivar artista'))
+
+    await waitFor(() => expect(textoEnRol('status', 'Artista reactivado.')).toBe(true))
+    expect(await botonEstado('Desactivar artista')).toBeTruthy()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+  })
 })
