@@ -346,3 +346,39 @@ function datosDeEdicionDeProduccion(array $cambios = []): array
         'format' => 'ep',
     ], $cambios);
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-10 (docs/specs/backend/HU-10.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `SongResource` (spec §3.7). */
+const CAMPOS_DE_CANCION = ['id', 'production_id', 'name', 'position', 'status', 'created_at', 'updated_at'];
+
+/**
+ * Cuerpo válido de alta de canción. La producción viaja en la URL.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeCancion(array $cambios = []): array
+{
+    return array_merge([
+        'name' => 'Intro',
+    ], $cambios);
+}
+
+/**
+ * Cuerpo PUT válido: nombre y estado (spec §3.3).
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeEdicionDeCancion(array $cambios = []): array
+{
+    return array_merge([
+        'name' => 'Intro (versión final)',
+        'status' => 'en_progreso',
+    ], $cambios);
+}

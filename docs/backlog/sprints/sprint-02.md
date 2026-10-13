@@ -142,8 +142,8 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 
 **Adelantada de S3 el 2026-10-13** por decisión del humano, en lugar de TS-20 (ver nota abajo). Alcance: alta, edición y borrado simple de canciones dentro de una producción, con el diseño de `docs/erd/modelo-completo.md` §3.4. El borrado con confirmación y cascada es HU-12; el listado con estado y posición, HU-11; el máximo de canciones por formato, TS-20 (S3).
 
-- [ ] `ts-10.01` Spec backend aprobada con CRUD, posición, estado inicial, unicidad, autorización y errores D3.1. Orden interno: TS-19 y TS-49.
-- [ ] `ts-10.02` Tests backend en rojo para alta/edición/borrado, producción inexistente, duplicados, validación, permisos y no encontrado. Orden interno: ts-10.01.
+- [x] `ts-10.01` Spec backend aprobada con CRUD, posición, estado inicial, unicidad, autorización y errores D3.1. Orden interno: TS-19 y TS-49.
+- [x] `ts-10.02` Tests backend en rojo para alta/edición/borrado, producción inexistente, duplicados, validación, permisos y no encontrado. Orden interno: ts-10.01.
 - [ ] `ts-10.03` Código backend hasta verde (humano); migración `create_songs_table` basada en TS-49, Larastan y Pint limpios. Orden interno: ts-10.02.
 - [ ] `ts-10.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-10.03.
 - [ ] `ts-10.05` Spec frontend aprobada y enlazada a la backend. Orden interno: ts-10.01.

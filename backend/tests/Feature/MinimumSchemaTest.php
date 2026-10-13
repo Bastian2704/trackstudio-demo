@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Artist;
 use App\Models\Production;
+use App\Models\Song;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -323,4 +324,98 @@ it('permite en PostgreSQL el mismo nombre para otro artista o tras soft delete',
     Production::factory()->create(['artist_id' => $firstArtist->id, 'name' => 'demos']);
 
     expect(Production::withTrashed()->count())->toBe(3);
+});
+
+/*
+|--------------------------------------------------------------------------
+| TS-21 — Tabla songs (modelo-completo.md §3.4)
+|--------------------------------------------------------------------------
+*/
+
+it('crea songs con el contrato exacto aprobado', function () {
+    expect(Schema::hasTable('songs'))->toBeTrue();
+
+    expect(columnasPostgresql('songs'))->toBe([
+        ['column_name' => 'id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'production_id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'name', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 255],
+        ['column_name' => 'position', 'data_type' => 'smallint', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'status', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 20],
+        ['column_name' => 'created_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'updated_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'deleted_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+    ]);
+
+    $statusDefault = DB::scalar(
+        <<<'SQL'
+            SELECT column_default
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'songs'
+              AND column_name = 'status'
+        SQL,
+    );
+
+    expect($statusDefault)->toBeString()->toContain("'por_hacer'");
+});
+
+it('protege relaciones, estado, posición e índices de songs', function () {
+    expect(Schema::hasTable('songs'))->toBeTrue();
+
+    expect(restriccionesPostgresql('songs', 'p'))->toBe(['PRIMARY KEY (id)'])
+        ->and(restriccionesPostgresql('songs', 'u'))->toBe([])
+        ->and(clavesForaneasPostgresql('songs'))->toBe([
+            ['column_name' => 'production_id', 'foreign_table' => 'productions', 'foreign_column' => 'id', 'delete_rule' => 'NO ACTION'],
+        ]);
+
+    $checks = restriccionesPostgresql('songs', 'c');
+    $checkDeEstado = collect($checks)->first(fn (string $check): bool => str_contains($check, 'status'));
+    $checkDePosicion = collect($checks)->first(fn (string $check): bool => str_contains($check, 'position'));
+
+    expect($checks)->toHaveCount(2)
+        ->and($checkDeEstado)->toBeString()
+        ->toContain('por_hacer')
+        ->toContain('en_progreso')
+        ->toContain('finalizada')
+        ->and($checkDePosicion)->toBeString()
+        ->toContain('position > 0');
+
+    $indices = collect(DB::select(
+        <<<'SQL'
+            SELECT indexname, indexdef
+            FROM pg_indexes
+            WHERE schemaname = current_schema()
+              AND tablename = 'songs'
+        SQL,
+    ))->pluck('indexdef', 'indexname');
+
+    expect($indices)->toHaveKey('songs_production_id_index')
+        ->and($indices['songs_production_id_index'])->toContain('(production_id)')
+        ->and($indices)->toHaveKey('songs_production_id_name_lower_unique')
+        ->and($indices['songs_production_id_name_lower_unique'])
+        ->toContain('CREATE UNIQUE INDEX')
+        ->toContain('production_id')
+        ->toContain('lower(')
+        ->toContain('name')
+        ->toContain('WHERE (deleted_at IS NULL)')
+        // La posición no es única: la compactación del borrado la reescribe (§3.5).
+        ->and($indices->contains(fn (string $indice): bool => str_contains($indice, 'position')))->toBeFalse();
+});
+
+it('impide en PostgreSQL repetir el nombre vigente dentro de la producción', function () {
+    $production = Production::factory()->create();
+    $otherProduction = Production::factory()->create();
+    $original = Song::factory()->create(['production_id' => $production->id, 'name' => 'Intro', 'position' => 1]);
+
+    expect(fn () => DB::transaction(fn () => Song::factory()->create([
+        'production_id' => $production->id,
+        'name' => 'INTRO',
+        'position' => 2,
+    ])))->toThrow(UniqueConstraintViolationException::class);
+
+    Song::factory()->create(['production_id' => $otherProduction->id, 'name' => 'intro', 'position' => 1]);
+    $original->delete();
+    Song::factory()->create(['production_id' => $production->id, 'name' => 'Intro', 'position' => 1]);
+
+    expect(Song::withTrashed()->count())->toBe(3);
 });
