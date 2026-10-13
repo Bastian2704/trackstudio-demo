@@ -119,8 +119,8 @@ Alcance del sprint: el productor desactiva y reactiva artistas dentro del catál
 - [x] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
 - [x] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
 - [x] `ts-07.06` Tests frontend en rojo para estados, acción, error y permisos. Orden interno: ts-07.05.
-- [ ] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
-- [ ] `ts-07.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-07.07.
+- [x] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
+- [x] `ts-07.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-07.07.
 - [ ] `ts-07.09` Integración y cierre. Hecho cuando: los tres estados se demuestran en staging, persisten y quedan auditables; CI y AC verdes. Orden interno: ts-07.04, ts-07.08 y TS-15 integrado.
 
 ### TS-19 / ts-08 - HU-08 Registrar, editar y eliminar producciones
