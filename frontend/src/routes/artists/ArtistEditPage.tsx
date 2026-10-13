@@ -3,10 +3,24 @@ import type { AxiosError } from 'axios'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
 import ArtistForm from './ArtistForm'
-import { fetchArtist, updateArtist } from './artistApi'
+import { fetchArtist, updateArtist, changeArtistStatus } from './artistApi'
+import { STATUS_LABELS } from './artistSchema'
 import type { Artist, ArtistInput } from './artistSchema'
 
 export default function ArtistEditPage() {
@@ -14,6 +28,7 @@ export default function ArtistEditPage() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const [notice, setNotice] = useState(() => noticeFrom(location.state))
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const query = useQuery<Artist, AxiosError<ApiErrorBody>>({
     queryKey: ['artists', id],
@@ -26,6 +41,17 @@ export default function ArtistEditPage() {
       queryClient.setQueryData(['artists', id], artist)
       setNotice('Cambios guardados.')
     },
+  })
+
+  const statusMutation = useMutation({
+    mutationFn: (active: boolean) => changeArtistStatus(id, active),
+    onSuccess: (artist, active) => {
+      queryClient.setQueryData(['artists', id], artist)
+      void queryClient.invalidateQueries({ queryKey: ['artists', 'list'] })
+      setConfirmOpen(false)
+      setNotice(active ? 'Artista reactivado.' : 'Artista desactivado.')
+    },
+    onError: () => setConfirmOpen(false),
   })
 
   if (query.isError) {
@@ -54,14 +80,64 @@ export default function ArtistEditPage() {
           {notice}
         </p>
       )}
+      {statusMutation.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          No se pudo cambiar el estado del artista. Inténtalo de nuevo.
+        </p>
+      )}
       {query.isPending ? (
         <p>Cargando…</p>
       ) : (
-        <ArtistForm
-          values={{ name: query.data.name, email: query.data.email }}
-          submitLabel="Guardar cambios"
-          onSubmit={(input) => mutation.mutateAsync(input)}
-        />
+        <>
+          <ArtistForm
+            values={{ name: query.data.name, email: query.data.email }}
+            submitLabel="Guardar cambios"
+            onSubmit={(input) => mutation.mutateAsync(input)}
+          />
+          <section className="space-y-3">
+            <p>Estado: {STATUS_LABELS[query.data.status]}</p>
+
+            {query.data.status === 'inactivo' ? (
+              <Button
+                disabled={statusMutation.isPending}
+                onClick={() => statusMutation.mutate(true)}
+              >
+                Reactivar artista
+              </Button>
+            ) : (
+              <AlertDialog
+                open={confirmOpen}
+                onOpenChange={(open) => {
+                  if (!statusMutation.isPending) setConfirmOpen(open)
+                }}
+              >
+                <AlertDialogTrigger render={<Button variant="destructive" />}>
+                  Desactivar artista
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Desactivar artista?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      No podrás registrar producciones nuevas para este artista hasta reactivarlo.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={statusMutation.isPending}>
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      disabled={statusMutation.isPending}
+                      onClick={() => statusMutation.mutate(false)}
+                    >
+                      Desactivar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </section>
+        </>
       )}
     </main>
   )
