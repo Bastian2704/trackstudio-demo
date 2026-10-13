@@ -63,8 +63,8 @@ Todas empiezan como P0 respecto del objetivo de su sprint. P1 se asigna al refin
 | ts-06 | HU-06 | HU-06 Listar artistas con estado y producciones    | ts-epic-artists       | S2     | R1      | 2   | ambas   | datos     | ts-05, ts-08        |
 | ts-07 | HU-07 | HU-07 Cambiar el estado de un artista              | ts-epic-artists       | S2     | R1      | 2   | ambas   | datos     | ts-05               |
 | ts-08 | HU-08 | HU-08 Registrar, editar y eliminar producciones    | ts-epic-productions   | S2     | R1      | 3   | ambas   | datos     | ts-05, ts-38        |
-| ts-09 | HU-09 | HU-09 Validar restricciones de formato             | ts-epic-productions   | S2     | R1      | 3   | ambas   | datos     | ts-08               |
-| ts-10 | HU-10 | HU-10 Registrar, editar y eliminar canciones       | ts-epic-songs         | S3     | R1      | 3   | ambas   | datos     | ts-08, ts-38        |
+| ts-09 | HU-09 | HU-09 Validar restricciones de formato             | ts-epic-productions   | S3     | R1      | 3   | ambas   | datos     | ts-08, ts-10        |
+| ts-10 | HU-10 | HU-10 Registrar, editar y eliminar canciones       | ts-epic-songs         | S2     | R1      | 3   | ambas   | datos     | ts-08, ts-38        |
 | ts-11 | HU-11 | HU-11 Listar canciones con estado y posición       | ts-epic-songs         | S3     | R1      | 2   | ambas   | datos     | ts-10               |
 | ts-12 | HU-12 | HU-12 Eliminar canción con confirmación y cascada  | ts-epic-songs         | S3     | R1      | 3   | ambas   | datos     | ts-10, ts-13        |
 | ts-13 | HU-13 | HU-13 Subir archivos de audio a una versión        | ts-epic-audio         | S3     | R1      | 5   | ambas   | archivos  | ts-10, ts-31, ts-38 |
@@ -95,7 +95,7 @@ La historia y los criterios de aceptación de cada Story se copiaron del Anexo C
 | ts-29 | Configurar staging (Railway desde `develop` + Vercel preview)        | ts-epic-infra  | S1     | R1          | infra | infra    | —             | Acceso a Railway y Vercel                          |
 | ts-30 | Configurar dominio `trackstudio.site` y DNS                          | ts-epic-infra  | S2     | R1          | infra | infra    | —             | Registrador del dominio                            |
 | ts-31 | Provisionar bucket S3 e IAM en us-east-1                             | ts-epic-infra  | S3     | R1          | infra | archivos | —             | D7.1-D7.7 decididas; cuenta AWS preparada en TS-50 |
-| ts-32 | Configurar Resend con dominio verificado                             | ts-epic-infra  | S5     | R2          | infra | infra    | ts-30         | Cuenta Resend                                      |
+| ts-32 | Configurar Resend con dominio verificado                             | ts-epic-infra  | S1-S2  | R2          | infra | infra    | ts-30         | Cuenta Resend                                      |
 | ts-33 | Configurar producción (Railway, Vercel, Auth0) y monitoreo de uptime | ts-epic-infra  | S5-S6  | R3          | infra | infra    | ts-30         | Accesos de producción; aprobación manual           |
 | ts-34 | Tesis: Diseño de la solución (C4 niveles 2-4, ERD, persistencia)     | ts-epic-thesis | S4     | transversal | docs  | normal   | —             | —                                                  |
 | ts-35 | Tesis: Desarrollo de la solución (evidencia SCRUM por sprint)        | ts-epic-thesis | S2-S6  | transversal | docs  | normal   | —             | —                                                  |
@@ -110,7 +110,7 @@ Las Task de infraestructura las ejecuta el equipo humano (`CLAUDE.md` regla 6). 
 | ID    | Summary                                       | Estado conocido (según git)                                                                     |
 | ----- | --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | ts-01 | HU-01 Configurar entorno y repositorios       | Scaffolding Laravel 13 + Sail y React + Vite, ESLint/Prettier/Husky integrados (PR #1-#5).      |
-| ts-02 | HU-02 Pipeline CI/CD con despliegue a staging | CI de frontend y backend integradas (PR #7, #8); falta confirmar el despliegue a staging.       |
+| ts-02 | HU-02 Pipeline CI/CD con despliegue a staging | `TS-13` en `Listo`; CI y despliegue a staging cerrados (PR #20).                                |
 | ts-03 | HU-03 Autenticación con Auth0                 | Login/logout con Auth0 integrado (PR #6).                                                       |
 | ts-04 | HU-04 Control de acceso basado en roles       | `TS-15` en `Listo` desde 2026-10-02; backend, frontend, usuarios sintéticos y staging cerrados. |
 | ts-29 | Configurar staging                            | Cerrada como `TS-40`; Railway, Vercel, Auth0 y smoke test verificados.                          |
@@ -120,7 +120,7 @@ El estado operativo vigente se consulta en Jira. El desglose histórico y sus ch
 
 ## Sprint 2
 
-Sincronizado el 2026-10-02 como `TS Sprint 2` (id 37), futuro, con ventana 2026-10-05 a 2026-10-16.
+Sincronizado el 2026-10-02 como `TS Sprint 2` (id 37), con ventana 2026-10-05 a 2026-10-16. El 2026-10-13 TS-21 (HU-10) sustituyó a TS-20 (HU-09), que pasa a S3: sus reglas cuentan canciones y necesitan la tabla `songs` de HU-10.
 
 | Jira  | ID local | Summary                                         |  SP | Condición principal                          |
 | ----- | -------- | ----------------------------------------------- | --: | -------------------------------------------- |
@@ -128,7 +128,7 @@ Sincronizado el 2026-10-02 como `TS Sprint 2` (id 37), futuro, con ventana 2026-
 | TS-17 | ts-06    | HU-06 Listar artistas con estado y producciones |   2 | TS-16; aceptación completa después de TS-19. |
 | TS-18 | ts-07    | HU-07 Cambiar el estado de un artista           |   2 | TS-16.                                       |
 | TS-19 | ts-08    | HU-08 Registrar, editar y eliminar producciones |   3 | TS-16 y slice `productions` de TS-49.        |
-| TS-20 | ts-09    | HU-09 Validar restricciones de formato          |   3 | TS-19 y contrato de duración de EP aprobado. |
+| TS-21 | ts-10    | HU-10 Registrar, editar y eliminar canciones    |   3 | TS-19 y TS-49 (ERD §3.4).                    |
 
 Las Tasks de S2 son TS-41, TS-46 y TS-49. El sprint reserva además 2 SP equivalentes para evidencia incremental de TS-35..TS-37 (HU-24..HU-26), sin duplicar puntos. El desglose aprobado está en [`sprints/sprint-02.md`](sprints/sprint-02.md).
 

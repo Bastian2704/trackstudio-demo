@@ -1,9 +1,9 @@
 # Mapa vigente de claves Jira
 
 **Fuente de verdad:** Jira de MediHealth, proyecto `TS`, board 3.  
-**Última verificación:** 2026-10-02.
+**Última verificación:** 2026-10-13.
 
-**Planificación sincronizada 2026-10-02:** el roadmap activo termina en S6. `TS Sprint 2` (id 37) contiene TS-16..TS-20, TS-41, TS-46 y TS-49; TS-35..TS-39 tienen objetivo S6 y TS-35..TS-37 conservan seguimiento incremental S2-S5.
+**Planificación sincronizada 2026-10-02:** el roadmap activo termina en S6. `TS Sprint 2` (id 37) contiene TS-16..TS-20, TS-41, TS-46 y TS-49 (el 2026-10-13 TS-21 sustituye a TS-20, que vuelve al backlog con `target-s3`; también están TS-53 y TS-62); TS-35..TS-39 tienen objetivo S6 y TS-35..TS-37 conservan seguimiento incremental S2-S5.
 
 Este mapa evita confundir los IDs locales del backlog y las claves del tablero anterior con las claves actuales. Jira manda; si una fila difiere del tablero, se corrige aquí después de corregir Jira.
 
@@ -24,9 +24,15 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-50` | Subtask de `TS-42`           | Preparar cuenta AWS; no provisiona bucket/IAM de la aplicación                   | Listo                                |
 | `TS-51` | Task de `TS-2`               | Manejador centralizado D3.1 y correlación con Sentry; trazabilidad retrospectiva | Listo                                |
 | `TS-52` | Task relacionada con `TS-44` | Health check, runbook y uptime en staging                                        | Listo                                |
-| `TS-53` | Task relacionada con `TS-46` | Evidencia SCRUM del Sprint 1 en la tesis                                         | Por hacer                            |
+| `TS-53` | Task relacionada con `TS-46` | Evidencia SCRUM del Sprint 1 en la tesis                                         | En curso; Sprint 1 y Sprint 2        |
 | `TS-54` | Task relacionada con `TS-49` | Modelo mínimo `users`/`artists` y decisión sobre `production_access`             | Listo (2026-10-02)                   |
-| `TS-60` | Task de `TS-1`               | Replanificar el roadmap a seis sprints sin reducir alcance                       | En curso; `TS Sprint 1` (2026-10-02) |
+| `TS-55` | Task                         | Actualizar dependencias backend con avisos de seguridad (laravel/framework, league/commonmark) | Por hacer; sin sprint |
+| `TS-56` | Task                         | Content Security Policy estricta en el frontend (D5.1)                           | Por hacer; sin sprint                |
+| `TS-57` | Task                         | Cubrir con test el replace del retorno de Auth0 (mutación C3 superviviente)      | Por hacer; sin sprint                |
+| `TS-58` | Task                         | Mover `Auth0ProviderRouter` de `main.tsx` a su propio archivo                    | Por hacer; sin sprint                |
+| `TS-59` | Task                         | Carrera entre la consulta de `/me` y el interceptor de `Authorization`           | Por hacer; sin sprint                |
+| `TS-60` | Task de `TS-1`               | Replanificar el roadmap a seis sprints sin reducir alcance                       | Listo; `TS Sprint 1`                 |
+| `TS-62` | Task                         | Reunión con el docente guía                                                      | Por hacer; `TS Sprint 2`             |
 | `TS-63` | Task de `TS-1`, bloquea `TS-44` | DNS de producción (`@`, `www`, `api`); sale de dividir `TS-41`                | Por hacer (2026-10-08)               |
 
 ## Claves históricas
