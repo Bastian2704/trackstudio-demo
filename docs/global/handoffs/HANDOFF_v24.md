@@ -51,3 +51,10 @@
 2. Resolver **D9.2** para desbloquear `ts-06.09`, `ts-07.09` y `ts-08.09` en staging. Para `ts-07.09`, comprobar además que el canal de log por defecto llega a los logs de Railway.
 3. Abrir tarea para el 405 → 500 del manejador D3.1.
 4. Pendiente sin fecha: llevar al documento de tesis las correcciones de Auth0 (`auth0/login` v7) y de versiones (D2.1).
+5. **Jira, del lado humano (detectado en la reconciliación del 2026-10-13):**
+   - Cambiar el objetivo de `TS Sprint 2`, que sigue diciendo «HU-05..HU-09» (ahora es HU-05..HU-08 y HU-10).
+   - Crear `TS Sprint 3` (19–30 oct) y meter TS-20, que hoy está en el backlog con `target-s3`.
+   - TS-40 tiene 2 SP, pero la regla local dice que las Tasks no llevan SP: quitarlos o documentar la excepción.
+   - Épicas TS-1…TS-11 todas en «Por hacer»; TS-3 (Artistas) ya tiene sus tres historias en Listo.
+   - Confirmar que TS-61 se borró a propósito (la numeración salta de TS-60 a TS-62).
+6. **Sprint 2, aún abierto:** evidencia de tesis TS-46 (`ts-35.s2.01`–`.04`) y TS-53; calidad S2 de TS-35…TS-37 (`ts-24/25/26.s2.01`); reunión con el docente guía (TS-62).
