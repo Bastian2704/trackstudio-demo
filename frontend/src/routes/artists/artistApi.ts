@@ -21,3 +21,8 @@ export async function updateArtist(id: string, input: ArtistInput): Promise<Arti
   const res = await api.put<{ data: Artist }>(`/api/v1/artists/${id}`, input)
   return res.data.data
 }
+
+export async function changeArtistStatus(id: string, active: boolean): Promise<Artist> {
+  const res = await api.put<{ data: Artist }>(`/api/v1/artists/${id}/status`, { active })
+  return res.data.data
+}

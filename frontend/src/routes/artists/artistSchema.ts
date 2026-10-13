@@ -37,4 +37,10 @@ export interface ArtistPage {
   }
 }
 
+export const STATUS_LABELS: Record<Artist['status'], string> = {
+  activo: 'Activo',
+  invitado: 'Invitado',
+  inactivo: 'Inactivo',
+}
+
 export type Artist = z.infer<typeof artistSchema>

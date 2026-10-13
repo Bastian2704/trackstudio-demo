@@ -47,6 +47,13 @@ Route::put('/artists/{artist}', [ArtistController::class, 'update'])
         'can:update,artist',
     ]);
 
+Route::put('/artists/{artist}/status', [ArtistController::class, 'changeStatus'])
+    ->whereUuid('artist')
+    ->middleware([
+        'auth:auth0-api',
+        'can:changeStatus,artist',
+    ]);
+
 Route::post('/productions', [ProductionController::class, 'store'])
     ->middleware([
         'auth:auth0-api',

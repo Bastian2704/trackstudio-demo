@@ -4,13 +4,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { FORMAT_LABELS } from '../productions/productionSchema'
 import { fetchArtists } from './artistApi'
-import type { Artist, ArtistPage } from './artistSchema'
-
-const STATUS_LABELS: Record<Artist['status'], string> = {
-  activo: 'Activo',
-  invitado: 'Invitado',
-  inactivo: 'Inactivo',
-}
+import { STATUS_LABELS } from './artistSchema'
+import type { ArtistPage } from './artistSchema'
 
 function pageFrom(raw: string | null): number {
   const n = Number(raw)

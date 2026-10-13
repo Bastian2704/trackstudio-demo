@@ -111,16 +111,16 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 
 ### TS-18 / ts-07 - HU-07 Cambiar el estado de un artista
 
-Alcance del sprint: transiciones entre activo, suspendido y bloqueado, con persistencia y evidencia auditable según el contrato que apruebe la spec.
+Alcance del sprint: el productor desactiva y reactiva artistas dentro del catálogo `invitado`/`activo`/`inactivo` (D6.3); la reactivación deriva el estado de `user_id`. Persistencia y auditoría por log estructurado (`docs/specs/backend/HU-07.md` §3.4 y §3.6).
 
-- [ ] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
-- [ ] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
-- [ ] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
-- [ ] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
-- [ ] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
-- [ ] `ts-07.06` Tests frontend en rojo para estados, acción, error y permisos. Orden interno: ts-07.05.
-- [ ] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
-- [ ] `ts-07.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-07.07.
+- [x] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
+- [x] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
+- [x] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
+- [x] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
+- [x] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
+- [x] `ts-07.06` Tests frontend en rojo para estados, acción, error y permisos. Orden interno: ts-07.05.
+- [x] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
+- [x] `ts-07.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-07.07.
 - [ ] `ts-07.09` Integración y cierre. Hecho cuando: los tres estados se demuestran en staging, persisten y quedan auditables; CI y AC verdes. Orden interno: ts-07.04, ts-07.08 y TS-15 integrado.
 
 ### TS-19 / ts-08 - HU-08 Registrar, editar y eliminar producciones

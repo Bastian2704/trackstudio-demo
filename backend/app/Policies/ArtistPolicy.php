@@ -35,6 +35,13 @@ final class ArtistPolicy
         return $this->isProducer($user);
     }
 
+    public function changeStatus(
+        StatelessUserContract $user,
+        Artist $artist
+    ): bool {
+        return $this->isProducer($user);
+    }
+
     private function isProducer(StatelessUserContract $user): bool
     {
         return $user->getAttribute('role') === Role::Productor;
