@@ -45,8 +45,8 @@ Un release es liberable solo cuando todas sus historias cumplen la Definition of
 | Sprint    | Ventana        | HU principales              | SP de HU principales |           Reserva HU-24..HU-26 | Capacidad objetivo |
 | --------- | -------------- | --------------------------- | -------------------: | -----------------------------: | -----------------: |
 | S1        | 21 sep-2 oct   | HU-01..HU-04                |                   16 |                              0 |                 16 |
-| S2        | 5-16 oct       | HU-05..HU-09                |                   13 |                              2 |                 15 |
-| S3        | 19-30 oct      | HU-10..HU-13                |                   13 |                              2 |                 15 |
+| S2        | 5-16 oct       | HU-05..HU-08 y HU-10        |                   13 |                              2 |                 15 |
+| S3        | 19-30 oct      | HU-09 y HU-11..HU-13        |                   13 |                              2 |                 15 |
 | S4        | 2-13 nov       | HU-14..HU-16                |                   13 |                              2 |                 15 |
 | S5        | 16-27 nov      | HU-17..HU-19                |                   13 |                              2 |                 15 |
 | S6        | 30 nov-11 dic  | HU-20..HU-23 y HU-27..HU-28 |                   16 | cierre con evidencia acumulada |                 16 |
@@ -56,14 +56,14 @@ Los 8 SP de HU-24..HU-26 se cuentan una sola vez. Se ejecutan con subtareas o ev
 
 ## Secuencia objetivo por sprint
 
-| Sprint | Historias y trabajo transversal                                 | Demostrable al cierre                                                                                                      | Riesgo o dependencia principal                                                                                        |
-| ------ | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| S1     | HU-01..HU-04 (16 SP)                                            | Monorepo, CI front/back, login Auth0 y endpoint protegido con RBAC.                                                        | TS-15 quedó en `Listo` el 2026-10-02; el contrato RBAC está disponible para S2.                                       |
-| S2     | HU-05..HU-09 (13 SP) + 2 SP de HU-24..HU-26                     | Alta, edición, listado y estado de artistas; producciones con reglas de formato; pruebas/evidencia de la superficie nueva. | Modelo de `productions` aprobado en TS-49; contrato de duración de EP definido antes de TS-20.                        |
-| S3     | HU-10..HU-13 (13 SP) + 2 SP de HU-24..HU-26                     | Canciones por producción, borrado confirmado y subida WAV/MP3 ≤ 500 MB con progreso.                                       | ERD de canciones/versiones aprobado; bucket S3 e IAM de TS-42 configurados por el humano.                             |
-| S4     | HU-14..HU-16 (13 SP) + 2 SP de HU-24..HU-26                     | Versionado secuencial, reproductor y URLs prefirmadas. **Cierre R1.**                                                      | Expiración/refresco de URLs e integridad por hash (RNF-02, RNF-05).                                                   |
-| S5     | HU-17..HU-19 (13 SP) + 2 SP de HU-24..HU-26                     | Comentarios sobre la línea de tiempo, navegación y borrado propio; ensayo de aceptación.                                   | Sincronización reproductor-comentarios; producción debe quedar preparada al cierre.                                   |
-| S6     | HU-20..HU-23 (11 SP), HU-27..HU-28 (5 SP) y cierre HU-24..HU-26 | Acceso del artista, sesiones, regresión/RNF, R2 en staging, producción y aceptación final. **Cierre R2 y R3.**             | S6 no tiene holgura: dominio, Resend, infraestructura productiva y documentación deben llegar preparados desde S2-S5. |
+| Sprint | Historias y trabajo transversal                                 | Demostrable al cierre                                                                                                       | Riesgo o dependencia principal                                                                                                                 |
+| ------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1     | HU-01..HU-04 (16 SP)                                            | Monorepo, CI front/back, login Auth0 y endpoint protegido con RBAC.                                                         | TS-15 quedó en `Listo` el 2026-10-02; el contrato RBAC está disponible para S2.                                                                |
+| S2     | HU-05..HU-08 y HU-10 (13 SP) + 2 SP de HU-24..HU-26             | Alta, edición, listado y estado de artistas; CRUD de producciones y de canciones; pruebas/evidencia de la superficie nueva. | Modelo de `productions` aprobado en TS-49. HU-10 sustituye a HU-09 el 2026-10-13: las reglas de formato cuentan canciones y necesitan `songs`. |
+| S3     | HU-09 y HU-11..HU-13 (13 SP) + 2 SP de HU-24..HU-26             | Reglas de formato por número de canciones, listado de canciones, borrado confirmado y subida WAV/MP3 ≤ 500 MB con progreso. | ERD de canciones/versiones aprobado; bucket S3 e IAM de TS-42 configurados por el humano.                                                      |
+| S4     | HU-14..HU-16 (13 SP) + 2 SP de HU-24..HU-26                     | Versionado secuencial, reproductor y URLs prefirmadas. **Cierre R1.**                                                       | Expiración/refresco de URLs e integridad por hash (RNF-02, RNF-05).                                                                            |
+| S5     | HU-17..HU-19 (13 SP) + 2 SP de HU-24..HU-26                     | Comentarios sobre la línea de tiempo, navegación y borrado propio; ensayo de aceptación.                                    | Sincronización reproductor-comentarios; producción debe quedar preparada al cierre.                                                            |
+| S6     | HU-20..HU-23 (11 SP), HU-27..HU-28 (5 SP) y cierre HU-24..HU-26 | Acceso del artista, sesiones, regresión/RNF, R2 en staging, producción y aceptación final. **Cierre R2 y R3.**              | S6 no tiene holgura: dominio, Resend, infraestructura productiva y documentación deben llegar preparados desde S2-S5.                          |
 
 HU-28 conserva 2 SP supuestos para cuadrar los 92 SP de la tesis, pendiente de confirmación en su refinación.
 
@@ -72,8 +72,8 @@ HU-28 conserva 2 SP supuestos para cuadrar los 92 SP de la tesis, pendiente de c
 | Requerimiento                   | Historias                         | Ejecución/cierre           |
 | ------------------------------- | --------------------------------- | -------------------------- |
 | RF-01 Artistas                  | HU-05, HU-06, HU-07               | S2                         |
-| RF-02 Producciones              | HU-08, HU-09                      | S2                         |
-| RF-03 Canciones                 | HU-10, HU-11, HU-12               | S3                         |
+| RF-02 Producciones              | HU-08, HU-09                      | S2 (HU-08), S3 (HU-09)     |
+| RF-03 Canciones                 | HU-10, HU-11, HU-12               | S2 (HU-10), S3             |
 | RF-04 Versiones y audio         | HU-13, HU-14, HU-15, HU-16        | S3-S4                      |
 | RF-05 Comentarios               | HU-17, HU-18, HU-19               | S5                         |
 | RF-06 Acceso del artista        | HU-20, HU-21                      | S6                         |
@@ -126,7 +126,7 @@ El backlog conserva completos RF-01 a RF-07, RNF-01 a RNF-07, HU-01 a HU-28 y la
 
 ## Gates y dependencias externas
 
-- **S2:** TS-49 debe aprobar el slice de `productions` antes de la implementación de TS-19; el contrato de duración del EP debe resolverse en la spec de HU-09.
+- **S2:** TS-49 debe aprobar el slice de `productions` antes de la implementación de TS-19 (hecho). El contrato de formato se resolvió por número de canciones (2026-10-05) y HU-09 pasó a S3 detrás de HU-10 (2026-10-13).
 - **S3:** ADR D7.1-D7.7 está cerrado; los gates vivos son ERD e infraestructura manual TS-42.
 - **Fin de S5:** dominio, correo e infraestructura productiva preparados; inventario de pruebas/RNF y guion de aceptación casi completos.
 - **S6/R2:** HU-20..HU-23 y regresión crítica en staging antes de producción.

@@ -142,6 +142,24 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
   })
 
+  it.each([
+    ['/producciones/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/canciones/nueva'],
+    ['/canciones/9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a/editar'],
+  ])('las rutas de canciones son solo del productor: artista en %s', async (ruta) => {
+    renderApp(contextoConRol('artista'), ruta)
+
+    expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+  })
+
+  it('las rutas de canciones son solo del productor: productor en el alta', async () => {
+    renderApp(
+      contextoConRol('productor'),
+      '/producciones/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/canciones/nueva',
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Registrar canción' })).toBeTruthy()
+  })
+
   /*
    * TS-17 (HU-06) — ts-06.06, spec frontend §4 test 15.
    */
