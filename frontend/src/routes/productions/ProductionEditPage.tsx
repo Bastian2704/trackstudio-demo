@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import {
   AlertDialog,
@@ -88,6 +88,7 @@ export default function ProductionEditPage() {
             submitLabel="Guardar cambios"
             onSubmit={(input) => updateMutation.mutateAsync(input)}
           />
+          <Link to={`/producciones/${id}/canciones/nueva`}>Nueva canción</Link>
           <AlertDialog
             open={confirmOpen}
             onOpenChange={(open) => {

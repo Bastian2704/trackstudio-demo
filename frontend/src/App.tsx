@@ -13,6 +13,8 @@ import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
 import ArtistListPage from './routes/artists/ArtistListPage.tsx'
 import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
 import ProductionEditPage from './routes/productions/ProductionEditPage.tsx'
+import SongCreatePage from './routes/songs/SongCreatePage.tsx'
+import SongEditPage from './routes/songs/SongEditPage.tsx'
 
 function App() {
   const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
@@ -70,6 +72,8 @@ function App() {
           <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
           <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />
           <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
+          <Route path="/producciones/:productionId/canciones/nueva" element={<SongCreatePage />} />
+          <Route path="/canciones/:id/editar" element={<SongEditPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
