@@ -146,8 +146,8 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 - [x] `ts-10.02` Tests backend en rojo para alta/edición/borrado, producción inexistente, duplicados, validación, permisos y no encontrado. Orden interno: ts-10.01.
 - [x] `ts-10.03` Código backend hasta verde (humano); migración `create_songs_table` basada en TS-49, Larastan y Pint limpios. Orden interno: ts-10.02.
 - [x] `ts-10.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-10.03.
-- [ ] `ts-10.05` Spec frontend aprobada y enlazada a la backend. Orden interno: ts-10.01.
-- [ ] `ts-10.06` Tests frontend en rojo para alta/edición/borrado, validación, duplicados, permisos y estados asíncronos. Orden interno: ts-10.05.
+- [x] `ts-10.05` Spec frontend aprobada y enlazada a la backend. Orden interno: ts-10.01.
+- [x] `ts-10.06` Tests frontend en rojo para alta/edición/borrado, validación, duplicados, permisos y estados asíncronos. Orden interno: ts-10.05.
 - [ ] `ts-10.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-10.06.
 - [ ] `ts-10.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-10.07.
 - [ ] `ts-10.09` Comprobación en staging por el equipo; no bloquea el Done. Orden interno: ts-10.04 y ts-10.08.
