@@ -148,8 +148,8 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 - [x] `ts-10.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-10.03.
 - [x] `ts-10.05` Spec frontend aprobada y enlazada a la backend. Orden interno: ts-10.01.
 - [x] `ts-10.06` Tests frontend en rojo para alta/edición/borrado, validación, duplicados, permisos y estados asíncronos. Orden interno: ts-10.05.
-- [ ] `ts-10.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-10.06.
-- [ ] `ts-10.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-10.07.
+- [x] `ts-10.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-10.06.
+- [x] `ts-10.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-10.07.
 - [ ] `ts-10.09` Comprobación en staging por el equipo; no bloquea el Done. Orden interno: ts-10.04 y ts-10.08.
 
 **TS-20 (HU-09) sale del sprint el 2026-10-13.** Sus reglas cuentan canciones vigentes y en S2 no existía `songs`: la regla no podía rechazar nada y sus tests nacerían en verde (C2). Pasa a S3 detrás de TS-21; su checklist (con `ts-09.10` ya resuelto) vive en Jira. Los AC ya reflejan el contrato por número de canciones.
