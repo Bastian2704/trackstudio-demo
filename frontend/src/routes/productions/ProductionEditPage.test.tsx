@@ -20,6 +20,11 @@ import {
  * Contrato de GET, PUT y DELETE /api/v1/productions/{production}: spec backend
  * §3.1 y §3.7. La edición del artista se monta real porque el test 15 afirma
  * el destino tras el borrado y el aviso que esa página pinta.
+ *
+ * TS-21 (HU-10) — ts-10.06, spec frontend HU-10 §4 test 20: enlace «Nueva
+ * canción». El alta de canción se monta como marcador: que la página real
+ * aparezca lo afirma `App.test.tsx` (test 21), y así este archivo no depende
+ * de un módulo de otra HU.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
@@ -76,6 +81,10 @@ function renderEdicion() {
         <Routes>
           <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
           <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
+          <Route
+            path="/producciones/:productionId/canciones/nueva"
+            element={<p>Alta de canción simulada</p>}
+          />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -266,4 +275,17 @@ describe('ProductionEditPage', () => {
       expect(nombre().value).toBe('Sesiones del álbum')
     },
   )
+
+  it('ofrece registrar una canción en la producción', async () => {
+    simularApi(conPrecarga(() => ({ status: 500 })))
+    const user = renderEdicion()
+    await esperarPrecarga()
+
+    const enlace = screen.getByRole('link', { name: 'Nueva canción' })
+    expect(enlace.getAttribute('href')).toBe(`/producciones/${ID}/canciones/nueva`)
+
+    await user.click(enlace)
+
+    expect(await screen.findByText('Alta de canción simulada')).toBeTruthy()
+  })
 })
