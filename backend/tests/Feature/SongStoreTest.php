@@ -48,9 +48,10 @@ it('registra una canción y responde 201', function () {
 it('asigna la siguiente posición entre las vigentes', function () {
     $production = Production::factory()->create();
     $otherProduction = Production::factory()->create();
+    // Hueco en 2 (residual de concurrencia, §3.8): solo `max + 1` evita repetir la 3.
     Song::factory()->create(['production_id' => $production->id, 'name' => 'Uno', 'position' => 1]);
-    Song::factory()->create(['production_id' => $production->id, 'name' => 'Dos', 'position' => 2]);
-    Song::factory()->create(['production_id' => $production->id, 'name' => 'Tres', 'position' => 3])->delete();
+    Song::factory()->create(['production_id' => $production->id, 'name' => 'Tres', 'position' => 3]);
+    Song::factory()->create(['production_id' => $production->id, 'name' => 'Cuatro', 'position' => 4])->delete();
 
     foreach (range(1, 5) as $position) {
         Song::factory()->create(['production_id' => $otherProduction->id, 'name' => "Ajena {$position}", 'position' => $position]);
@@ -60,7 +61,7 @@ it('asigna la siguiente posición entre las vigentes', function () {
 
     $this->postJson("/api/v1/productions/{$production->id}/songs", datosDeCancion())
         ->assertCreated()
-        ->assertJsonPath('data.position', 3);
+        ->assertJsonPath('data.position', 4);
 });
 
 it('permite crear para artistas habilitados', function (ArtistStatus $status) {
