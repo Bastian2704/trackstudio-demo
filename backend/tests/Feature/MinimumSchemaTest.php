@@ -378,7 +378,8 @@ it('protege relaciones, estado, posición e índices de songs', function () {
         ->toContain('en_progreso')
         ->toContain('finalizada')
         ->and($checkDePosicion)->toBeString()
-        ->toContain('position > 0');
+        // PostgreSQL entrecomilla `position` (palabra clave) al reconstruir el CHECK.
+        ->toMatch('/"?position"? > 0/');
 
     $indices = collect(DB::select(
         <<<'SQL'
