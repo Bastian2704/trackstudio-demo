@@ -93,6 +93,12 @@ describe('SongCreatePage', () => {
       url: `/api/v1/productions/${PRODUCTION_ID}/songs`,
       body: { name: 'Intro' },
     })
+    // La edición abierta es la de la canción creada, no otra que también responda.
+    await waitFor(() =>
+      expect(peticiones.filter((p) => p.method === 'GET').map((p) => p.url)).toEqual([
+        `/api/v1/songs/${ID}`,
+      ]),
+    )
     await waitFor(() => expect(textoEnRol('status', 'Canción registrada.')).toBe(true))
     await waitFor(() => expect(nombre().value).toBe('Intro'))
     const estado = screen.getByLabelText<HTMLSelectElement>('Estado')

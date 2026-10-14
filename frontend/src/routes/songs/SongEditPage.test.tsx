@@ -140,7 +140,8 @@ describe('SongEditPage', () => {
     const peticiones = simularApi(
       conPrecarga(() => ({
         status: 200,
-        data: { data: cancion({ name: 'Intro (versión larga)', status: 'en_progreso' }) },
+        // El servidor manda: su respuesta difiere de lo escrito para ver que se pinta ella.
+        data: { data: cancion({ name: 'Intro (versión extendida)', status: 'finalizada' }) },
       })),
     )
     const user = renderEdicion()
@@ -159,8 +160,8 @@ describe('SongEditPage', () => {
         body: { name: 'Intro (versión larga)', status: 'en_progreso' },
       },
     ])
-    expect(nombre().value).toBe('Intro (versión larga)')
-    expect(estado().value).toBe('en_progreso')
+    await waitFor(() => expect(nombre().value).toBe('Intro (versión extendida)'))
+    expect(estado().value).toBe('finalizada')
   })
 
   it.each([
@@ -213,6 +214,30 @@ describe('SongEditPage', () => {
       expect(await screen.findByText(mensaje)).toBeTruthy()
       expect(conError().getAttribute('aria-invalid')).toBe('true')
       expect(sinError().getAttribute('aria-invalid')).not.toBe('true')
+      expect(nombre().value).toBe('Outro')
+    },
+  )
+
+  it.each([
+    { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
+    { caso: '404 RESOURCE_NOT_FOUND', respuesta: problema(404, 'RESOURCE_NOT_FOUND') },
+  ])(
+    'un error al guardar da el aviso general y conserva lo escrito: $caso',
+    async ({ respuesta }) => {
+      simularApi(conPrecarga(() => respuesta))
+      const user = renderEdicion()
+      await esperarPrecarga()
+
+      await user.clear(nombre())
+      await user.type(nombre(), 'Outro')
+      await user.click(guardar())
+
+      await waitFor(() =>
+        expect(textoEnRol('alert', 'No se pudo guardar la canción. Inténtalo de nuevo.')).toBe(
+          true,
+        ),
+      )
+      expect(textoEnRol('alert', 'La producción no está disponible.')).toBe(false)
       expect(nombre().value).toBe('Outro')
     },
   )
