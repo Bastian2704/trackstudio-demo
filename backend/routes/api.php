@@ -7,8 +7,10 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\MeController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RbacCheckController;
+use App\Http\Controllers\SongController;
 use App\Models\Artist;
 use App\Models\Production;
+use App\Models\Song;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
@@ -79,4 +81,32 @@ Route::delete('/productions/{production}', [ProductionController::class, 'destro
     ->middleware([
         'auth:auth0-api',
         'can:delete,production',
+    ]);
+
+Route::post('/productions/{production}/songs', [SongController::class, 'store'])
+    ->whereUuid('production')
+    ->middleware([
+        'auth:auth0-api',
+        'can:create,'.Song::class,
+    ]);
+
+Route::get('/songs/{song}', [SongController::class, 'show'])
+    ->whereUuid('song')
+    ->middleware([
+        'auth:auth0-api',
+        'can:view,song',
+    ]);
+
+Route::put('/songs/{song}', [SongController::class, 'update'])
+    ->whereUuid('song')
+    ->middleware([
+        'auth:auth0-api',
+        'can:update,song',
+    ]);
+
+Route::delete('/songs/{song}', [SongController::class, 'destroy'])
+    ->whereUuid('song')
+    ->middleware([
+        'auth:auth0-api',
+        'can:delete,song',
     ]);
