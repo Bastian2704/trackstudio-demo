@@ -521,9 +521,33 @@ Configurado en `backend/config/cors.php`. La autenticación es por `Authorizatio
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
 | 9.1 | Ambientes | DECIDIDO | dev manual / staging en `develop` / prod en `main` con aprobación |
-| 9.2 | Migraciones en deploy | **ABIERTO** | ¿Automáticas o manuales? (decisión de riesgo) |
+| 9.2 | Migraciones en deploy | DECIDIDO | Automáticas en cada despliegue de Railway (`migrate --force`), ver D9.2 |
 | 9.3 | Observabilidad | DECIDIDO | Sentry (errores) + UptimeRobot (uptime) — ver D9.3 |
-| 9.4 | Rollback | ABIERTO | Procedimiento concreto en Railway/Vercel |
+| 9.4 | Rollback | DECIDIDO | Rollback de plataforma + migraciones compatibles hacia atrás + corrección hacia adelante; copia de BD antes de cada despliegue a producción. Ver D9.4 |
+
+### D9.2 — Migraciones automáticas en cada despliegue de Railway (2026-10-15)
+
+**Decisión del humano:** Railway ejecuta `php artisan migrate --force` en cada build/despliegue del backend. Ya no hay paso manual: la migración de una HU llega a staging en cuanto se mergea en `develop`. `--force` es obligatorio porque Laravel pide confirmación en `APP_ENV=production`.
+
+**Riesgo aceptado:** una migración rota se aplica sin intervención humana. Mitigaciones: toda migración pasa por CI (Pest monta el esquema completo con `RefreshDatabase`) y por la review de su HU antes del merge, y producción solo recibe lo que ya se aplicó en staging (`develop` → `main` con aprobación, 9.1). El procedimiento de vuelta atrás está en **D9.4**.
+
+**Efecto:** se desbloquean las comprobaciones en staging (`.09`) que esperaban este punto, y se resuelve la trampa 1 del handoff v25 para staging. La configuración vive en Railway: el agente no la toca (`CLAUDE.md` §0.6).
+
+### D9.4 — Rollback: plataforma + expand/contract + corrección hacia adelante (2026-10-15)
+
+**Decisión del humano.** Un fallo de despliegue se resuelve en tres capas:
+
+1. **Código:** se vuelve al despliegue anterior desde el panel: «Rollback» en Railway (backend) e «Instant Rollback» en Vercel (frontend). Con D9.2, el `migrate --force` del despliegue anterior no hace nada (su código no trae migraciones nuevas), así que el esquema se queda como está.
+2. **Esquema (expand/contract):** como el código viejo tiene que funcionar con el esquema nuevo, toda migración es **aditiva y compatible hacia atrás**: tablas nuevas, columnas que admiten nulos o tienen valor por defecto, índices. Borrar, renombrar o endurecer una restricción se hace en un despliegue **posterior**, cuando ningún código desplegado usa lo viejo. **Nunca** se ejecuta `migrate:rollback` en staging ni en producción: los `down()` no se prueban y pueden perder datos.
+3. **Datos (solo producción):** antes de cada merge a `main` (que ya exige aprobación, 9.1) se saca una copia de la BD de producción, con `pg_dump` o con el backup de Railway si el plan lo incluye. Solo se restaura si una migración destruyó datos, y se acepta perder lo escrito desde la copia.
+
+Después de cualquier rollback se corrige **hacia adelante**: `git revert` o un hotfix sobre la rama afectada, para que el repo vuelva a coincidir con lo desplegado. Staging no lleva copia de BD, porque sus datos son sintéticos.
+
+**Quién:** el rollback, la copia y la restauración los ejecuta el humano (`CLAUDE.md` §0.6). El agente documenta el procedimiento, en `docs/global/runbook-mantenimiento.md` §4, y en cada review de una HU con migración comprueba que esta sea aditiva o esté partida en expand/contract.
+
+**Alternativas descartadas:** `migrate:rollback` manual (sus `down()` no se prueban, pueden perder datos y se ejecutarían bajo presión) y solo `git revert` (tarda lo que el CI más el build, y no arregla el esquema).
+
+→ *ISO 25010: fiabilidad (recuperabilidad). Cubre: RNF-04.*
 
 ### D9.3 — Observabilidad: Sentry (errores) + UptimeRobot (uptime), riesgo de ToS aceptado (2026-08-18)
 
@@ -604,8 +628,8 @@ Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y 
 
 **⚠️ Recordatorios — pausados en esta conversación (2026-08-18), retomar la decisión (no solo el trámite) cuando se trabaje cada uno:**
 
-1. ⚠️ **9.2 — Migraciones en deploy.** ¿Automáticas al desplegar o manuales con aprobación? Es decisión de riesgo: automáticas son más rápidas pero pueden aplicar un cambio de esquema roto sin intervención humana en producción.
-2. ⚠️ **9.4 — Rollback.** ¿Cuál es el procedimiento concreto en Railway/Vercel si un despliegue falla? Definir *antes* de que ocurra el primer incidente real, no durante.
+1. ~~**9.2 — Migraciones en deploy.**~~ — **cerrado 2026-10-15**: automáticas en cada despliegue de Railway con `--force` (ver D9.2).
+2. ~~**9.4 — Rollback.**~~ — **cerrado 2026-10-15**: rollback de plataforma, migraciones expand/contract, corrección hacia adelante y copia de BD antes de producción (ver D9.4).
 3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `productions`/`songs`/`versions`/`comments`/`studio_sessions`. El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
 4. ⚠️ **1.6 — Definition of Ready, certificación completa.** Confirmar si el prototipo de Figma existe para todas las pantallas (criterio 6), y cerrar 11.5 (criterio 7) para que deje de ser `PARCIAL`.
 5. ⚠️ **11.5 — Plan de medición de RNF, resto de RNF.** RNF-04 ya tiene instrumento (D9.3); falta confirmar el redactado exacto de RNF-03 en la tesis (ver D7.1) y definir instrumento para RNF-01, RNF-02, RNF-05, RNF-06, RNF-07.

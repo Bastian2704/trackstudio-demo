@@ -158,5 +158,5 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 
 1. S2 cerrado el 2026-10-15 con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Revisión con el dueño de Track Studio el 2026-10-19.
 2. Iniciar `TS Sprint 3` el 2026-10-19 con [`sprints/sprint-03.md`](sprints/sprint-03.md) como baseline de ejecución: TS-20, TS-22, TS-24 y TS-23 (13 SP) más la reserva de TS-35..TS-37.
-3. Gate humano del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. Decidir D9.2 en la semana 1.
+3. Gate humano del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. D9.2 quedó decidida el 2026-10-15 (migraciones automáticas en Railway).
 4. Cerrar en la semana 1 el arrastre del S2 (evidencia de TS-46/TS-53, calidad S2 y comprobaciones en staging).

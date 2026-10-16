@@ -1,8 +1,8 @@
 # Runbook — Mantenimiento programado y monitoreo de uptime
 
 > **Dueño de la decisión:** D9.3 (UptimeRobot, plan gratuito, intervalo de 5 min). **Tarea:** TS-44 · **Spec:** `docs/specs/backend/HU-02.md`.
-> **Alcance:** cómo avisar de una ventana de mantenimiento, cómo pausar y reactivar los monitores, y cómo registrar la disponibilidad para RNF-04.
-> **Fuera del alcance de este runbook:** rollback (9.4, ABIERTO), migraciones en deploy (9.2, ABIERTO), rate limiting (8.5, ABIERTO) y aviso automático por Resend (planificado para S5 mediante TS-43).
+> **Alcance:** cómo avisar de una ventana de mantenimiento, cómo pausar y reactivar los monitores, cómo registrar la disponibilidad para RNF-04 y cómo hacer rollback de un despliegue (§4, D9.4). Las migraciones son automáticas en cada despliegue de Railway (D9.2).
+> **Fuera del alcance de este runbook:** rate limiting (8.5, ABIERTO) y aviso automático por Resend (planificado para S5 mediante TS-43).
 
 ---
 
@@ -79,3 +79,41 @@ Pausar los monitores evita alertas falsas. Además, el tiempo que un monitor est
 ## 3. Registro de disponibilidad (RNF-04)
 
 > _Pendiente: fijar la periodicidad (mensual o por sprint) contrastando con el texto real de RNF-04 de la tesis. Registrar la decisión en `TS-53`._
+
+---
+
+## 4. Rollback de un despliegue (D9.4)
+
+> Lo ejecuta el humano desde los paneles. Nunca se usa `migrate:rollback` en staging ni en producción.
+
+### 4.1 Antes de cada merge a `main` (solo producción)
+
+1. Saca una copia de la BD de producción: el backup de Railway si el plan lo incluye; si no, `pg_dump` con las credenciales del panel. **Nunca** se guarda en el repo (D2.2).
+2. Anota en el PR la fecha y hora de la copia y dónde quedó.
+3. Comprueba que las migraciones del PR son aditivas (expand/contract, D9.4). Si alguna borra o renombra, no se mergea hasta que el código desplegado ya no use lo viejo.
+
+### 4.2 Si falla el backend (Railway)
+
+1. En el servicio del backend → **Deployments**, elige el último despliegue sano → **Rollback**.
+2. Comprueba `curl -i https://<backend>/api/v1/health`: tiene que devolver `200` y `"database":true`.
+3. Revisa Sentry: la tasa de errores tiene que volver a la normalidad.
+
+### 4.3 Si falla el frontend (Vercel)
+
+1. En el proyecto → **Deployments**, elige el último despliegue sano → **Instant Rollback** (en producción) o **Promote** (en preview).
+2. Comprueba que la app carga y que el login funciona.
+
+### 4.4 Si una migración destruyó datos (solo producción)
+
+1. Avisa al productor y abre una ventana de mantenimiento (§2).
+2. Haz rollback del backend (§4.2) y restaura la copia de §4.1. Lo escrito desde la copia se pierde: anótalo.
+3. Cierra la ventana (§2.3).
+
+### 4.5 Después de cualquier rollback
+
+1. Corrige hacia adelante: `git revert` del merge o hotfix sobre la rama afectada, con su PR y CI en verde. El repo tiene que volver a coincidir con lo desplegado.
+2. Registra el incidente en la tabla de abajo y en el handoff de la sesión.
+
+| Fecha | Ambiente | Capa | Causa | Acción (rollback/restauración) | Corrección (PR) | Responsable |
+| ----- | -------- | ---- | ----- | ------------------------------ | --------------- | ----------- |
+| —     | —        | —    | —     | —                              | —               | —           |
