@@ -14,7 +14,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 4. **La fuente de verdad manda.** Historias/AC → Jira. Decisiones técnicas → ADR (por número: `D3.1`, `D4.8`…). Si el código debe diferir de la spec, **primero se actualiza la spec** (misma sesión).
 5. **Secretos nunca al repo ni al cliente.** El repo es **público** (`D2.2`): jamás secretos ni datos reales del cliente en código, config o historial. `.env` siempre en `.gitignore`; `.env.example` versionado sin valores reales.
 6. **No toco infraestructura a mano** (Railway, Vercel, Auth0, S3, DNS, Resend). Si una tarea lo requiere, lo señalo como dependencia y me detengo.
-
+7. **Nunca se menciona "humano"** Cada que haya una decision del "humano", lo cambias por "equipo" ej. decision del equipo
 ---
 
 ## 1. Verificación previa a cualquier cambio (obligatoria)
