@@ -16,7 +16,7 @@ Entregar en staging la gestión completa de canciones dentro de una producción:
 | --------------------- | --------------------------------------------------------- | -------------------------------------: |
 | Historias funcionales | HU-09 y HU-11..HU-13                                      |                                  13 SP |
 | Calidad transversal   | Avance verificable de HU-24..HU-26 sobre la superficie S3 |                      2 SP equivalentes |
-| Tasks sin SP          | TS-42, TS-46, D9.2 y arrastre del S2                      | Consumen la misma capacidad del sprint |
+| Tasks sin SP          | TS-42, TS-46, TS-68..TS-70, D9.2 y arrastre del S2        | Consumen la misma capacidad del sprint |
 | **Objetivo total**    | Funcional + transversal                                   |                 **15 SP equivalentes** |
 
 Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es un gate humano desde el día 1.
@@ -31,6 +31,9 @@ Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es 
 | TS-23 | ts-12    | Story |   3 | HU-12 Eliminar canción con confirmación y cascada | TS-22 (UI del listado) y tabla `versions` de TS-24      |
 | TS-42 | ts-31    | Task  |   — | Provisionar bucket S3 e IAM en us-east-1          | Acción humana externa; D7.1-D7.7                        |
 | TS-46 | ts-35    | Task  |   — | Tesis: evidencia de desarrollo por sprint         | Evidencia de las entregas                               |
+| TS-68 | ts-39    | Task  |   — | UI Figma: base (tokens y shell con navegación)    | —                                                       |
+| TS-69 | ts-40    | Task  |   — | UI Figma: login, inicio, 403 y errores            | TS-68                                                   |
+| TS-70 | ts-41    | Task  |   — | UI Figma: artistas (HU-05..HU-07)                 | TS-68                                                   |
 | —     | —        | ADR   |   — | Decidir D9.2 (migraciones en deploy)              | Decisión humana; desbloquea las comprobaciones `.09`    |
 
 ## Secuencia de ejecución
@@ -141,6 +144,10 @@ El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del 
 
 Supuesto por defecto del 2026-10-15: se decide en la semana 1. Desbloquea `ts-06.09`, `ts-07.09`, `ts-08.09` y `ts-10.09` (S2) y, después, las comprobaciones del S3. Al resolverla: aplicar en staging las migraciones de `songs` y `versions` y comprobar `APP_DEBUG=false` en Railway (handoff v25, trampa 7).
 
+### TS-68..TS-70 - Fidelidad visual con Figma (épica TS-67)
+
+Añadidas el 2026-10-15. Primero la base (tokens y shell con navegación lateral), luego login/errores y artistas, cuya funcionalidad ya está Done. Cada Task tiene su checklist `.01`..`.05` en Jira (inventario de marcos, enmienda de spec, tests solo donde cambia el comportamiento, código del humano y review contra Figma). Producciones y canciones (TS-71, TS-72) van en S4, porque TS-20, TS-22 y TS-23 cambian esas pantallas en este sprint.
+
 ### TS-46 / ts-35 - Evidencia de desarrollo
 
 - [ ] `ts-35.s3.01` Objetivo, backlog comprometido y cambios de planificación del S3.
@@ -195,6 +202,7 @@ La misma del S2: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 | Subidas grandes en la demo                   | Un PUT de 500 MB tarda más de 15 min          | D7.2/D7.6: sin multipart ni refresco; se documenta y se prueba con archivos representativos. |
 | D9.2 sigue abierto                           | Se acumulan `.09` y migraciones sin aplicar   | Decidir en la semana 1.                                                                     |
 | La reserva de QA se absorbe                  | No hay evidencia de TS-35..TS-37 al corte     | Proteger los 2 SP equivalentes y revisarlos en el cierre.                                   |
+| TS-68..TS-70 desplazan las HU                | Las HU van atrasadas al corte de mitad        | Las HU tienen prioridad; la UI de Figma se arrastra a S4 con registro, sin recortar alcance. |
 
 ## Sincronización con Jira ejecutada
 
@@ -203,5 +211,6 @@ La misma del S2: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 - [x] Enlaces: TS-42 bloquea TS-24; TS-24 bloquea TS-23.
 - [x] Checklists `ts-11.xx`, `ts-12.xx` y `ts-13.xx` añadidas a TS-22, TS-23 y TS-24, con la frontera de alcance.
 - [x] Arrastre comentado en TS-46 y TS-35..TS-37.
+- [x] 2026-10-15: épica TS-67 y Tasks TS-68..TS-76 creadas con enlaces Blocks; TS-68..TS-70 en `TS Sprint 3`, el resto en el backlog con `target-s4`/`s5`/`s6`.
 - [ ] Cerrar `TS Sprint 2` el 2026-10-15 (humano) y mover al S3 los incompletos TS-46, TS-53 y TS-35..TS-37.
 - [ ] Iniciar `TS Sprint 3` el 2026-10-19, después de la revisión con el dueño (humano).

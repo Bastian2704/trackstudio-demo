@@ -113,6 +113,7 @@ El backlog conserva completos RF-01 a RF-07, RNF-01 a RNF-07, HU-01 a HU-28 y la
 - Autenticación, RBAC, URLs firmadas, validación de audio, integridad, pruebas, producción y aceptación no se recortan para cumplir la fecha.
 - Fuera del alcance: app móvil nativa, pagos y facturación, contratos y derechos, chat o notificaciones en tiempo real, edición o procesamiento de audio, integración con DAWs o distribuidoras, multiestudio, perfiles públicos, analítica, login social, i18n y formatos distintos de WAV/MP3.
 - Los elementos de prototipos sin respaldo en RF (métricas del dashboard, estado/prioridad/respuestas de comentarios, notas técnicas y estadísticas del artista, porcentaje de avance y portada) no entran al roadmap hasta una decisión formal.
+- **Decisión del 2026-10-15 (fidelidad visual, épica `TS-67`):** el frontend se iguala al prototipo de Figma con una Task de base (tokens + shell con **navegación lateral**, que sí se adopta) y una por módulo (`TS-68`..`TS-76`). Cada una entra en el primer sprint en que su módulo funcional está Done: S3 base, acceso/errores y artistas; S4 producciones y canciones; S5 versiones; S6 comentarios, acceso del artista y sesiones (estos dos, tras el gate R2). No llevan SP y consumen la capacidad del sprint; el resto de elementos sin RF sigue fuera.
 
 ## Track paralelo: ADR, infraestructura y tesis
 

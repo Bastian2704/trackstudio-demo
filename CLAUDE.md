@@ -99,6 +99,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 - No crear migraciones de `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
 - No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.
 - No construir interfaces funcionales fuera de artistas, producciones, canciones (HU-09..HU-12) y la subida de HU-13. Historial y reproducción de versiones, comentarios, acceso del artista y sesiones esperan su sprint.
+- Fidelidad visual con Figma (épica `TS-67`): en S3 solo `TS-68` (tokens y shell con navegación lateral), `TS-69` (login/errores) y `TS-70` (artistas). Cada Task de UI espera a que su módulo funcional esté Done. Del prototipo sin RF solo se adopta la navegación lateral; buscador, métricas, portada, avance y menú «⋮» siguen fuera.
 
 ---
 
