@@ -1,9 +1,11 @@
 # Mapa vigente de claves Jira
 
 **Fuente de verdad:** Jira de MediHealth, proyecto `TS`, board 3.  
-**Última verificación:** 2026-10-13.
+**Última verificación:** 2026-10-15.
 
 **Planificación sincronizada 2026-10-02:** el roadmap activo termina en S6. `TS Sprint 2` (id 37) contiene TS-16..TS-20, TS-41, TS-46 y TS-49 (el 2026-10-13 TS-21 sustituye a TS-20, que vuelve al backlog con `target-s3`; también están TS-53 y TS-62); TS-35..TS-39 tienen objetivo S6 y TS-35..TS-37 conservan seguimiento incremental S2-S5.
+
+**Sprint 3 creado el 2026-10-15:** `TS Sprint 3` (id 38, futuro, 2026-10-19 a 2026-10-30) con TS-20, TS-22, TS-23, TS-24 (13 SP) y TS-42. Enlaces: TS-42 bloquea TS-24 y TS-24 bloquea TS-23. TS-46, TS-53 y TS-35..TS-37 pasan del S2 al S3 al cerrar `TS Sprint 2` (2026-10-15).
 
 Este mapa evita confundir los IDs locales del backlog y las claves del tablero anterior con las claves actuales. Jira manda; si una fila difiere del tablero, se corrige aquí después de corregir Jira.
 
@@ -34,6 +36,8 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-60` | Task de `TS-1`               | Replanificar el roadmap a seis sprints sin reducir alcance                       | Listo; `TS Sprint 1`                 |
 | `TS-62` | Task                         | Reunión con el docente guía                                                      | Por hacer; `TS Sprint 2`             |
 | `TS-63` | Task de `TS-1`, bloquea `TS-44` | DNS de producción (`@`, `www`, `api`); sale de dividir `TS-41`                | Por hacer (2026-10-08)               |
+| `TS-67` | Epic (`ts-epic-ui`)          | Fidelidad visual con Figma                                                       | Por hacer (2026-10-15)               |
+| `TS-68`..`TS-76` | Tasks de `TS-67` (`ts-39`..`ts-47`) | Base y shell, luego un módulo por Task; mapa consecutivo (ts-39 = TS-68 … ts-47 = TS-76) | TS-68..TS-70 en `TS Sprint 3`; el resto, `target-s4`..`s6` |
 
 ## Claves históricas
 

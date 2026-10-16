@@ -113,6 +113,7 @@ El backlog conserva completos RF-01 a RF-07, RNF-01 a RNF-07, HU-01 a HU-28 y la
 - Autenticación, RBAC, URLs firmadas, validación de audio, integridad, pruebas, producción y aceptación no se recortan para cumplir la fecha.
 - Fuera del alcance: app móvil nativa, pagos y facturación, contratos y derechos, chat o notificaciones en tiempo real, edición o procesamiento de audio, integración con DAWs o distribuidoras, multiestudio, perfiles públicos, analítica, login social, i18n y formatos distintos de WAV/MP3.
 - Los elementos de prototipos sin respaldo en RF (métricas del dashboard, estado/prioridad/respuestas de comentarios, notas técnicas y estadísticas del artista, porcentaje de avance y portada) no entran al roadmap hasta una decisión formal.
+- **Decisión del 2026-10-15 (fidelidad visual, épica `TS-67`):** el frontend se iguala al prototipo de Figma con una Task de base (tokens + shell con **navegación lateral**, que sí se adopta) y una por módulo (`TS-68`..`TS-76`). Cada una entra en el primer sprint en que su módulo funcional está Done: S3 base, acceso/errores y artistas; S4 producciones y canciones; S5 versiones; S6 comentarios, acceso del artista y sesiones (estos dos, tras el gate R2). No llevan SP y consumen la capacidad del sprint; el resto de elementos sin RF sigue fuera.
 
 ## Track paralelo: ADR, infraestructura y tesis
 
@@ -155,7 +156,7 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 
 ## Siguiente paso
 
-1. Integrar esta baseline documental mediante TS-60 y su PR contra `develop`.
-2. Iniciar `TS Sprint 2` (Jira id 37) el 2026-10-05 con [`sprints/sprint-02.md`](sprints/sprint-02.md) como baseline de ejecución.
-3. Comenzar por TS-49 (slice `productions`) y la spec backend de TS-16; el gate RBAC de TS-15 ya está satisfecho.
-4. Revisar capacidad y evidencia transversal de TS-35..TS-37 a mitad del sprint, sin duplicar sus 8 SP.
+1. S2 cerrado el 2026-10-15 con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Revisión con el dueño de Track Studio el 2026-10-19.
+2. Iniciar `TS Sprint 3` el 2026-10-19 con [`sprints/sprint-03.md`](sprints/sprint-03.md) como baseline de ejecución: TS-20, TS-22, TS-24 y TS-23 (13 SP) más la reserva de TS-35..TS-37.
+3. Gate humano del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. D9.2 quedó decidida el 2026-10-15 (migraciones automáticas en Railway).
+4. Cerrar en la semana 1 el arrastre del S2 (evidencia de TS-46/TS-53, calidad S2 y comprobaciones en staging).

@@ -427,9 +427,9 @@ Contención (D6.7): no se añaden más índices que los anteriores hasta que una
 | Tabla | Migra en | Estado |
 | --- | --- | --- |
 | `users`, `artists` | `TS-15` (S1), `TS-16` (S2) | Migradas |
-| `productions` | `TS-19` (S2) | Slice aprobado, pendiente de Red/Green |
-| `songs` | `TS-21` (S3) | Diseño de este documento |
-| `versions` | `TS-24` (S3); verificación en `TS-25`/`TS-27` (S4) | Diseño de este documento |
+| `productions` | `TS-19` (S2) | Migrada |
+| `songs` | `TS-21` (S2, adelantada de S3 el 2026-10-13) | Migrada |
+| `versions` | `TS-24` (S3); verificación en `TS-25`/`TS-27` (S4) | Planificada en S3 (`sprint-03.md`) |
 | `comments` | `TS-28` (S5) | Diseño de este documento |
 | `production_access`, `studio_sessions` | `TS-31`, `TS-33` (S6) | Diseño de este documento |
 

@@ -94,6 +94,8 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 
 Regla propia de esta capa: una migración o un modelo Eloquent solo nace de un **ERD aprobado en `docs/erd/`** (S1: `modelo-minimo-sprint-1.md`, cerrado; S2: `modelo-sprint-2.md`, que prevalece donde lo modifica) **y** de una spec aprobada. No se inventa el esquema desde la implementación.
 
+Toda migración es **aditiva y compatible hacia atrás** (D9.4, expand/contract): Railway migra en cada despliegue (D9.2) y el rollback de plataforma deja el esquema nuevo con el código viejo. Borrar, renombrar o endurecer restricciones va en un despliegue posterior. La review lo comprueba en cada HU con migración.
+
 ## 7. Nomenclatura
 
 Nombres de clases, métodos, variables, migraciones y tests: **`backend/docs/nomenclatura.md`**. Este archivo (CLAUDE.md) manda sobre _cómo trabajar_; ese, sobre _cómo nombrar_.
