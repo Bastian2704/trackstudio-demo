@@ -1,6 +1,6 @@
 # Sprint 2 - Artistas y producciones
 
-**Estado:** baseline aprobada y reconciliada con Jira el 2026-10-02. `TS Sprint 2` es el sprint futuro id 37; Jira manda sobre estado, checklist y criterios de aceptación.
+**Estado:** cerrado el 2026-10-15 (un día antes de la ventana, por decisión del humano) con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Los pendientes se arrastran al [Sprint 3](sprint-03.md#arrastre-del-s2). Baseline aprobada y reconciliada con Jira el 2026-10-02. `TS Sprint 2` es el sprint futuro id 37; Jira manda sobre estado, checklist y criterios de aceptación.
 **Ventana:** 2026-10-05 a 2026-10-16. **Release:** R1 - Núcleo interno (MVP).
 **Selección funcional:** `TS-16`..`TS-19` y `TS-21` (13 SP; TS-21 sustituye a TS-20 el 2026-10-13). **Reserva transversal:** 2 SP equivalentes para trabajo incremental de `TS-35`..`TS-37` (HU-24..HU-26), sin contar los SP dos veces.
 **Tasks:** `TS-41` (dominio/DNS), `TS-46` (evidencia de desarrollo) y `TS-49` (ERD completo).

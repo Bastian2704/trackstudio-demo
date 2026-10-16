@@ -1,9 +1,11 @@
 # Mapa vigente de claves Jira
 
 **Fuente de verdad:** Jira de MediHealth, proyecto `TS`, board 3.  
-**Última verificación:** 2026-10-13.
+**Última verificación:** 2026-10-15.
 
 **Planificación sincronizada 2026-10-02:** el roadmap activo termina en S6. `TS Sprint 2` (id 37) contiene TS-16..TS-20, TS-41, TS-46 y TS-49 (el 2026-10-13 TS-21 sustituye a TS-20, que vuelve al backlog con `target-s3`; también están TS-53 y TS-62); TS-35..TS-39 tienen objetivo S6 y TS-35..TS-37 conservan seguimiento incremental S2-S5.
+
+**Sprint 3 creado el 2026-10-15:** `TS Sprint 3` (id 38, futuro, 2026-10-19 a 2026-10-30) con TS-20, TS-22, TS-23, TS-24 (13 SP) y TS-42. Enlaces: TS-42 bloquea TS-24 y TS-24 bloquea TS-23. TS-46, TS-53 y TS-35..TS-37 pasan del S2 al S3 al cerrar `TS Sprint 2` (2026-10-15).
 
 Este mapa evita confundir los IDs locales del backlog y las claves del tablero anterior con las claves actuales. Jira manda; si una fila difiere del tablero, se corrige aquí después de corregir Jira.
 

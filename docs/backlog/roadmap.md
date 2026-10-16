@@ -155,7 +155,7 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 
 ## Siguiente paso
 
-1. Integrar esta baseline documental mediante TS-60 y su PR contra `develop`.
-2. Iniciar `TS Sprint 2` (Jira id 37) el 2026-10-05 con [`sprints/sprint-02.md`](sprints/sprint-02.md) como baseline de ejecución.
-3. Comenzar por TS-49 (slice `productions`) y la spec backend de TS-16; el gate RBAC de TS-15 ya está satisfecho.
-4. Revisar capacidad y evidencia transversal de TS-35..TS-37 a mitad del sprint, sin duplicar sus 8 SP.
+1. S2 cerrado el 2026-10-15 con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Revisión con el dueño de Track Studio el 2026-10-19.
+2. Iniciar `TS Sprint 3` el 2026-10-19 con [`sprints/sprint-03.md`](sprints/sprint-03.md) como baseline de ejecución: TS-20, TS-22, TS-24 y TS-23 (13 SP) más la reserva de TS-35..TS-37.
+3. Gate humano del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. Decidir D9.2 en la semana 1.
+4. Cerrar en la semana 1 el arrastre del S2 (evidencia de TS-46/TS-53, calidad S2 y comprobaciones en staging).

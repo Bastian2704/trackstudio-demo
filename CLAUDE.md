@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec.)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **9.2** migraciones en deploy, **9.4** rollback, **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec. En S3, el gate externo vivo es **`TS-42`** (bucket/IAM, humano) para HU-13.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 
@@ -85,18 +85,20 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ---
 
-## 5. Qué NO hacer todavía (alcance vigente de Sprint 2)
+## 5. Qué NO hacer todavía (alcance vigente de Sprint 3)
+
+> **Actualizado el 2026-10-15 (Sprint 3, `docs/backlog/sprints/sprint-03.md`):** se levanta el veto de `versions`, de la subida a S3 de aplicación y de la presigned **PUT** **solo para `TS-24`** (HU-13), según `docs/erd/modelo-completo.md` §3.5 y D7.1-D7.7. Siguen vetados la verificación con `HeadObject`/ETag y el paso a `verificada` (S4, `TS-25`/`TS-27`) y las URLs firmadas de lectura (HU-16). HU-09 (`TS-20`), HU-11 (`TS-22`) y HU-12 (`TS-23`) entran en S3. Las viñetas siguientes se leen con esta nota.
 
 > **Actualizado el 2026-10-02:** la baseline de 12 semanas habilita HU-05..HU-09 en S2. El bloque 7 del ADR continúa **CERRADO** (D7.1-D7.7); no es un bloqueo. El gate vigente para datos es el slice aprobado del ERD en `TS-49`. Si se levanta otro veto, se levanta aquí primero.
 >
 > **Actualizado el 2026-10-13:** `TS-21` (HU-10, canciones) se adelanta de S3 a S2 y `TS-20` (HU-09) pasa a S3. Se levanta el veto de `songs` **solo para TS-21**.
 
 - Se permiten en S2 las migraciones e interfaces de `artists` y `productions` que estén cubiertas por una spec aprobada y por el slice correspondiente del ERD. No se inventa el esquema desde la implementación.
-- No tocar todavía subida de archivos, S3 de aplicación, versiones de audio ni presigned URLs. Son alcance de S3-S4 y requieren sus gates de ERD e infraestructura (`TS-42`).
-- Se permite la migración e interfaz de `songs` para `TS-21` (HU-10), cubierta por su spec aprobada y por `docs/erd/modelo-completo.md` §3.4. El máximo de canciones por formato es de `TS-20` (S3), no de TS-21.
-- No crear migraciones de `versions`, `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
+- Subida de archivos, S3 de aplicación, `versions` y presigned PUT: solo dentro de `TS-24`, con `TS-42` (bucket/IAM, humano) listo. Fuera de esa historia siguen vetados.
+- `songs` ya existe (`TS-21`, Listo). En S3 se amplía con el máximo por formato (`TS-20`), el listado (`TS-22`) y el borrado en cascada (`TS-23`), según `docs/erd/modelo-completo.md` §3.4.
+- No crear migraciones de `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
 - No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.
-- No construir interfaces funcionales fuera de artistas, producciones y el CRUD de canciones de TS-21. Las pantallas de humo existentes de S1 se conservan; listado de canciones (HU-11), borrado en cascada (HU-12), audio, comentarios, acceso del artista y sesiones esperan su sprint.
+- No construir interfaces funcionales fuera de artistas, producciones, canciones (HU-09..HU-12) y la subida de HU-13. Historial y reproducción de versiones, comentarios, acceso del artista y sesiones esperan su sprint.
 
 ---
 
