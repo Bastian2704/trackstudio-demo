@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
+import SongList from '@/routes/songs/SongList'
 import ProductionForm from './ProductionForm'
 import { deleteProduction, fetchProduction, updateProduction } from './productionApi'
 import type { Production, ProductionInput } from './productionSchema'
@@ -89,6 +90,7 @@ export default function ProductionEditPage() {
             onSubmit={(input) => updateMutation.mutateAsync(input)}
           />
           <Link to={`/producciones/${id}/canciones/nueva`}>Nueva canción</Link>
+          <SongList productionId={id} />
           <AlertDialog
             open={confirmOpen}
             onOpenChange={(open) => {
