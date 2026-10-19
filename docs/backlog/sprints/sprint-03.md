@@ -93,7 +93,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 ### TS-22 / ts-11 - HU-11 Listar canciones con estado y posición
 
 - [x] `ts-11.01` Spec backend: listado por producción, orden por `position`, estado, autorización (fila RBAC de `songs`, ADR 8.1), vacío y no encontrado.
-- [ ] `ts-11.02` Tests backend en rojo: orden, estado, vacío, borradas excluidas, permisos y sin N+1.
+- [x] `ts-11.02` Tests backend en rojo: orden, estado, vacío, borradas excluidas, permisos y sin N+1.
 - [ ] `ts-11.03` Código backend hasta verde (humano).
 - [ ] `ts-11.04` Review backend con C3.
 - [ ] `ts-11.05` Spec frontend: listado dentro de la producción, estados de carga/vacío/error y enlace a cada canción.
