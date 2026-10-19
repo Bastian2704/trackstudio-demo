@@ -11,11 +11,22 @@ use App\Models\Production;
 use App\Models\Song;
 use App\Services\SongService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 final class SongController extends Controller
 {
     public function __construct(private SongService $songs) {}
+
+    public function index(Production $production): AnonymousResourceCollection
+    {
+        $songs = $production->songs()
+            ->orderBy('position')
+            ->orderBy('id')
+            ->paginate();
+
+        return SongResource::collection($songs);
+    }
 
     public function store(StoreSongRequest $request, Production $production): JsonResponse
     {

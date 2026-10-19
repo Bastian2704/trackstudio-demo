@@ -15,6 +15,11 @@ final class SongPolicy
         return $this->isProducer($user);
     }
 
+    public function viewAny(StatelessUserContract $user): bool
+    {
+        return $this->isProducer($user);
+    }
+
     public function view(
         StatelessUserContract $user,
         Song $song
