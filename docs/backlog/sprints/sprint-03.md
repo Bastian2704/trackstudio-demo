@@ -98,7 +98,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 - [x] `ts-11.04` Review backend con C3.
 - [x] `ts-11.05` Spec frontend: listado dentro de la producción, estados de carga/vacío/error y enlace a cada canción.
 - [x] `ts-11.06` Tests frontend en rojo.
-- [ ] `ts-11.07` Código frontend hasta verde (humano).
+- [x] `ts-11.07` Código frontend hasta verde (humano).
 - [ ] `ts-11.08` Review frontend con C3.
 - [ ] `ts-11.09` Comprobación en staging por el equipo.
 
