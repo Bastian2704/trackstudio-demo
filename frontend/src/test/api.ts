@@ -86,3 +86,26 @@ export function problema(status: number, code: string, extra: Record<string, unk
     },
   }
 }
+
+/** Envoltura paginada de Laravel (D3.3) con `meta` coherente con `data`. */
+export function pagina(data: unknown[], meta: Record<string, unknown> = {}) {
+  const vacia = data.length === 0
+  return {
+    status: 200,
+    data: {
+      data,
+      links: { first: '…?page=1', last: '…?page=1', prev: null, next: null },
+      meta: {
+        current_page: 1,
+        from: vacia ? null : 1,
+        last_page: 1,
+        path: 'http://localhost/api/v1/simulado',
+        per_page: 15,
+        to: vacia ? null : data.length,
+        total: data.length,
+        links: [],
+        ...meta,
+      },
+    },
+  }
+}
