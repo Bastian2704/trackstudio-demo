@@ -48,7 +48,9 @@ it('lista las canciones de la producción ordenadas por posición', function () 
 it('desempata por id cuando dos canciones comparten posición', function () {
     exigirRuta('GET', 'api/v1/productions/{production}/songs');
     $production = Production::factory()->create();
-    $ids = Song::factory()->for($production)->count(3)->create(['position' => 1])
+    // Sin desempate, PostgreSQL devuelve los empates en orden arbitrario: con 6 filas,
+    // acertar el orden por azar es 1/720 (con 3 era 1/6 y la C3 no era fiable).
+    $ids = Song::factory()->for($production)->count(6)->create(['position' => 1])
         ->pluck('id')
         ->sort()
         ->values()
