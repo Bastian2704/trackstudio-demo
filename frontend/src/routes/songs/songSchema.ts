@@ -28,3 +28,14 @@ export const songSchema = z.object({
 })
 
 export type Song = z.infer<typeof songSchema>
+
+export interface SongPage {
+  data: Song[]
+  meta: {
+    current_page: number
+    last_page: number
+    from: number | null
+    to: number | null
+    total: number
+  }
+}

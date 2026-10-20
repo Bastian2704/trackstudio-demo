@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import ProductionCreatePage from '@/routes/productions/ProductionCreatePage'
 import ProductionEditPage from '@/routes/productions/ProductionEditPage'
-import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
 
 /*
  * TS-19 (HU-08) — ts-08.06, spec frontend §4 tests 1 a 9.
@@ -14,6 +14,9 @@ import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/te
  * La página de edición se monta junto a la de alta porque el test 1 afirma el
  * destino real tras el 201: la edición de la producción creada, con su aviso.
  * El artista lo fija la URL (apaño temporal hasta TS-17, spec §1).
+ *
+ * TS-22 (HU-11): la edición monta el listado de canciones; su GET recibe una
+ * página vacía (spec frontend HU-11 §4, nota de fixtures).
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
@@ -75,12 +78,12 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
   return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
 }
 
-/** El alta responde 201; la precarga posterior de la edición, 200. */
+/** El alta responde 201; la precarga posterior de la edición, 200, y su listado de canciones, vacío. */
 function altaCorrecta(datos = produccion()) {
-  return ({ method }: { method: string }): RespuestaSimulada =>
-    method === 'POST'
-      ? { status: 201, data: { data: datos } }
-      : { status: 200, data: { data: datos } }
+  return ({ method, url }: { method: string; url: string }): RespuestaSimulada => {
+    if (method === 'POST') return { status: 201, data: { data: datos } }
+    return url.endsWith('/songs') ? pagina([]) : { status: 200, data: { data: datos } }
+  }
 }
 
 describe('ProductionCreatePage', () => {

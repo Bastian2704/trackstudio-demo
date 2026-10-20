@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import ArtistEditPage from '@/routes/artists/ArtistEditPage'
 import ProductionEditPage from '@/routes/productions/ProductionEditPage'
 import {
+  pagina,
   problema,
   restaurarApi,
   simularApi,
@@ -25,10 +26,15 @@ import {
  * canción». El alta de canción se monta como marcador: que la página real
  * aparezca lo afirma `App.test.tsx` (test 21), y así este archivo no depende
  * de un módulo de otra HU.
+ *
+ * TS-22 (HU-11) — ts-11.06, spec frontend HU-11 §4 tests 9 a 11: la sección
+ * «Canciones» monta `SongList` real. `conPrecarga` responde a su GET con una
+ * página de canciones; antes le llegaba el artista.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const URL_PRODUCCION = `/api/v1/productions/${ID}`
+const URL_CANCIONES = `${URL_PRODUCCION}/songs`
 
 function produccion(cambios: Record<string, unknown> = {}) {
   return {
@@ -39,6 +45,18 @@ function produccion(cambios: Record<string, unknown> = {}) {
     created_at: '2026-10-08T14:03:11+00:00',
     updated_at: '2026-10-08T14:03:11+00:00',
     ...cambios,
+  }
+}
+
+function cancion() {
+  return {
+    id: '9d3d1b20-4a5b-4c6d-8e7f-000000000001',
+    production_id: ID,
+    name: 'Intro',
+    position: 1,
+    status: 'en_progreso',
+    created_at: '2026-10-13T14:03:11+00:00',
+    updated_at: '2026-10-13T14:03:11+00:00',
   }
 }
 
@@ -58,15 +76,16 @@ afterEach(() => {
   restaurarApi()
 })
 
-/** Los GET responden con la producción o su artista; el resto lo decide cada caso. */
+/** Los GET responden con la producción, sus canciones o su artista; el resto lo decide cada caso. */
 function conPrecarga(
   alResto: (peticion: PeticionRegistrada) => RespuestaSimulada | Promise<RespuestaSimulada>,
+  canciones: RespuestaSimulada = pagina([cancion()]),
 ) {
   return (peticion: PeticionRegistrada) => {
     if (peticion.method !== 'GET') return alResto(peticion)
-    return peticion.url === URL_PRODUCCION
-      ? { status: 200, data: { data: produccion() } }
-      : { status: 200, data: { data: artista() } }
+    if (peticion.url === URL_PRODUCCION) return { status: 200, data: { data: produccion() } }
+    if (peticion.url === URL_CANCIONES) return canciones
+    return { status: 200, data: { data: artista() } }
   }
 }
 
@@ -287,5 +306,42 @@ describe('ProductionEditPage', () => {
     await user.click(enlace)
 
     expect(await screen.findByText('Alta de canción simulada')).toBeTruthy()
+  })
+
+  it('muestra las canciones de la producción', async () => {
+    const peticiones = simularApi(conPrecarga(() => ({ status: 500 })))
+    renderEdicion()
+    await esperarPrecarga()
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Canciones' })).toBeTruthy()
+    expect((await screen.findByRole('link', { name: 'Intro' })).getAttribute('href')).toBe(
+      `/canciones/${cancion().id}/editar`,
+    )
+    expect(peticiones.filter((p) => p.url.endsWith('/songs'))).toEqual([
+      { method: 'GET', url: URL_CANCIONES, body: undefined, params: { page: 1 } },
+    ])
+    expect(nombre().value).toBe('Sesiones del álbum')
+  })
+
+  it('no pide el listado si la producción no carga', async () => {
+    const peticiones = simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
+    renderEdicion()
+
+    expect(await screen.findByRole('heading', { name: 'Producción no encontrada' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Canciones' })).toBeNull()
+    expect(peticiones.filter((p) => p.url.endsWith('/songs'))).toEqual([])
+  })
+
+  it('un error del listado no tapa la producción', async () => {
+    simularApi(conPrecarga(() => ({ status: 500 }), problema(500, 'INTERNAL_ERROR')))
+    renderEdicion()
+    await esperarPrecarga()
+
+    await waitFor(() =>
+      expect(textoEnRol('alert', 'No se pudo cargar el listado de canciones.')).toBe(true),
+    )
+    expect(nombre().value).toBe('Sesiones del álbum')
+    expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Eliminar producción' })).toBeTruthy()
   })
 })

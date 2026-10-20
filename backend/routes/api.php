@@ -90,6 +90,13 @@ Route::post('/productions/{production}/songs', [SongController::class, 'store'])
         'can:create,'.Song::class,
     ]);
 
+Route::get('/productions/{production}/songs', [SongController::class, 'index'])
+    ->whereUuid('production')
+    ->middleware([
+        'auth:auth0-api',
+        'can:viewAny,'.Song::class,
+    ]);
+
 Route::get('/songs/{song}', [SongController::class, 'show'])
     ->whereUuid('song')
     ->middleware([

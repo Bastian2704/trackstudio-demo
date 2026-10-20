@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import ProductionEditPage from '@/routes/productions/ProductionEditPage'
 import SongEditPage from '@/routes/songs/SongEditPage'
 import {
+  pagina,
   problema,
   restaurarApi,
   simularApi,
@@ -55,15 +56,18 @@ afterEach(() => {
   restaurarApi()
 })
 
-/** Los GET responden con la canción o su producción; el resto lo decide cada caso. */
+/**
+ * Los GET responden con la canción, su producción o el listado de canciones de
+ * esta (vacío; TS-22, spec frontend HU-11 §4); el resto lo decide cada caso.
+ */
 function conPrecarga(
   alResto: (peticion: PeticionRegistrada) => RespuestaSimulada | Promise<RespuestaSimulada>,
 ) {
   return (peticion: PeticionRegistrada) => {
     if (peticion.method !== 'GET') return alResto(peticion)
-    return peticion.url === URL_CANCION
-      ? { status: 200, data: { data: cancion() } }
-      : { status: 200, data: { data: produccion() } }
+    if (peticion.url === URL_CANCION) return { status: 200, data: { data: cancion() } }
+    if (peticion.url === `${URL_PRODUCCION}/songs`) return pagina([])
+    return { status: 200, data: { data: produccion() } }
   }
 }
 
@@ -297,7 +301,10 @@ describe('SongEditPage', () => {
     expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
     await waitFor(() => expect(textoEnRol('status', 'Canción eliminada.')).toBe(true))
     expect(borrados(peticiones)).toEqual([{ method: 'DELETE', url: URL_CANCION, body: undefined }])
-    expect(peticiones.at(-1)).toMatchObject({ method: 'GET', url: URL_PRODUCCION })
+    // La producción solo la pide la página de destino; su listado sale después.
+    expect(peticiones).toContainEqual(
+      expect.objectContaining({ method: 'GET', url: URL_PRODUCCION }),
+    )
   })
 
   it('no elimina dos veces ni cierra el diálogo mientras borra', async () => {
