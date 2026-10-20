@@ -7,7 +7,7 @@
 
 ## 1. Estado ejecutivo
 
-- **TS-42:** bucket, IAM de la API, cifrado y CORS hechos y verificados (§4). **Pendiente:** versioning y lifecycle, que D7.1-D7.7 no deciden (§3.1), y la evidencia en Jira.
+- **TS-42:** bucket, IAM de la API, cifrado y CORS hechos y verificados (§4). Versioning y lifecycle de D7.8 aplicados (§3.1). **Pendiente:** la evidencia en Jira.
 - **TS-24 (HU-13):** ya puede escribir su spec contra un bucket real. Antes del Red/Green tiene que resolver §6, trampa 1.
 
 ## 2. Configuración aplicada
@@ -17,7 +17,8 @@
 | Bucket | `trackstudio-audio-staging`, `us-east-1`, general purpose, namespace global |
 | Acceso público | Block all public access (las 4), ACLs deshabilitadas |
 | Cifrado | SSE-S3 (`AES256`) |
-| Versioning | Deshabilitado hasta decidir §3.1 |
+| Versioning | Activado (D7.8) |
+| Lifecycle | `d7-8-housekeeping`, todo el bucket: versiones no actuales a 30 días, delete markers huérfanos, multipart incompleto a 7 días; sin acciones sobre las versiones actuales (D7.8) |
 | CORS (D7.5) | Orígenes `http://localhost:5173` y `https://trackstudio-staging.vercel.app`; métodos `PUT`, `GET`; header `Content-Type`; expone `ETag`; `MaxAgeSeconds` 3000 |
 | Usuario de la API | `trackstudio-api`, sin consola, una access key («application running outside AWS») |
 | Política | `trackstudio-api-s3`: `Allow s3:PutObject, s3:GetObject` en `bucket/*`; `Deny s3:*` en `bucket/db-backups/*` (D6.10) |
@@ -27,7 +28,7 @@ Sin `s3:DeleteObject`: el audio se conserva hasta la purga (D4.5, ERD §3.4). Si
 
 ## 3. Decisiones
 
-1. **Abierto — versioning y lifecycle (propuesta D7.8):** versioning activado; SSE-S3; una regla de lifecycle para todo el bucket que expira las versiones no actuales a los 30 días, borra los delete markers huérfanos y aborta las subidas multipart incompletas a los 7 días. Los objetos actuales no expiran nunca (audio hasta la purga, backups según D6.10). Falta la aprobación del equipo; al aprobarse, se registra en el ADR y se aplica en la consola.
+1. **D7.8 — versioning y lifecycle (aprobada por el equipo el 2026-10-20, registrada en el ADR):** versioning activado; SSE-S3; una regla de lifecycle para todo el bucket que expira las versiones no actuales a los 30 días, borra los delete markers huérfanos y aborta las subidas multipart incompletas a los 7 días. Los objetos actuales no expiran nunca (audio hasta la purga, backups según D6.10). Aplicada en la consola.
 2. **IAM user y no rol:** Railway corre fuera de AWS y no puede asumir un rol sin federación.
 3. **Namespace global y no «Account Regional»:** no está verificado que el SDK de PHP y Flysystem firmen bien las URLs con el sufijo regional.
 
@@ -42,7 +43,8 @@ Sin `s3:DeleteObject`: el audio se conserva hasta la purga (D4.5, ERD §3.4). Si
 ## 5. Archivos de la sesión
 
 - `docs/global/handoffs/HANDOFF_v26.md` (este archivo).
-- `docs/backlog/sprints/sprint-03.md`: marcados los dos primeros puntos de TS-42 (bucket privado e IAM).
+- `docs/adr/decisiones-tecnicas-track-studio.md`: nueva D7.8 y su fila en la tabla del bloque 7.
+- `docs/backlog/sprints/sprint-03.md`: marcados los puntos de TS-42 de bucket privado, IAM, configuración (CORS, versioning, cifrado y lifecycle) y credenciales.
 
 ## 6. Trampas operativas
 
@@ -54,6 +56,5 @@ Sin `s3:DeleteObject`: el audio se conserva hasta la purga (D4.5, ERD §3.4). Si
 
 ## 7. Próximos pasos ordenados
 
-1. Decidir §3.1. Si se aprueba: D7.8 en el ADR, versioning y lifecycle en la consola, y marcar el último punto de TS-42 en `sprint-03.md`.
-2. Comentario de evidencia no sensible en TS-42 (sin Account ID ni claves) y mover TS-42 a «Listo».
-3. Spec backend de `TS-24`, resolviendo antes §6, trampa 1.
+1. Comentario de evidencia no sensible en TS-42 (sin Account ID ni claves) y mover TS-42 a «Listo».
+2. Spec backend de `TS-24`, resolviendo antes §6, trampa 1.

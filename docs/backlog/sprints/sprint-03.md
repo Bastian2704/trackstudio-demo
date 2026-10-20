@@ -134,8 +134,8 @@ El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del 
 
 - [x] Bucket privado en `us-east-1`, sin acceso público.
 - [x] Usuario o rol IAM de la API con mínimo privilegio (`PutObject`/`HeadObject`/`GetObject` sobre el bucket).
-- [ ] CORS según D7.5, versioning, cifrado y lifecycle según D7.x.
-- [ ] Credenciales solo en las variables de entorno de Railway y en el `.env` local; `.env.example` sin valores.
+- [x] CORS según D7.5, versioning, cifrado y lifecycle según D7.x.
+- [x] Credenciales solo en las variables de entorno de Railway y en el `.env` local; `.env.example` sin valores.
 - [ ] Evidencia no sensible en un comentario de TS-42.
 
 ### TS-68..TS-70 - Fidelidad visual con Figma (épica TS-67)
