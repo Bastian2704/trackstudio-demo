@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use App\Auth\UserRepository;
+use App\Models\Production;
+use App\Models\Song;
 use App\Contracts\AudioStorageContract;
 use App\Enums\AudioContentType;
 use Auth0\Laravel\Entities\CredentialEntity;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route as DefinicionDeRuta;
 use Illuminate\Support\Facades\Route;
@@ -451,4 +455,23 @@ function falsearAlmacenamientoDeAudio(?Throwable $falla = null): ArrayObject
     });
 
     return $llamadas;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-09 (docs/specs/backend/HU-09.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Crea `$cantidad` canciones vigentes en la producción, con posiciones 1..n.
+ *
+ * @return Collection<int, Song>
+ */
+function crearCanciones(Production $production, int $cantidad): Collection
+{
+    return Song::factory()
+        ->count($cantidad)
+        ->sequence(fn (Sequence $sequence): array => ['position' => $sequence->index + 1])
+        ->create(['production_id' => $production->id]);
 }

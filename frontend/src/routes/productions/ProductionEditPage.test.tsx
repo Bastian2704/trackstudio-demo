@@ -30,6 +30,10 @@ import {
  * TS-22 (HU-11) — ts-11.06, spec frontend HU-11 §4 tests 9 a 11: la sección
  * «Canciones» monta `SongList` real. `conPrecarga` responde a su GET con una
  * página de canciones; antes le llegaba el artista.
+ *
+ * TS-20 (HU-09) — ts-09.06, spec frontend HU-09 §4 tests 7 a 11: aviso del
+ * formato y enlace «Nueva canción» según el total del listado. `conPrecarga`
+ * acepta la producción que devuelve, para variar el formato.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
@@ -80,10 +84,11 @@ afterEach(() => {
 function conPrecarga(
   alResto: (peticion: PeticionRegistrada) => RespuestaSimulada | Promise<RespuestaSimulada>,
   canciones: RespuestaSimulada = pagina([cancion()]),
+  datosProduccion = produccion(),
 ) {
   return (peticion: PeticionRegistrada) => {
     if (peticion.method !== 'GET') return alResto(peticion)
-    if (peticion.url === URL_PRODUCCION) return { status: 200, data: { data: produccion() } }
+    if (peticion.url === URL_PRODUCCION) return { status: 200, data: { data: datosProduccion } }
     if (peticion.url === URL_CANCIONES) return canciones
     return { status: 200, data: { data: artista() } }
   }
@@ -140,6 +145,22 @@ function confirmar() {
 
 function borrados(peticiones: PeticionRegistrada[]) {
   return peticiones.filter((p) => p.method === 'DELETE')
+}
+
+const AVISO = 'Formato de la producción'
+
+async function textoDelAviso() {
+  return (await screen.findByRole('region', { name: AVISO })).textContent ?? ''
+}
+
+/** `n` canciones distintas, en posiciones 1..n. */
+function variasCanciones(n: number) {
+  return Array.from({ length: n }, (_, i) => ({
+    ...cancion(),
+    id: `9d3d1b20-4a5b-4c6d-8e7f-${String(i + 1).padStart(12, '0')}`,
+    name: `Canción ${i + 1}`,
+    position: i + 1,
+  }))
 }
 
 describe('ProductionEditPage', () => {
@@ -343,5 +364,117 @@ describe('ProductionEditPage', () => {
     expect(nombre().value).toBe('Sesiones del álbum')
     expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Eliminar producción' })).toBeTruthy()
+  })
+
+  it('muestra el aviso con el formato guardado y el total del listado', async () => {
+    // 15 filas en la página 1 de 20: el conteo sale de `meta.total`, no de las filas.
+    simularApi(
+      conPrecarga(
+        () => ({ status: 500 }),
+        pagina(variasCanciones(15), { total: 20, last_page: 2, to: 15 }),
+        produccion({ format: 'album' }),
+      ),
+    )
+    renderEdicion()
+    await esperarPrecarga()
+
+    const texto = await textoDelAviso()
+    expect(texto).toContain('Un álbum tiene 7 canciones o más.')
+    expect(texto).toContain('Esta producción tiene 20 canciones.')
+  })
+
+  it.each([
+    { caso: 'sencillo con 1', format: 'sencillo', total: 1 },
+    { caso: 'EP con 6', format: 'ep', total: 6 },
+    { caso: 'sencillo con 3 (heredado)', format: 'sencillo', total: 3 },
+  ])(
+    'oculta «Nueva canción» cuando la producción está en su máximo: $caso',
+    async ({ format, total }) => {
+      simularApi(
+        conPrecarga(
+          () => ({ status: 500 }),
+          pagina([cancion()], { total }),
+          produccion({ format }),
+        ),
+      )
+      renderEdicion()
+      await esperarPrecarga()
+
+      await textoDelAviso()
+      expect(screen.queryByRole('link', { name: 'Nueva canción' })).toBeNull()
+    },
+  )
+
+  it.each([
+    { caso: 'EP con 5', format: 'ep', total: 5 },
+    { caso: 'álbum con 30', format: 'album', total: 30 },
+  ])('muestra «Nueva canción» por debajo del máximo: $caso', async ({ format, total }) => {
+    simularApi(
+      conPrecarga(() => ({ status: 500 }), pagina([cancion()], { total }), produccion({ format })),
+    )
+    renderEdicion()
+    await esperarPrecarga()
+
+    await textoDelAviso()
+    expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
+  })
+
+  it('sin listado no muestra el aviso y conserva «Nueva canción»', async () => {
+    simularApi(
+      conPrecarga(
+        () => ({ status: 500 }),
+        problema(500, 'INTERNAL_ERROR'),
+        produccion({ format: 'sencillo' }),
+      ),
+    )
+    renderEdicion()
+    await esperarPrecarga()
+
+    await waitFor(() =>
+      expect(textoEnRol('alert', 'No se pudo cargar el listado de canciones.')).toBe(true),
+    )
+    expect(screen.queryByRole('region', { name: AVISO })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
+  })
+
+  it('actualiza el aviso tras cambiar de formato', async () => {
+    simularApi(
+      conPrecarga(
+        () => ({ status: 200, data: { data: produccion({ format: 'album' }) } }),
+        pagina([cancion()], { total: 3 }),
+        produccion({ format: 'ep' }),
+      ),
+    )
+    const user = renderEdicion()
+    await esperarPrecarga()
+    expect(await textoDelAviso()).toContain('Un EP tiene de 2 a 6 canciones.')
+
+    await user.selectOptions(formato(), 'Álbum')
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+
+    await waitFor(() => expect(textoEnRol('status', 'Cambios guardados.')).toBe(true))
+    expect(await textoDelAviso()).toContain('Un álbum tiene 7 canciones o más.')
+  })
+
+  it('pinta bajo el selector el 422 de formato y conserva el aviso', async () => {
+    const mensaje = 'La producción tiene 3 canciones y un sencillo admite como máximo 1.'
+    simularApi(
+      conPrecarga(
+        () => problema(422, 'VALIDATION_ERROR', { errors: { format: [mensaje] } }),
+        pagina([cancion()], { total: 3 }),
+        produccion({ format: 'ep' }),
+      ),
+    )
+    const user = renderEdicion()
+    await esperarPrecarga()
+    await textoDelAviso()
+
+    await user.selectOptions(formato(), 'Sencillo')
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText(mensaje)).toBeTruthy()
+    expect(formato().getAttribute('aria-invalid')).toBe('true')
+    expect(textoEnRol('alert', mensaje)).toBe(false)
+    expect(await textoDelAviso()).toContain('Un EP tiene de 2 a 6 canciones.')
   })
 })

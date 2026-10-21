@@ -80,14 +80,14 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 ### TS-20 / ts-09 - HU-09 Validar restricciones de formato
 
 - [x] `ts-09.10` Contrato de formato aprobado en TS-49 (2026-10-05).
-- [ ] `ts-09.01` Spec backend: matriz de reglas por formato, alta de canción, cambio de formato y errores D3.1.
-- [ ] `ts-09.02` Tests backend en rojo: límites por formato, casos válidos, alta, edición y autorización.
-- [ ] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios.
-- [ ] `ts-09.04` Review backend con C3.
-- [ ] `ts-09.05` Spec frontend: validación coherente con el backend y presentación del 422.
-- [ ] `ts-09.06` Tests frontend en rojo.
-- [ ] `ts-09.07` Código frontend hasta verde (humano).
-- [ ] `ts-09.08` Review frontend con C3.
+- [x] `ts-09.01` Spec backend: matriz de reglas por formato, alta de canción, cambio de formato y errores D3.1.
+- [x] `ts-09.02` Tests backend en rojo: límites por formato, casos válidos, alta, edición y autorización.
+- [x] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios.
+- [x] `ts-09.04` Review backend con C3.
+- [x] `ts-09.05` Spec frontend: validación coherente con el backend y presentación del 422.
+- [x] `ts-09.06` Tests frontend en rojo.
+- [x] `ts-09.07` Código frontend hasta verde (humano).
+- [x] `ts-09.08` Review frontend con C3.
 - [ ] `ts-09.09` Comprobación en staging por el equipo.
 
 ### TS-22 / ts-11 - HU-11 Listar canciones con estado y posición
@@ -132,10 +132,10 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del sprint).
 
-- [ ] Bucket privado en `us-east-1`, sin acceso público.
-- [ ] Usuario o rol IAM de la API con mínimo privilegio (`PutObject`/`HeadObject`/`GetObject` sobre el bucket).
-- [ ] CORS según D7.5, versioning, cifrado y lifecycle según D7.x.
-- [ ] Credenciales solo en las variables de entorno de Railway y en el `.env` local; `.env.example` sin valores.
+- [x] Bucket privado en `us-east-1`, sin acceso público.
+- [x] Usuario o rol IAM de la API con mínimo privilegio (`PutObject`/`HeadObject`/`GetObject` sobre el bucket).
+- [x] CORS según D7.5, versioning, cifrado y lifecycle según D7.x.
+- [x] Credenciales solo en las variables de entorno de Railway y en el `.env` local; `.env.example` sin valores.
 - [ ] Evidencia no sensible en un comentario de TS-42.
 
 ### TS-68..TS-70 - Fidelidad visual con Figma (épica TS-67)

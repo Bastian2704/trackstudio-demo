@@ -8,6 +8,15 @@ export const FORMAT_LABELS: Record<(typeof PRODUCTION_FORMATS)[number], string> 
   album: 'Álbum',
 }
 
+export const FORMAT_RULES: Record<
+  (typeof PRODUCTION_FORMATS)[number],
+  { min: number; max: number | null }
+> = {
+  sencillo: { min: 1, max: 1 },
+  ep: { min: 2, max: 6 },
+  album: { min: 7, max: null },
+}
+
 export const productionInputSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio.'),
   format: z.string().pipe(z.enum(PRODUCTION_FORMATS, 'Selecciona un formato.')),

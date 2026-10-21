@@ -377,6 +377,7 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 | 7.5 | CORS del bucket | DECIDIDO | Ver D7.5 |
 | 7.6 | Expiración de presigned URLs + refresco por sesión | DECIDIDO | 15 min, ver D7.6 |
 | 7.7 | Validación WAV/MP3 ≤ 500 MB en front y back | DECIDIDO | Ver D7.7 |
+| 7.8 | Versioning, cifrado y lifecycle del bucket | DECIDIDO (2026-10-20) | Ver D7.8 |
 
 **Nota:** con Railway (5 GB de disco, 100 conexiones) y archivos de hasta 500 MB, la subida directa navegador→S3 es prácticamente obligatoria. 7.3 aborda el dolor original del estudio (versiones duplicadas sin nomenclatura).
 
@@ -471,9 +472,28 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 → *ISO 25010: fiabilidad (validación de entrada), eficiencia. Cubre: RF-04, RNF-03.*
 
+### D7.8 — Versioning, cifrado y lifecycle del bucket (2026-10-20)
+
+Añadida al aplicar `TS-42`: sus criterios pedían versioning, cifrado y lifecycle «según D7.x», pero D7.1-D7.7 no los decidían. Decisión del equipo.
+
+**Cifrado:** SSE-S3 (`AES256`) por defecto. Se descarta SSE-KMS: cobra por cada petición y no aporta control adicional para este alcance.
+
+**Versioning:** activado. Protege el audio del cliente y los backups de D6.10 frente a sobrescrituras y borrados accidentales. Casi no genera versiones extra, porque los keys no se reutilizan nunca (D7.3). Una vez activado no se desactiva, solo se suspende.
+
+**Lifecycle:** una regla para todo el bucket:
+- las versiones no actuales expiran a los 30 días;
+- se borran los delete markers que quedan sin versiones;
+- las subidas multipart incompletas se abortan a los 7 días (hoy no hay multipart, D7.2; cubre una futura revisión).
+
+Los objetos actuales **no expiran nunca**: el audio se conserva hasta la purga (D4.5) y los backups siguen la retención de D6.10.
+
+**Justificación:** el versioning sin lifecycle acumula copias sin límite, y el presupuesto de la cuenta es de USD 1. Con 30 días hay margen para detectar y revertir un error sin que el costo crezca.
+
+→ *ISO 25010: fiabilidad (recuperabilidad), seguridad (confidencialidad). Cubre: RNF-02, RNF-04.*
+
 ---
 
-**Bloque 7 — completo.** Las 7 decisiones (D7.1-D7.7) quedan cerradas. Desbloquea: el ERD completo (entidad `versions` ya puede modelarse) y las HU-13 a HU-16 pueden empezar a evaluarse contra la Definition of Ready.
+**Bloque 7 — completo.** Las 7 decisiones (D7.1-D7.7) quedan cerradas; D7.8 se añadió el 2026-10-20 con `TS-42`. Desbloquea: el ERD completo (entidad `versions` ya puede modelarse) y las HU-13 a HU-16 pueden empezar a evaluarse contra la Definition of Ready.
 
 ## 8. Seguridad y acceso
 

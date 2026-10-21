@@ -13,6 +13,9 @@ import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/te
  *
  * La edición de la canción se monta junto al alta porque el test 1 afirma el
  * destino real tras el 201. La producción la fija la URL (backend §3.1).
+ *
+ * TS-20 (HU-09) — ts-09.06, spec frontend HU-09 §4 tests 12 y 13: 422 del
+ * máximo por formato e invalidación del listado de la producción.
  */
 const PRODUCTION_ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const ID = '9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a'
@@ -35,11 +38,11 @@ afterEach(() => {
   restaurarApi()
 })
 
-function renderAlta() {
-  const queryClient = new QueryClient({
+function renderAlta(
+  queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-
+  }),
+) {
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[`/producciones/${PRODUCTION_ID}/canciones/nueva`]}>
@@ -211,6 +214,36 @@ describe('SongCreatePage', () => {
       expect(textoEnRol('alert', 'No se pudo guardar la canción. Inténtalo de nuevo.')).toBe(true),
     )
     expect(nombre().value).toBe('Intro')
+  })
+
+  it('muestra en la alerta el 422 del máximo', async () => {
+    const motivo = 'Un sencillo admite como máximo 1 canción.'
+    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { production: [motivo] } }))
+    const user = renderAlta()
+
+    await escribirYEnviar(user)
+
+    await waitFor(() => expect(textoEnRol('alert', motivo)).toBe(true))
+    expect(screen.getByRole('heading', { name: 'Registrar canción' })).toBeTruthy()
+    expect(nombre().value).toBe('Intro')
+  })
+
+  it('invalida el listado de la producción tras registrar', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
+    const listado = ['songs', 'list', PRODUCTION_ID, 1]
+    const ajeno = ['songs', 'list', 'otra-produccion', 1]
+    queryClient.setQueryData(listado, { data: [], meta: {} })
+    queryClient.setQueryData(ajeno, { data: [], meta: {} })
+    simularApi(altaCorrecta())
+    const user = renderAlta(queryClient)
+
+    await escribirYEnviar(user)
+
+    expect(await screen.findByRole('heading', { name: 'Editar canción' })).toBeTruthy()
+    expect(queryClient.getQueryState(listado)?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(ajeno)?.isInvalidated).toBe(false)
   })
 
   it('enlaza de vuelta a la producción', () => {
