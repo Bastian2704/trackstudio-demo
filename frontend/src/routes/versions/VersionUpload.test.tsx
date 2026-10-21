@@ -195,6 +195,7 @@ describe('VersionUpload', () => {
     ['WAV con cabecera MP3', 'toma.wav', 'audio/wav', 'id3' as const],
     ['WAV con un RIFF que no es WAVE', 'toma.wav', 'audio/wav', 'riff-avi' as const],
     ['MP3 con bytes arbitrarios', 'toma.mp3', 'audio/mpeg', [0x00, 0x11, 0x22, 0x33]],
+    ['MP3 con 0xFF sin sincronía de trama', 'toma.mp3', 'audio/mpeg', [0xff, 0x00, 0x00, 0x00]],
     ['MP3 con cabecera WAV', 'toma.mp3', 'audio/mpeg', 'wav' as const],
   ])('rechaza los magic bytes que no corresponden (%s)', async (_caso, name, type, cabecera) => {
     const s3 = simularS3()
@@ -264,10 +265,11 @@ describe('VersionUpload', () => {
     expect(campo().disabled).toBe(true)
     expect(boton().disabled).toBe(true)
 
-    subida.progreso(50, 100)
+    // 2/3 → 66 %: distingue el porcentaje de `loaded` y `floor` de `round` (67).
+    subida.progreso(2, 3)
 
-    await waitFor(() => expect(barra.value).toBe(50))
-    expect(screen.getByText('Subiendo… 50 %')).toBeTruthy()
+    await waitFor(() => expect(barra.value).toBe(66))
+    expect(screen.getByText('Subiendo… 66 %')).toBeTruthy()
   })
 
   it('confirma la subida cuando S3 responde 2xx', async () => {
@@ -300,6 +302,14 @@ describe('VersionUpload', () => {
     expect(campo().files).toHaveLength(0)
     expect(boton().disabled).toBe(false)
     expect(peticiones).toHaveLength(1)
+
+    // El campo vacío también vacía el estado, y el intento nuevo borra el éxito (§3.2).
+    await user.click(boton())
+
+    await waitFor(() => expect(textoEnRol('alert', 'Selecciona un archivo.')).toBe(true))
+    expect(textoEnRol('status', 'Archivo subido.')).toBe(false)
+    expect(peticiones).toHaveLength(1)
+    expect(s3).toHaveLength(1)
   })
 
   it.each([

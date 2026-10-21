@@ -110,7 +110,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 - [x] `ts-13.04` Review backend con C3.
 - [x] `ts-13.05` Spec frontend: selección del archivo, validación previa, normalización de `content_type`, POST directo con progreso (< 3 s, RNF-03), caducidad de 15 min y errores.
 - [x] `ts-13.06` Tests frontend en rojo.
-- [ ] `ts-13.07` Código frontend hasta verde (humano).
+- [x] `ts-13.07` Código frontend hasta verde (equipo).
 - [ ] `ts-13.08` Review frontend con C3.
 - [ ] `ts-13.09` Comprobación en staging con el bucket de TS-42 (equipo).
 
