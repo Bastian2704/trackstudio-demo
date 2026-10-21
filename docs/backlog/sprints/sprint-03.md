@@ -62,7 +62,7 @@ Orden recomendado:
 
 Vienen del ERD y de `CLAUDE.md` §5; no se reabren en las specs:
 
-- **HU-13 (TS-24):** firma (reserva de `version_number`, fila `pendiente`, presigned PUT de 15 min con condición de tipo y tamaño: D7.1, D7.3, D7.6 y D7.7), subida directa navegador→S3 con progreso visible (< 3 s, RNF-03) y migración `create_versions_table` con todas las columnas (ERD §3.5). **No incluye** la verificación con `HeadObject`/ETag ni el paso a `verificada` (TS-25/TS-27, S4), ni las URLs firmadas de lectura (HU-16). La spec debe definir qué ve el productor al terminar la subida mientras la versión sigue en `pendiente`.
+- **HU-13 (TS-24):** firma (reserva de `version_number`, fila `pendiente`, presigned POST de 15 min con condición de tipo y tamaño (POST desde la enmienda de D7.1 del 2026-10-20): D7.1, D7.3, D7.6 y D7.7), subida directa navegador→S3 con progreso visible (< 3 s, RNF-03) y migración `create_versions_table` con todas las columnas (ERD §3.5). **No incluye** la verificación con `HeadObject`/ETag ni el paso a `verificada` (TS-25/TS-27, S4), ni las URLs firmadas de lectura (HU-16). La spec debe definir qué ve el productor al terminar la subida mientras la versión sigue en `pendiente`.
 - **HU-12 (TS-23):** borrado lógico de la canción y de sus versiones vigentes en una transacción (ERD §3.4). Los objetos de S3 se conservan hasta la purga (D4.5). La confirmación reutiliza el `AlertDialog` de HU-10 y amplía el texto con la cascada.
 - **HU-11 (TS-22):** sustituye el apaño de navegación de HU-10: cada canción queda enlazada desde la producción (handoff v25 §3.2). No incluye reordenar si los AC no lo piden.
 - **HU-09 (TS-20):** máximo de canciones vigentes por formato al crear una canción y al cambiar de formato. Los mínimos solo informan (contrato `ts-09.10`).
@@ -104,11 +104,11 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 ### TS-24 / ts-13 - HU-13 Subir archivos de audio a una versión
 
-- [ ] `ts-13.01` Spec backend: firma, reserva de `version_number` con `FOR UPDATE`, fila `pendiente`, key D7.3, condiciones de la presigned PUT (D7.7), errores D3.1 y fila RBAC de `versions` (ADR 8.1).
+- [ ] `ts-13.01` Spec backend: firma, reserva de `version_number` con `FOR UPDATE`, fila `pendiente`, key D7.3, condiciones de la presigned POST (D7.7), errores D3.1 y fila RBAC de `versions` (ADR 8.1).
 - [ ] `ts-13.02` Tests backend en rojo: tipo/tamaño inválidos, numeración, key, canción inexistente o borrada, permisos y migración.
 - [ ] `ts-13.03` Código backend hasta verde (humano): `create_versions_table` según ERD §3.5. Larastan y Pint limpios.
 - [ ] `ts-13.04` Review backend con C3.
-- [ ] `ts-13.05` Spec frontend: selección del archivo, validación previa, normalización de `content_type`, PUT directo con progreso (< 3 s, RNF-03), caducidad de 15 min y errores.
+- [ ] `ts-13.05` Spec frontend: selección del archivo, validación previa, normalización de `content_type`, POST directo con progreso (< 3 s, RNF-03), caducidad de 15 min y errores.
 - [ ] `ts-13.06` Tests frontend en rojo.
 - [ ] `ts-13.07` Código frontend hasta verde (humano).
 - [ ] `ts-13.08` Review frontend con C3.

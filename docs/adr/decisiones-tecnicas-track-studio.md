@@ -370,8 +370,8 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 7.1 | ¿Subida directa navegador→S3 (presigned PUT) o vía backend? | DECIDIDO | Presigned PUT directo — ver D7.1 |
-| 7.2 | Multipart upload + feedback de progreso (RNF-03) | DECIDIDO | PUT simple por ahora — ver D7.2 |
+| 7.1 | ¿Subida directa navegador→S3 (presigned URL) o vía backend? | DECIDIDO | Presigned POST directo (enmienda 2026-10-20; antes PUT) — ver D7.1 |
+| 7.2 | Multipart upload + feedback de progreso (RNF-03) | DECIDIDO | Una sola petición (POST de formulario) por ahora — ver D7.2 |
 | 7.3 | Convención de S3 keys + versionado secuencial (`artist/prod/song/v{n}.ext`) | DECIDIDO | UUIDs, ver D7.3 |
 | 7.4 | Hash (RNF-05): ¿cliente antes de subir, ETag de S3, o backend? | DECIDIDO | ETag de S3, ver D7.4 |
 | 7.5 | CORS del bucket | DECIDIDO | Ver D7.5 |
@@ -380,7 +380,9 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 
 **Nota:** con Railway (5 GB de disco, 100 conexiones) y archivos de hasta 500 MB, la subida directa navegador→S3 es prácticamente obligatoria. 7.3 aborda el dolor original del estudio (versiones duplicadas sin nomenclatura).
 
-### D7.1 — Subida directa navegador→S3 vía presigned PUT (2026-08-18)
+### D7.1 — Subida directa navegador→S3 vía presigned POST (2026-08-18, enmendada 2026-10-20)
+
+> **Enmienda de 2026-10-20 (HU-13, `TS-24`), decisión del equipo:** el mecanismo pasa de **presigned PUT** a **presigned POST** (formulario de S3 con política firmada, `Aws\S3\PostObjectV4`). Motivo: D7.7 exige que S3 imponga el tipo y el tamaño, y una presigned PUT firmada con `aws-sdk-php` no puede hacerlo. `SignatureV4::moveHeadersToQuery()` quita de la firma `content-length` (`getHeaderBlacklist()`) y `content-type` (`getPresignHeaderDenyList()`), así que S3 aceptaría cualquier tipo y tamaño. La política del POST sí admite `content-length-range` y una condición exacta sobre `Content-Type`. Se descartaron la PUT con un `SignatureV4` heredado (depende de métodos protegidos del SDK) y la PUT sin condición (incumple D7.7 hasta S4). El resto de D7.1 no cambia: el archivo nunca toca Railway, el Form Request y la Policy actúan antes de firmar y la firma es local, sin llamada a S3. Donde este bloque dice «PUT», léase el POST de formulario.
 
 Se descarta el paso del archivo por el backend. **Mecanismo:** el frontend pide al backend una presigned URL; el Form Request valida la producción/canción/artista y la Policy autoriza antes de firmar; el backend firma la URL vía `AudioStorageContract` (S3), acotada al key de destino y con expiración corta; el navegador sube el archivo directamente a S3 con esa URL — el archivo nunca toca Railway.
 
@@ -390,7 +392,9 @@ Se descarta el paso del archivo por el backend. **Mecanismo:** el frontend pide 
 
 → *ISO 25010: eficiencia (comportamiento temporal), restricción Railway Hobby. Cubre: RNF-03, RNF-05.*
 
-### D7.2 — PUT simple, multipart diferido (2026-08-18)
+### D7.2 — Una sola petición, multipart diferido (2026-08-18)
+
+> **Enmienda de 2026-10-20:** la petición única es ahora un `POST` `multipart/form-data` con los campos de la política seguidos del archivo (D7.1). El progreso se sigue leyendo de `XMLHttpRequest.upload` y el compromiso es el mismo: sin reintento parcial. «Multipart» en esta decisión se refiere al *multipart upload* de S3 por partes, no al `multipart/form-data` del formulario.
 
 El navegador sube el archivo completo en una sola petición HTTP a la presigned URL, con el progreso obtenido escuchando el evento `progress` de `XMLHttpRequest` (fetch no expone progreso de subida nativamente). Si la conexión se corta a mitad de la subida, se reinicia desde cero — no hay reintento parcial.
 
@@ -422,6 +426,8 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 **Suficiencia de MD5:** el ETag de S3 (para uploads no-multipart) es el MD5 del archivo. MD5 no es criptográficamente robusto frente a manipulación deliberada, pero el caso de uso de RNF-05 es detectar **corrupción accidental** en la subida, no un ataque — para eso MD5 es suficiente.
 
+**Con el POST de 2026-10-20:** un POST de formulario sube el objeto en una sola parte, así que el ETag sigue siendo el MD5 del archivo y esta decisión no cambia.
+
 **⚠️ Acoplada a D7.2 — revisar si cambia:** esta decisión depende de que la subida sea PUT simple (D7.2). Si en algún momento se activa multipart upload real de S3, el ETag **deja de ser un MD5 simple del archivo completo** (pasa a ser un hash-de-hashes de las partes) y esta verificación deja de funcionar tal cual está descrita. Cualquier revisión futura de D7.2 hacia multipart **debe revisar D7.4 en la misma conversación**, no por separado.
 
 → *ISO 25010: fiabilidad (integridad de datos), eficiencia (comportamiento temporal). Cubre: RNF-05.*
@@ -430,7 +436,7 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 **Orígenes permitidos:** `localhost` (dev, puerto de Vite) + dominio de staging en Vercel + dominio de producción, una vez que existan. Nunca `*` — con presigned PUT, un CORS abierto permitiría que cualquier sitio use las URLs firmadas si llegan a filtrarse.
 
-**Métodos:** `PUT` (subir) y `GET` (por si en el futuro se sirve audio directo desde S3 con URL firmada en vez de proxy por el backend — todavía no decidido, es de la HU de reproducción). No se habilitan `POST`, `DELETE` ni `*`.
+**Métodos:** `POST` (subir, desde la enmienda de D7.1 del 2026-10-20; antes `PUT`) y `GET` (por si en el futuro se sirve audio directo desde S3 con URL firmada en vez de proxy por el backend — todavía no decidido, es de la HU de reproducción). No se habilitan `PUT`, `DELETE` ni `*`. **Pendiente del equipo (`TS-42`):** cambiar `PUT` por `POST` en el CORS del bucket antes de la comprobación en staging (`ts-13.09`).
 
 **Headers:** `Content-Type` permitido en la solicitud; `ExposeHeaders` debe incluir `ETag` explícitamente (los navegadores no lo exponen a JS por defecto sin esto), necesario para D7.4.
 
@@ -445,6 +451,8 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 **Expiración: 15 minutos.** Margen dentro del rango 10-15 min evaluado — suficiente para subir un archivo de 500 MB incluso en una conexión lenta (a 1 MB/s, ~8 minutos) sin dejar la URL viva durante horas si llega a filtrarse (log, captura de pantalla, historial del navegador).
 
+**Con el POST (enmienda de D7.1):** los 15 minutos son la `expiration` de la política firmada. S3 la comprueba al recibir la petición y rechaza con 403 una política caducada.
+
 **No hay "refresco" de una URL en uso:** con PUT simple (D7.2), si la URL expira a mitad de una subida, no existe manera de extender esa subida en curso — S3 simplemente rechaza el resto de la petición. El frontend debe detectar el fallo (403/expirada) y pedir una **URL nueva**, lo que reinicia la subida desde cero. Esto es consistente con el compromiso ya aceptado en D7.2 (sin reintento parcial).
 
 **"Por sesión" = por intento, no persistente:** cada vez que el artista/productor inicia una subida, el frontend pide una presigned URL nueva (pasando de nuevo por Form Request + Policy). No se reutilizan URLs entre intentos ni se guardan para uso posterior — evita que una URL vieja y ya usada quede disponible para reintentos no autorizados.
@@ -453,9 +461,9 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 ### D7.7 — Validación WAV/MP3 ≤ 500 MB: en front, y como condición de la propia presigned URL (2026-08-18)
 
-**Tamaño:** el frontend valida `≤ 500 MB` antes de pedir la presigned URL (rechazo inmediato). El backend no puede inspeccionar el archivo después de subido (D7.1: nunca toca Railway), así que la validación real de tamaño va como condición `content-length-range` al firmar la URL — S3 rechaza directamente cualquier PUT fuera de rango, sin que el backend tenga que hacer nada más.
+**Tamaño:** el frontend valida `≤ 500 MB` antes de pedir la presigned URL (rechazo inmediato). El backend no puede inspeccionar el archivo después de subido (D7.1: nunca toca Railway), así que la validación real de tamaño va como condición `content-length-range` de la política firmada (presigned POST, enmienda de D7.1 del 2026-10-20) — S3 rechaza directamente cualquier subida fuera de rango, sin que el backend tenga que hacer nada más. El rango es exacto: mínimo y máximo iguales al `size_bytes` declarado, que el Form Request ya acotó a ≤ 500 MB (contrato en `docs/specs/backend/HU-13.md`).
 
-**Formato (WAV/MP3):** el frontend valida extensión/`Content-Type` antes de subir. El Form Request valida el `Content-Type` declarado al pedir la URL, y ese mismo valor se fija como condición de la presigned URL (S3 rechaza si el `Content-Type` del PUT no coincide).
+**Formato (WAV/MP3):** el frontend valida extensión/`Content-Type` antes de subir. El Form Request valida el `Content-Type` declarado al pedir la URL, y ese mismo valor se fija como condición exacta (`eq`) de la política firmada (S3 rechaza si el `Content-Type` del formulario no coincide).
 
 **Verificación ligera de magic bytes — mejora de UX, no control de seguridad:** el frontend además lee los primeros bytes del archivo (`RIFF....WAVE` para WAV, sync frame/tag `ID3` para MP3) antes de pedir la URL, para detectar archivos corruptos o mal renombrados sin gastar minutos subiéndolos. Es barato (no requiere leer el archivo completo) y mejora la experiencia, pero **no es una garantía de seguridad** — se puede evadir fácilmente y no pretende serlo.
 
