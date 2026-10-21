@@ -106,7 +106,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 - [x] `ts-13.01` Spec backend: firma, reserva de `version_number` con `FOR UPDATE`, fila `pendiente`, key D7.3, condiciones de la presigned POST (D7.7), errores D3.1 y fila RBAC de `versions` (ADR 8.1).
 - [x] `ts-13.02` Tests backend en rojo: tipo/tamaño inválidos, numeración, key, canción inexistente o borrada, permisos y migración.
-- [ ] `ts-13.03` Código backend hasta verde (humano): `create_versions_table` según ERD §3.5. Larastan y Pint limpios.
+- [x] `ts-13.03` Código backend hasta verde (humano): `create_versions_table` según ERD §3.5. Larastan y Pint limpios.
 - [ ] `ts-13.04` Review backend con C3.
 - [ ] `ts-13.05` Spec frontend: selección del archivo, validación previa, normalización de `content_type`, POST directo con progreso (< 3 s, RNF-03), caducidad de 15 min y errores.
 - [ ] `ts-13.06` Tests frontend en rojo.

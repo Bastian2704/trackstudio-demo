@@ -502,20 +502,18 @@ it('protege relaciones, únicos, checks e índices de versions', function () {
         ]);
 
     $checks = collect(restriccionesPostgresql('versions', 'c'));
-    $check = fn (string $columna): ?string => $checks->first(fn (string $definicion): bool => str_contains($definicion, $columna));
+    // Se busca por la condición, no por la columna: `duration_ms` y
+    // `upload_status` también aparecen en el CHECK de evidencia.
+    $check = fn (string $condicion): ?string => $checks->first(fn (string $definicion): bool => str_contains($definicion, $condicion));
 
     expect($checks)->toHaveCount(6)
-        ->and($check('version_number'))->toBeString()->toContain('version_number > 0')
-        ->and($check('content_type'))->toBeString()->toContain('audio/wav')->toContain('audio/mpeg')
-        ->and($check('size_bytes'))->toBeString()->toContain('size_bytes > 0')->toContain('size_bytes <= 524288000')
-        ->and($check('duration_ms'))->toBeString()->toContain('duration_ms > 0')
-        ->and($checks->first(fn (string $definicion): bool => str_contains($definicion, 'etag IS NOT NULL')))
-        ->toBeString()->toContain('verified_at IS NOT NULL')->toContain('duration_ms IS NOT NULL');
-
-    $checkDeEstado = $checks->first(fn (string $definicion): bool => str_contains($definicion, 'upload_status')
-        && str_contains($definicion, 'fallida'));
-
-    expect($checkDeEstado)->toBeString()->toContain('pendiente')->toContain('verificada');
+        ->and($check('version_number > 0'))->toBeString()
+        ->and($check('audio/mpeg'))->toBeString()->toContain('audio/wav')
+        ->and($check('size_bytes <= 524288000'))->toBeString()->toContain('size_bytes > 0')
+        ->and($check('duration_ms > 0'))->toBeString()
+        ->and($check('fallida'))->toBeString()->toContain('pendiente')->toContain('verificada')
+        ->and($check('etag IS NOT NULL'))->toBeString()
+        ->toContain('verified_at IS NOT NULL')->toContain('duration_ms IS NOT NULL');
 
     $indices = collect(DB::select(
         <<<'SQL'
