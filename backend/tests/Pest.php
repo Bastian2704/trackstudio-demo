@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Auth\UserRepository;
+use App\Contracts\AudioStorageContract;
+use App\Enums\AudioContentType;
 use Auth0\Laravel\Entities\CredentialEntity;
+use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route as DefinicionDeRuta;
@@ -381,4 +384,71 @@ function datosDeEdicionDeCancion(array $cambios = []): array
         'name' => 'Intro (versión final)',
         'status' => 'en_progreso',
     ], $cambios);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-13 (docs/specs/backend/HU-13.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `VersionResource` (spec §3.7). */
+const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'content_type', 'size_bytes', 'upload_status', 'created_at', 'updated_at'];
+
+/**
+ * Cuerpo válido de la firma: un WAV de ~46 MB. El archivo no viaja (D7.1).
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeVersion(array $cambios = []): array
+{
+    return array_merge([
+        'content_type' => 'audio/wav',
+        'size_bytes' => 48211200,
+    ], $cambios);
+}
+
+/**
+ * Sustituye `AudioStorageContract` por un doble y devuelve sus llamadas.
+ *
+ * El doble firma un formulario de mentira que repite el key y el tipo
+ * recibidos; con `$falla`, registra la llamada y lanza esa excepción. La
+ * clase anónima se declara al ejecutarse, así que este archivo no exige que
+ * el contrato exista hasta que un test la use.
+ *
+ * @return ArrayObject<int, array{key: string, content_type: AudioContentType, size_bytes: int}>
+ */
+function falsearAlmacenamientoDeAudio(?Throwable $falla = null): ArrayObject
+{
+    /** @var ArrayObject<int, array{key: string, content_type: AudioContentType, size_bytes: int}> $llamadas */
+    $llamadas = new ArrayObject;
+
+    app()->instance(AudioStorageContract::class, new class($llamadas, $falla) implements AudioStorageContract
+    {
+        /** @param ArrayObject<int, array{key: string, content_type: AudioContentType, size_bytes: int}> $llamadas */
+        public function __construct(private ArrayObject $llamadas, private ?Throwable $falla) {}
+
+        public function presignUpload(string $key, AudioContentType $contentType, int $sizeBytes): array
+        {
+            $this->llamadas->append(['key' => $key, 'content_type' => $contentType, 'size_bytes' => $sizeBytes]);
+
+            if ($this->falla !== null) {
+                throw $this->falla;
+            }
+
+            return [
+                'url' => 'https://bucket-de-prueba.s3.amazonaws.com/',
+                'fields' => [
+                    'key' => $key,
+                    'Content-Type' => $contentType->value,
+                    'Policy' => 'politica-de-prueba',
+                    'X-Amz-Signature' => 'firma-de-prueba',
+                ],
+                'expires_at' => CarbonImmutable::now()->addMinutes(15),
+            ];
+        }
+    });
+
+    return $llamadas;
 }
