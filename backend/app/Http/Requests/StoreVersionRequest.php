@@ -29,7 +29,7 @@ final class StoreVersionRequest extends FormRequest
             'size_bytes' => [
                 'bail',
                 'required',
-                'integer',
+                'integer:strict',
                 'min:1',
                 'max:'.Version::MAX_SIZE_BYTES,
             ],

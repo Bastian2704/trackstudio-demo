@@ -34,6 +34,8 @@ dataset('tamaños invalidos', [
     'un byte más de 500 MB' => [['size_bytes' => 524288001], null],
     'texto' => [['size_bytes' => 'abc'], null],
     'decimal' => [['size_bytes' => 1.5], null],
+    'texto numérico' => [['size_bytes' => '48211200'], null],
+    'booleano' => [['size_bytes' => true], null],
 ]);
 
 /*
