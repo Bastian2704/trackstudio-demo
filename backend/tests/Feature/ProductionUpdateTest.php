@@ -151,3 +151,71 @@ it('rechaza la edición sin identidad productora y conserva la fila', function (
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| TS-20 — Cambio de formato con canciones vigentes
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/HU-09.md §3.3 y §4 (#6–#9).
+|
+*/
+
+it('permite cambiar a un formato que admite las canciones vigentes', function (string $from, int $existing, string $to) {
+    $production = Production::factory()->create(['format' => $from]);
+    crearCanciones($production, $existing);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->putJson("/api/v1/productions/{$production->id}", datosDeEdicionDeProduccion(['format' => $to]))
+        ->assertOk()
+        ->assertJsonPath('data.format', $to);
+
+    expect($production->refresh()->format->value)->toBe($to);
+})->with([
+    'EP con 1 a sencillo' => ['ep', 1, 'sencillo'],
+    'álbum con 6 a EP' => ['album', 6, 'ep'],
+    'sencillo con 1 a álbum' => ['sencillo', 1, 'album'],
+    'EP con 6 a álbum' => ['ep', 6, 'album'],
+]);
+
+it('rechaza cambiar a un formato que no admite las canciones vigentes', function (string $from, int $existing, string $to, string $message) {
+    $production = Production::factory()->create(['format' => $from]);
+    crearCanciones($production, $existing);
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->putJson("/api/v1/productions/{$production->id}", datosDeEdicionDeProduccion(['format' => $to]));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath('errors.format.0', $message);
+
+    expect(array_keys($response->json('errors')))->toBe(['format']);
+    expectProduccionIntacta($production);
+})->with([
+    'EP con 2 a sencillo' => ['ep', 2, 'sencillo', 'La producción tiene 2 canciones y un sencillo admite como máximo 1.'],
+    'álbum con 7 a EP' => ['album', 7, 'ep', 'La producción tiene 7 canciones y un EP admite como máximo 6.'],
+    'álbum con 7 a sencillo' => ['album', 7, 'sencillo', 'La producción tiene 7 canciones y un sencillo admite como máximo 1.'],
+]);
+
+it('no cuenta las canciones borradas al cambiar de formato', function () {
+    $production = Production::factory()->create(['format' => 'ep']);
+    crearCanciones($production, 2)->last()?->delete();
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->putJson("/api/v1/productions/{$production->id}", datosDeEdicionDeProduccion(['format' => 'sencillo']))
+        ->assertOk()
+        ->assertJsonPath('data.format', 'sencillo');
+});
+
+it('permite editar el nombre sin cambiar el formato aunque supere el máximo', function () {
+    // Dato heredado de S2, cuando el alta de canciones no tenía límite (HU-09 §3.4, decisión 2).
+    $production = Production::factory()->create(['format' => 'sencillo']);
+    crearCanciones($production, 3);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->putJson("/api/v1/productions/{$production->id}", datosDeEdicionDeProduccion(['format' => 'sencillo']))
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Sesiones remasterizadas');
+
+    expect($production->refresh()->name)->toBe('Sesiones remasterizadas');
+});
