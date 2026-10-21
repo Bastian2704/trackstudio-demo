@@ -18,10 +18,10 @@ import { Button } from '@/components/ui/button'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
+import VersionUpload from '@/routes/versions/VersionUpload'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import type { Song, SongInput } from './songSchema'
-import VersionUpload from '@/routes/versions/VersionUpload'
 
 export default function SongEditPage() {
   const { id = '' } = useParams()
