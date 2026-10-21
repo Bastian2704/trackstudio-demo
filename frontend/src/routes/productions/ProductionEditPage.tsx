@@ -18,10 +18,12 @@ import { Button } from '@/components/ui/button'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
+import { fetchSongs } from '@/routes/songs/songApi'
 import SongList from '@/routes/songs/SongList'
 import ProductionForm from './ProductionForm'
+import ProductionFormatNotice from './ProductionFormatNotice'
 import { deleteProduction, fetchProduction, updateProduction } from './productionApi'
-import type { Production, ProductionInput } from './productionSchema'
+import { FORMAT_RULES, type Production, type ProductionInput } from './productionSchema'
 
 export default function ProductionEditPage() {
   const { id = '' } = useParams()
@@ -35,6 +37,15 @@ export default function ProductionEditPage() {
     queryKey: ['productions', id],
     queryFn: () => fetchProduction(id),
   })
+
+  const songsQuery = useQuery({
+    queryKey: ['songs', 'list', id, 1],
+    queryFn: () => fetchSongs(id, 1),
+    enabled: query.isSuccess,
+  })
+  const songCount = songsQuery.isSuccess ? songsQuery.data.meta.total : undefined
+  const max = query.data ? FORMAT_RULES[query.data.format].max : null
+  const isFull = songCount !== undefined && max !== null && songCount >= max
 
   const updateMutation = useMutation({
     mutationFn: (input: ProductionInput) => updateProduction(id, input),
@@ -89,7 +100,10 @@ export default function ProductionEditPage() {
             submitLabel="Guardar cambios"
             onSubmit={(input) => updateMutation.mutateAsync(input)}
           />
-          <Link to={`/producciones/${id}/canciones/nueva`}>Nueva canción</Link>
+          {songCount !== undefined && (
+            <ProductionFormatNotice format={query.data.format} songCount={songCount} />
+          )}
+          {!isFull && <Link to={`/producciones/${id}/canciones/nueva`}>Nueva canción</Link>}
           <SongList productionId={id} />
           <AlertDialog
             open={confirmOpen}

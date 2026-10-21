@@ -46,6 +46,7 @@ export default function SongEditPage() {
   const deleteMutation = useMutation({
     mutationFn: (_productionId: string) => deleteSong(id),
     onSuccess: (_data, productionId) => {
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'list', productionId] })
       void navigate(`/producciones/${productionId}/editar`, {
         state: { notice: 'Canción eliminada.' },
       })

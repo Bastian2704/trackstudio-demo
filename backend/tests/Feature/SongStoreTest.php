@@ -46,7 +46,8 @@ it('registra una canción y responde 201', function () {
 });
 
 it('asigna la siguiente posición entre las vigentes', function () {
-    $production = Production::factory()->create();
+    // Álbum: sin máximo de canciones (HU-09 §3.1), para no depender del formato aleatorio de la factory.
+    $production = Production::factory()->create(['format' => 'album']);
     $otherProduction = Production::factory()->create();
     // Hueco en 2 (residual de concurrencia, §3.8): solo `max + 1` evita repetir la 3.
     Song::factory()->create(['production_id' => $production->id, 'name' => 'Uno', 'position' => 1]);
@@ -110,7 +111,8 @@ it('valida el nombre', function (array $changes, string $field, ?string $remove)
 })->with('nombres de cancion invalidos');
 
 it('protege la unicidad del nombre dentro de la producción', function () {
-    $production = Production::factory()->create();
+    // Álbum: sin máximo de canciones (HU-09 §3.1), para no depender del formato aleatorio de la factory.
+    $production = Production::factory()->create(['format' => 'album']);
     $otherProduction = Production::factory()->create();
     Song::factory()->create(['production_id' => $production->id, 'name' => 'Intro', 'position' => 1]);
     Song::factory()->create(['production_id' => $production->id, 'name' => 'Outro', 'position' => 2])->delete();
@@ -186,3 +188,86 @@ it('rechaza sin identidad o sin rol productor', function (?string $role, int $st
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| TS-20 — Máximo de canciones por formato al registrar una canción
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/HU-09.md §3.2 y §4 (#1–#5).
+|
+*/
+
+it('admite canciones hasta el máximo del formato', function (string $format, int $existing) {
+    $production = Production::factory()->create(['format' => $format]);
+    crearCanciones($production, $existing);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->postJson("/api/v1/productions/{$production->id}/songs", datosDeCancion())
+        ->assertCreated()
+        ->assertJsonPath('data.position', $existing + 1);
+
+    expect($production->songs()->count())->toBe($existing + 1);
+})->with([
+    'sencillo vacío' => ['sencillo', 0],
+    'EP con 5' => ['ep', 5],
+    'álbum con 6' => ['album', 6],
+    'álbum con 20' => ['album', 20],
+]);
+
+it('rechaza superar el máximo del formato', function (string $format, int $existing, string $message) {
+    $production = Production::factory()->create(['format' => $format]);
+    crearCanciones($production, $existing);
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/productions/{$production->id}/songs", datosDeCancion());
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath('errors.production.0', $message);
+
+    expect(array_keys($response->json('errors')))->toBe(['production'])
+        ->and(Song::query()->count())->toBe($existing);
+})->with([
+    'sencillo con 1' => ['sencillo', 1, 'Un sencillo admite como máximo 1 canción.'],
+    'EP con 6' => ['ep', 6, 'Un EP admite como máximo 6 canciones.'],
+]);
+
+it('no cuenta las canciones borradas para el máximo', function () {
+    $single = Production::factory()->create(['format' => 'sencillo']);
+    crearCanciones($single, 1)->each->delete();
+    $ep = Production::factory()->create(['format' => 'ep']);
+    crearCanciones($ep, 6)->last()?->delete();
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->postJson("/api/v1/productions/{$single->id}/songs", datosDeCancion())
+        ->assertCreated();
+    $this->postJson("/api/v1/productions/{$ep->id}/songs", datosDeCancion())
+        ->assertCreated();
+});
+
+it('cuenta solo las canciones de la propia producción', function () {
+    $production = Production::factory()->create(['format' => 'sencillo']);
+    $sibling = Production::factory()->create([
+        'artist_id' => $production->artist_id,
+        'format' => 'sencillo',
+    ]);
+    crearCanciones($sibling, 1);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->postJson("/api/v1/productions/{$production->id}/songs", datosDeCancion())
+        ->assertCreated();
+});
+
+it('prioriza el artista inactivo sobre el máximo', function () {
+    $production = Production::factory()->create(['format' => 'sencillo']);
+    crearCanciones($production, 1);
+    $production->artist()->update(['status' => ArtistStatus::Inactivo]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->postJson("/api/v1/productions/{$production->id}/songs", datosDeCancion())
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.production', [
+            'No se pueden añadir canciones a una producción de un artista inactivo.',
+        ]);
+});

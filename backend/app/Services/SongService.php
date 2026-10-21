@@ -23,6 +23,19 @@ final class SongService
             ]);
         }
 
+        $maxSongs = $production->format->maxSongs();
+
+        if ($maxSongs !== null && $production->songs()->count() >= $maxSongs) {
+            throw ValidationException::withMessages([
+                'production' => sprintf(
+                    'Un %s admite como máximo %d %s.',
+                    $production->format->label(),
+                    $maxSongs,
+                    $maxSongs === 1 ? 'canción' : 'canciones',
+                ),
+            ]);
+        }
+
         $position = (int) Song::query()
             ->where('production_id', $production->getKey())
             ->max('position') + 1;

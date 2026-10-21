@@ -80,14 +80,14 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 ### TS-20 / ts-09 - HU-09 Validar restricciones de formato
 
 - [x] `ts-09.10` Contrato de formato aprobado en TS-49 (2026-10-05).
-- [ ] `ts-09.01` Spec backend: matriz de reglas por formato, alta de canción, cambio de formato y errores D3.1.
-- [ ] `ts-09.02` Tests backend en rojo: límites por formato, casos válidos, alta, edición y autorización.
-- [ ] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios.
-- [ ] `ts-09.04` Review backend con C3.
-- [ ] `ts-09.05` Spec frontend: validación coherente con el backend y presentación del 422.
-- [ ] `ts-09.06` Tests frontend en rojo.
-- [ ] `ts-09.07` Código frontend hasta verde (humano).
-- [ ] `ts-09.08` Review frontend con C3.
+- [x] `ts-09.01` Spec backend: matriz de reglas por formato, alta de canción, cambio de formato y errores D3.1.
+- [x] `ts-09.02` Tests backend en rojo: límites por formato, casos válidos, alta, edición y autorización.
+- [x] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios.
+- [x] `ts-09.04` Review backend con C3.
+- [x] `ts-09.05` Spec frontend: validación coherente con el backend y presentación del 422.
+- [x] `ts-09.06` Tests frontend en rojo.
+- [x] `ts-09.07` Código frontend hasta verde (humano).
+- [x] `ts-09.08` Review frontend con C3.
 - [ ] `ts-09.09` Comprobación en staging por el equipo.
 
 ### TS-22 / ts-11 - HU-11 Listar canciones con estado y posición
