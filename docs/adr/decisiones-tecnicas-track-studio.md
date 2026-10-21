@@ -436,7 +436,7 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 **Orígenes permitidos:** `localhost` (dev, puerto de Vite) + dominio de staging en Vercel + dominio de producción, una vez que existan. Nunca `*` — con presigned PUT, un CORS abierto permitiría que cualquier sitio use las URLs firmadas si llegan a filtrarse.
 
-**Métodos:** `POST` (subir, desde la enmienda de D7.1 del 2026-10-20; antes `PUT`) y `GET` (por si en el futuro se sirve audio directo desde S3 con URL firmada en vez de proxy por el backend — todavía no decidido, es de la HU de reproducción). No se habilitan `PUT`, `DELETE` ni `*`. **Pendiente del equipo (`TS-42`):** cambiar `PUT` por `POST` en el CORS del bucket antes de la comprobación en staging (`ts-13.09`).
+**Métodos:** `POST` (subir, desde la enmienda de D7.1 del 2026-10-20; antes `PUT`) y `GET` (por si en el futuro se sirve audio directo desde S3 con URL firmada en vez de proxy por el backend — todavía no decidido, es de la HU de reproducción). No se habilitan `PUT`, `DELETE` ni `*`. **Aplicado por el equipo (2026-10-20, `TS-42`):** el CORS del bucket permite `POST` y `GET`.
 
 **Headers:** `Content-Type` permitido en la solicitud; `ExposeHeaders` debe incluir `ETag` explícitamente (los navegadores no lo exponen a JS por defecto sin esto), necesario para D7.4.
 
@@ -479,7 +479,7 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11); faltan filas de `productions`/`versions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
+| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11) y `versions` el 2026-10-20 (HU-13); faltan filas de `productions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
 | 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
@@ -503,6 +503,10 @@ Documentación formal de las reglas de autorización que ya implican D4.2 (API R
 | `songs` | Ver | ✅ | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `songs` | Editar | ✅ | ❌ |
 | `songs` | Borrar | ✅ | ❌ |
+| `versions` | Subir (firmar la subida) | ✅ | ❌ |
+| `versions` | Ver historial | ✅ desde HU-14 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
+| `versions` | Reproducir | ✅ desde HU-15/HU-16 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
+| `versions` | Borrar (cascada de HU-12) | ✅ | ❌ |
 | Endpoint de humo (`/api/v1/me`) | Ver | ✅ | ✅ |
 
 **Evidencia auditable (D3.1):** el 403 que recibe un `artista` al intentar una acción marcada ❌ arriba es la prueba end-to-end de que esta matriz se cumple en código, no solo en documentación — es el entregable de HU-04 y de la Definition of Done del Sprint 1.
@@ -643,7 +647,7 @@ Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y 
 
 1. ~~**9.2 — Migraciones en deploy.**~~ — **cerrado 2026-10-15**: automáticas en cada despliegue de Railway con `--force` (ver D9.2).
 2. ~~**9.4 — Rollback.**~~ — **cerrado 2026-10-15**: rollback de plataforma, migraciones expand/contract, corrección hacia adelante y copia de BD antes de producción (ver D9.4).
-3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `productions`/`versions`/`comments`/`studio_sessions` (`songs` cerrada el 2026-10-19 en HU-11; «reordenar» entra cuando exista su HU). El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
+3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `productions`/`comments`/`studio_sessions` (`songs` cerrada el 2026-10-19 en HU-11 y `versions` el 2026-10-20 en HU-13; «reordenar» entra cuando exista su HU). El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
 4. ⚠️ **1.6 — Definition of Ready, certificación completa.** Confirmar si el prototipo de Figma existe para todas las pantallas (criterio 6), y cerrar 11.5 (criterio 7) para que deje de ser `PARCIAL`.
 5. ⚠️ **11.5 — Plan de medición de RNF, resto de RNF.** RNF-04 ya tiene instrumento (D9.3); falta confirmar el redactado exacto de RNF-03 en la tesis (ver D7.1) y definir instrumento para RNF-01, RNF-02, RNF-05, RNF-06, RNF-07.
 6. ~~**3.6 — Nivel de adhesión a RFC 9457.**~~ — **cerrado 2026-09-17**: completo, con `type` derivado del `code` sobre `trackstudio.site` (ver D3.1).
