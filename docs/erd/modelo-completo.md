@@ -130,7 +130,7 @@ Restricción entre columnas: `CHECK (upload_status <> 'verificada' OR (etag IS N
 
 **Ciclo de vida** (frontera de D7.1, D7.4 y D7.6):
 
-1. **Firma (HU-13):** el Service reserva el número, crea la fila en `pendiente` con `content_type`, el `size_bytes` declarado y `s3_key`, y devuelve la presigned PUT (15 min, D7.6).
+1. **Firma (HU-13):** el Service reserva el número, crea la fila en `pendiente` con `content_type`, el `size_bytes` declarado y `s3_key`, y devuelve la presigned POST (15 min, D7.6; POST desde la enmienda de D7.1 del 2026-10-20).
 2. **Confirmación:** el frontend informa del ETag y de `duration_ms`. El Service llama a `HeadObject` mediante `HashVerifierContract` (D4.3) y, si el ETag coincide, pasa la fila a `verificada` con `etag`, `verified_at`, el `size_bytes` real y `duration_ms`. Si no coincide, pasa a `fallida`.
 3. **Abandono:** una fila `pendiente` cuya URL caducó sin confirmarse puede pasar a `fallida`. El mecanismo (job programado o paso perezoso al consultar) lo decide la spec de HU-14. Su número queda consumido.
 4. Solo las versiones `verificada` aparecen en el historial (HU-14), se reproducen (HU-15/16) y admiten comentarios (§3.6).

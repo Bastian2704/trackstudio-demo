@@ -5,10 +5,13 @@ declare(strict_types=1);
 use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Song;
+use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -420,3 +423,147 @@ it('impide en PostgreSQL repetir el nombre vigente dentro de la producción', fu
 
     expect(Song::withTrashed()->count())->toBe(3);
 });
+
+/*
+|--------------------------------------------------------------------------
+| TS-24 — Tabla versions (modelo-completo.md §3.5)
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/HU-13.md §3.9 y §4 (#1–#4). Sin clases nuevas: la
+| tabla se inspecciona y se escribe con SQL para no tumbar los casos previos.
+|
+*/
+
+/**
+ * Fila mínima válida de `versions` para insertar con `DB::table()`.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function filaDeVersion(array $cambios = []): array
+{
+    $id = (string) Str::uuid();
+
+    return array_merge([
+        'id' => $id,
+        'song_id' => Song::factory()->create()->id,
+        'version_number' => 1,
+        's3_key' => "artista/produccion/cancion/{$id}.wav",
+        'content_type' => 'audio/wav',
+        'size_bytes' => 1024,
+        'uploaded_by' => User::factory()->create()->id,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ], $cambios);
+}
+
+it('crea versions con el contrato exacto aprobado', function () {
+    expect(Schema::hasTable('versions'))->toBeTrue();
+
+    expect(columnasPostgresql('versions'))->toBe([
+        ['column_name' => 'id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'song_id', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'version_number', 'data_type' => 'integer', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'label', 'data_type' => 'character varying', 'is_nullable' => 'YES', 'character_maximum_length' => 100],
+        ['column_name' => 'description', 'data_type' => 'text', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+        ['column_name' => 's3_key', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 512],
+        ['column_name' => 'content_type', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 50],
+        ['column_name' => 'size_bytes', 'data_type' => 'bigint', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'etag', 'data_type' => 'character varying', 'is_nullable' => 'YES', 'character_maximum_length' => 64],
+        ['column_name' => 'upload_status', 'data_type' => 'character varying', 'is_nullable' => 'NO', 'character_maximum_length' => 20],
+        ['column_name' => 'verified_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+        ['column_name' => 'duration_ms', 'data_type' => 'integer', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+        ['column_name' => 'uploaded_by', 'data_type' => 'uuid', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'created_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'updated_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
+        ['column_name' => 'deleted_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+    ]);
+
+    $uploadStatusDefault = DB::scalar(
+        <<<'SQL'
+            SELECT column_default
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = 'versions'
+              AND column_name = 'upload_status'
+        SQL,
+    );
+
+    expect($uploadStatusDefault)->toBeString()->toContain("'pendiente'");
+});
+
+it('protege relaciones, únicos, checks e índices de versions', function () {
+    expect(Schema::hasTable('versions'))->toBeTrue();
+
+    expect(restriccionesPostgresql('versions', 'p'))->toBe(['PRIMARY KEY (id)'])
+        ->and(clavesForaneasPostgresql('versions'))->toBe([
+            ['column_name' => 'song_id', 'foreign_table' => 'songs', 'foreign_column' => 'id', 'delete_rule' => 'NO ACTION'],
+            ['column_name' => 'uploaded_by', 'foreign_table' => 'users', 'foreign_column' => 'id', 'delete_rule' => 'NO ACTION'],
+        ]);
+
+    $checks = collect(restriccionesPostgresql('versions', 'c'));
+    // Se busca por la condición, no por la columna: `duration_ms` y
+    // `upload_status` también aparecen en el CHECK de evidencia.
+    $check = fn (string $condicion): ?string => $checks->first(fn (string $definicion): bool => str_contains($definicion, $condicion));
+
+    expect($checks)->toHaveCount(6)
+        ->and($check('version_number > 0'))->toBeString()
+        ->and($check('audio/mpeg'))->toBeString()->toContain('audio/wav')
+        ->and($check('size_bytes <= 524288000'))->toBeString()->toContain('size_bytes > 0')
+        ->and($check('duration_ms > 0'))->toBeString()
+        ->and($check('fallida'))->toBeString()->toContain('pendiente')->toContain('verificada')
+        ->and($check('etag IS NOT NULL'))->toBeString()
+        ->toContain('verified_at IS NOT NULL')->toContain('duration_ms IS NOT NULL');
+
+    $indices = collect(DB::select(
+        <<<'SQL'
+            SELECT indexname, indexdef
+            FROM pg_indexes
+            WHERE schemaname = current_schema()
+              AND tablename = 'versions'
+        SQL,
+    ))->pluck('indexdef', 'indexname');
+
+    // Total, no parcial: un número borrado no se reutiliza nunca (ERD §3.5).
+    expect($indices)->toHaveKey('versions_song_id_version_number_unique')
+        ->and($indices['versions_song_id_version_number_unique'])
+        ->toContain('CREATE UNIQUE INDEX')
+        ->toContain('(song_id, version_number)')
+        ->not->toContain('WHERE')
+        ->and($indices->contains(fn (string $indice): bool => str_contains($indice, 'CREATE UNIQUE INDEX')
+            && str_contains($indice, '(s3_key)')
+            && ! str_contains($indice, 'WHERE')))->toBeTrue()
+        ->and($indices)->toHaveKey('versions_uploaded_by_index')
+        ->and($indices['versions_uploaded_by_index'])->toContain('(uploaded_by)');
+});
+
+it('rechaza repetir un número de versión aunque la anterior esté borrada', function () {
+    $borrada = filaDeVersion(['deleted_at' => now()]);
+    DB::table('versions')->insert($borrada);
+
+    expect(fn () => DB::transaction(fn () => DB::table('versions')->insert(filaDeVersion([
+        'song_id' => $borrada['song_id'],
+        'version_number' => $borrada['version_number'],
+    ]))))->toThrow(UniqueConstraintViolationException::class);
+
+    expect(DB::table('versions')->count())->toBe(1);
+});
+
+it('rechaza una versión verificada sin evidencia de integridad', function (string $faltante) {
+    $evidencia = array_diff_key([
+        'etag' => 'd41d8cd98f00b204e9800998ecf8427e',
+        'verified_at' => now(),
+        'duration_ms' => 180000,
+    ], [$faltante => true]);
+
+    expect(fn () => DB::transaction(fn () => DB::table('versions')->insert(filaDeVersion([
+        'upload_status' => 'verificada',
+        ...$evidencia,
+    ]))))->toThrow(QueryException::class, 'versions_verified_complete_check');
+
+    expect(DB::table('versions')->count())->toBe(0);
+})->with([
+    'sin etag' => ['etag'],
+    'sin verified_at' => ['verified_at'],
+    'sin duration_ms' => ['duration_ms'],
+]);

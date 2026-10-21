@@ -32,7 +32,7 @@ it('clasifica y protege todas las rutas de la API', function () {
         ->sortKeys()
         ->all();
 
-    // TS-16..TS-22: artistas, producciones y canciones, solo productor vía sus Policies.
+    // TS-16..TS-24: artistas, producciones, canciones y versiones, solo productor vía sus Policies.
     expect($inventario)->toBe([
         'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
         'DELETE api/v1/songs/{song}' => ['auth:auth0-api', 'can:delete,song'],
@@ -47,6 +47,7 @@ it('clasifica y protege todas las rutas de la API', function () {
         'POST api/v1/productions' => ['auth:auth0-api', 'can:create,App\\Models\\Production'],
         'POST api/v1/productions/{production}/songs' => ['auth:auth0-api', 'can:create,App\\Models\\Song'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
+        'POST api/v1/songs/{song}/versions' => ['auth:auth0-api', 'can:create,App\\Models\\Version'],
         'PUT api/v1/artists/{artist}' => ['auth:auth0-api', 'can:update,artist'],
         'PUT api/v1/artists/{artist}/status' => ['auth:auth0-api', 'can:changeStatus,artist'],
         'PUT api/v1/productions/{production}' => ['auth:auth0-api', 'can:update,production'],
@@ -82,4 +83,5 @@ it('restringe a UUID las rutas parametrizadas de canciones', function (string $m
     'consulta' => ['GET', 'api/v1/songs/{song}', 'song'],
     'edición' => ['PUT', 'api/v1/songs/{song}', 'song'],
     'borrado' => ['DELETE', 'api/v1/songs/{song}', 'song'],
+    'subida' => ['POST', 'api/v1/songs/{song}/versions', 'song'],
 ]);

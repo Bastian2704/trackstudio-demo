@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
+import VersionUpload from '@/routes/versions/VersionUpload'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import type { Song, SongInput } from './songSchema'
@@ -92,6 +93,7 @@ export default function SongEditPage() {
           <Link to={`/producciones/${query.data.production_id}/editar`}>
             Volver a la producción
           </Link>
+          <VersionUpload songId={id} />
           <AlertDialog
             open={confirmOpen}
             onOpenChange={(open) => {

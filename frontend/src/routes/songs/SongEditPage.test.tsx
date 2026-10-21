@@ -14,6 +14,7 @@ import {
   type PeticionRegistrada,
   type RespuestaSimulada,
 } from '@/test/api'
+import { archivoDeAudio, firmaSimulada, simularS3 } from '@/test/s3'
 
 /*
  * TS-21 (HU-10) — ts-10.06, spec frontend §4 tests 11 a 19.
@@ -391,4 +392,48 @@ describe('SongEditPage', () => {
       expect(dialogo.textContent).toContain('¿Eliminar canción?')
     },
   )
+})
+
+/*
+ * TS-24 (HU-13) — ts-13.06, spec frontend HU-13 §4 tests 14 y 15: la subida de
+ * versiones se monta en la edición de la canción, solo con la canción cargada.
+ */
+describe('SongEditPage — subida de versiones', () => {
+  it('muestra la subida de versiones de la canción', async () => {
+    simularS3()
+    const peticiones = simularApi(
+      conPrecarga((peticion) =>
+        peticion.method === 'POST' && peticion.url === `${URL_CANCION}/versions`
+          ? firmaSimulada(1, ID)
+          : { status: 500 },
+      ),
+    )
+    renderEdicion()
+    const user = userEvent.setup({ applyAccept: false })
+
+    await esperarPrecarga()
+    expect(screen.getByRole('heading', { name: 'Subir versión' })).toBeTruthy()
+    expect(nombre()).toBeTruthy()
+
+    await user.upload(
+      screen.getByLabelText('Archivo de audio'),
+      archivoDeAudio({ name: 'toma.wav', type: 'audio/wav', cabecera: 'wav' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Subir versión' }))
+
+    await waitFor(() =>
+      expect(peticiones.filter((p) => p.method === 'POST')).toEqual([
+        expect.objectContaining({ url: `${URL_CANCION}/versions` }),
+      ]),
+    )
+  })
+
+  it('no ofrece subir si la canción no carga', async () => {
+    simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
+    renderEdicion()
+
+    expect(await screen.findByRole('heading', { name: 'Canción no encontrada' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Subir versión' })).toBeNull()
+    expect(screen.queryByLabelText('Archivo de audio')).toBeNull()
+  })
 })

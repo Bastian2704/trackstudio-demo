@@ -87,14 +87,14 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ## 5. Qué NO hacer todavía (alcance vigente de Sprint 3)
 
-> **Actualizado el 2026-10-15 (Sprint 3, `docs/backlog/sprints/sprint-03.md`):** se levanta el veto de `versions`, de la subida a S3 de aplicación y de la presigned **PUT** **solo para `TS-24`** (HU-13), según `docs/erd/modelo-completo.md` §3.5 y D7.1-D7.7. Siguen vetados la verificación con `HeadObject`/ETag y el paso a `verificada` (S4, `TS-25`/`TS-27`) y las URLs firmadas de lectura (HU-16). HU-09 (`TS-20`), HU-11 (`TS-22`) y HU-12 (`TS-23`) entran en S3. Las viñetas siguientes se leen con esta nota.
+> **Actualizado el 2026-10-15 (Sprint 3, `docs/backlog/sprints/sprint-03.md`):** se levanta el veto de `versions`, de la subida a S3 de aplicación y de la presigned **POST** (antes PUT, enmienda de D7.1 del 2026-10-20) **solo para `TS-24`** (HU-13), según `docs/erd/modelo-completo.md` §3.5 y D7.1-D7.7. Siguen vetados la verificación con `HeadObject`/ETag y el paso a `verificada` (S4, `TS-25`/`TS-27`) y las URLs firmadas de lectura (HU-16). HU-09 (`TS-20`), HU-11 (`TS-22`) y HU-12 (`TS-23`) entran en S3. Las viñetas siguientes se leen con esta nota.
 
 > **Actualizado el 2026-10-02:** la baseline de 12 semanas habilita HU-05..HU-09 en S2. El bloque 7 del ADR continúa **CERRADO** (D7.1-D7.7); no es un bloqueo. El gate vigente para datos es el slice aprobado del ERD en `TS-49`. Si se levanta otro veto, se levanta aquí primero.
 >
 > **Actualizado el 2026-10-13:** `TS-21` (HU-10, canciones) se adelanta de S3 a S2 y `TS-20` (HU-09) pasa a S3. Se levanta el veto de `songs` **solo para TS-21**.
 
 - Se permiten en S2 las migraciones e interfaces de `artists` y `productions` que estén cubiertas por una spec aprobada y por el slice correspondiente del ERD. No se inventa el esquema desde la implementación.
-- Subida de archivos, S3 de aplicación, `versions` y presigned PUT: solo dentro de `TS-24`, con `TS-42` (bucket/IAM, humano) listo. Fuera de esa historia siguen vetados.
+- Subida de archivos, S3 de aplicación, `versions` y presigned POST (D7.1, enmendada el 2026-10-20; antes PUT): solo dentro de `TS-24`, con `TS-42` (bucket/IAM, humano) listo. Fuera de esa historia siguen vetados.
 - `songs` ya existe (`TS-21`, Listo). En S3 se amplía con el máximo por formato (`TS-20`), el listado (`TS-22`) y el borrado en cascada (`TS-23`), según `docs/erd/modelo-completo.md` §3.4.
 - No crear migraciones de `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
 - No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.

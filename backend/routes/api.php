@@ -8,9 +8,11 @@ use App\Http\Controllers\MeController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RbacCheckController;
 use App\Http\Controllers\SongController;
+use App\Http\Controllers\VersionController;
 use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Song;
+use App\Models\Version;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
@@ -116,4 +118,11 @@ Route::delete('/songs/{song}', [SongController::class, 'destroy'])
     ->middleware([
         'auth:auth0-api',
         'can:delete,song',
+    ]);
+
+Route::post('/songs/{song}/versions', [VersionController::class, 'store'])
+    ->whereUuid('song')
+    ->middleware([
+        'auth:auth0-api',
+        'can:create,'.Version::class,
     ]);
