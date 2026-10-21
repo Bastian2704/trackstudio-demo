@@ -21,6 +21,11 @@ import {
  * Contrato de GET, PUT y DELETE /api/v1/songs/{song}: spec backend §3.1 y §3.7.
  * La edición de la producción se monta real porque el test 17 afirma el
  * destino tras el borrado y el aviso que esa página pinta.
+ *
+ * TS-20 (HU-09) — ts-09.06, spec frontend HU-09 §4 test 14: el borrado invalida
+ * el listado de la producción. Ese caso usa el `staleTime` de la app (30 s):
+ * con el 0 por defecto de los tests, `SongList` volvería a pedir el listado al
+ * montarse aunque nadie lo invalidara, y el test no podría fallar.
  */
 const PRODUCTION_ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const ID = '9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a'
@@ -71,11 +76,11 @@ function conPrecarga(
   }
 }
 
-function renderEdicion() {
-  const queryClient = new QueryClient({
+function renderEdicion(
+  queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-
+  }),
+) {
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[`/canciones/${ID}/editar`]}>
@@ -305,6 +310,34 @@ describe('SongEditPage', () => {
     expect(peticiones).toContainEqual(
       expect.objectContaining({ method: 'GET', url: URL_PRODUCCION }),
     )
+  })
+
+  it('invalida el listado de la producción tras eliminar', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false, staleTime: 30_000 },
+        mutations: { retry: false },
+      },
+    })
+    const ajeno = ['songs', 'list', 'otra-produccion', 1]
+    queryClient.setQueryData(['songs', 'list', PRODUCTION_ID, 1], pagina([cancion()]).data)
+    queryClient.setQueryData(ajeno, pagina([]).data)
+    const peticiones = simularApi(conPrecarga(() => ({ status: 204 })))
+    const user = renderEdicion(queryClient)
+    await esperarPrecarga()
+
+    await abrirDialogo(user)
+    await user.click(confirmar())
+
+    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
+    // Sin invalidar, la caché fresca (30 s) no se vuelve a pedir y el listado no llega.
+    await waitFor(() => {
+      const borrado = peticiones.findIndex((p) => p.method === 'DELETE')
+      const listado = peticiones.findIndex((p) => p.url === `${URL_PRODUCCION}/songs`)
+      expect(borrado).toBeGreaterThanOrEqual(0)
+      expect(listado).toBeGreaterThan(borrado)
+    })
+    expect(queryClient.getQueryState(ajeno)?.isInvalidated).toBe(false)
   })
 
   it('no elimina dos veces ni cierra el diálogo mientras borra', async () => {
