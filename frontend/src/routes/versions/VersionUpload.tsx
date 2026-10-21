@@ -53,6 +53,7 @@ export default function VersionUpload({ songId }: { songId: string }) {
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const [validating, setValidating] = useState(false)
 
   const mutation = useMutation({
     mutationFn: async (input: { file: File; contentType: AudioContentType }) => {
@@ -75,7 +76,13 @@ export default function VersionUpload({ songId }: { songId: string }) {
   async function submit() {
     setError(null)
     setDone(false)
-    const result = await validateFile(file)
+    setValidating(true)
+    let result: Awaited<ReturnType<typeof validateFile>>
+    try {
+      result = await validateFile(file)
+    } finally {
+      setValidating(false)
+    }
     if ('error' in result) {
       setError(result.error)
       return
@@ -83,7 +90,7 @@ export default function VersionUpload({ songId }: { songId: string }) {
     if (file) mutation.mutate({ file, contentType: result.contentType })
   }
 
-  const busy = mutation.isPending
+  const busy = validating || mutation.isPending
 
   return (
     <section className="space-y-4">
@@ -113,7 +120,7 @@ export default function VersionUpload({ songId }: { songId: string }) {
           WAV o MP3, hasta 500 MB.
         </p>
       </div>
-      {busy && progress === null && (
+      {mutation.isPending && progress === null && (
         <p role="status" className="text-sm">
           Preparando la subida…
         </p>
