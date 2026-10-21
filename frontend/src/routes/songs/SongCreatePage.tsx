@@ -13,6 +13,7 @@ export default function SongCreatePage() {
     mutationFn: (input: SongInput) => createSong(productionId, input.name),
     onSuccess: (song) => {
       queryClient.setQueryData(['songs', song.id], song)
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'list', productionId] })
       void navigate(`/canciones/${song.id}/editar`, {
         state: { notice: 'Canción registrada.' },
       })
