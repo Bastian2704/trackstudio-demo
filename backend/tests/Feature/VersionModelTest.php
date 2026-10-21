@@ -26,12 +26,15 @@ it('relaciona canciones y versiones y castea sus enums', function () {
         'content_type' => 'audio/mpeg',
         'upload_status' => 'fallida',
     ]);
-    Version::factory()->for($song)->create(['version_number' => 2])->delete();
+    $deleted = Version::factory()->for($song)->create(['version_number' => 2]);
+    $deleted->delete();
     Version::factory()->create();
 
     $current->refresh();
 
-    expect($current->content_type)->toBe(AudioContentType::Mpeg)
+    // Sin SoftDeletes el borrado sería físico y versions() también la excluiría.
+    expect(Version::withTrashed()->findOrFail($deleted->id)->trashed())->toBeTrue()
+        ->and($current->content_type)->toBe(AudioContentType::Mpeg)
         ->and($current->upload_status)->toBe(UploadStatus::Fallida)
         ->and($current->song->is($song))->toBeTrue()
         ->and($song->versions()->pluck('versions.id')->all())->toBe([$current->id]);

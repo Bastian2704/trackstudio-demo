@@ -7,6 +7,7 @@ use App\Enums\AudioContentType;
 use App\Models\Song;
 use App\Models\User;
 use App\Models\Version;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,8 @@ uses(RefreshDatabase::class);
 */
 
 it('firma la subida y responde 201 con la versión pendiente', function () {
+    // Reloj fijo: expires_at debe ser la marca del doble (ahora + 15 min), no otra.
+    $this->travelTo(CarbonImmutable::parse('2026-10-20 14:03:11'));
     $llamadas = falsearAlmacenamientoDeAudio();
     $song = Song::factory()->create();
     $claims = claimsDeToken('productor');
@@ -40,7 +43,8 @@ it('firma la subida y responde 201 con la versión pendiente', function () {
         ->assertJsonPath('data.upload_status', 'pendiente')
         ->assertJsonPath('upload.url', 'https://bucket-de-prueba.s3.amazonaws.com/')
         ->assertJsonPath('upload.fields.Policy', 'politica-de-prueba')
-        ->assertJsonPath('upload.fields.X-Amz-Signature', 'firma-de-prueba');
+        ->assertJsonPath('upload.fields.X-Amz-Signature', 'firma-de-prueba')
+        ->assertJsonPath('upload.expires_at', '2026-10-20T14:18:11+00:00');
 
     expect(array_keys($response->json('data')))->toEqualCanonicalizing(CAMPOS_DE_VERSION)
         ->and(Str::isUuid($response->json('data.id')))->toBeTrue()
@@ -88,13 +92,21 @@ it('construye el key de D7.3 con la extensión del tipo', function (string $cont
     'MP3' => ['audio/mpeg', 'mp3'],
 ]);
 
-it('numera de forma secuencial contando borradas y fallidas', function () {
+// Con un hueco (el 3) y la última versión borrada o fallida: count() + 1 daría
+// 4, y omitir withTrashed() o filtrar por estado daría un número ya usado.
+it('numera de forma secuencial contando borradas y fallidas', function (string $last) {
     $llamadas = falsearAlmacenamientoDeAudio();
     $song = Song::factory()->create();
     $otherSong = Song::factory()->create();
     Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
-    Version::factory()->for($song)->create(['version_number' => 2])->delete();
-    Version::factory()->for($song)->fallida()->create(['version_number' => 3]);
+
+    if ($last === 'borrada') {
+        Version::factory()->for($song)->fallida()->create(['version_number' => 2]);
+        Version::factory()->for($song)->create(['version_number' => 4])->delete();
+    } else {
+        Version::factory()->for($song)->create(['version_number' => 2])->delete();
+        Version::factory()->for($song)->fallida()->create(['version_number' => 4]);
+    }
 
     foreach (range(1, 6) as $number) {
         Version::factory()->for($otherSong)->create(['version_number' => $number]);
@@ -104,10 +116,13 @@ it('numera de forma secuencial contando borradas y fallidas', function () {
 
     $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion())
         ->assertCreated()
-        ->assertJsonPath('data.version_number', 4);
+        ->assertJsonPath('data.version_number', 5);
 
-    expect($llamadas[0]['key'])->toEndWith('/v4.wav');
-});
+    expect($llamadas[0]['key'])->toEndWith('/v5.wav');
+})->with([
+    'la última está borrada' => ['borrada'],
+    'la última está fallida' => ['fallida'],
+]);
 
 it('bloquea la canción al reservar el número', function () {
     falsearAlmacenamientoDeAudio();
