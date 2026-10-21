@@ -21,6 +21,7 @@ import type { ApiErrorBody } from '@/lib/api'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import type { Song, SongInput } from './songSchema'
+import VersionUpload from '@/routes/versions/VersionUpload'
 
 export default function SongEditPage() {
   const { id = '' } = useParams()
@@ -91,6 +92,7 @@ export default function SongEditPage() {
           <Link to={`/producciones/${query.data.production_id}/editar`}>
             Volver a la producción
           </Link>
+          <VersionUpload songId={id} />
           <AlertDialog
             open={confirmOpen}
             onOpenChange={(open) => {
