@@ -411,6 +411,42 @@ describe('VersionUpload', () => {
     expect(textoEnRol('alert', caducado)).toBe(false)
   })
 
+  // Test 16 (review ts-13.08, hallazgo 1): la lectura de los magic bytes es
+  // asíncrona; se retiene hasta `liberar` para abrir la ventana a propósito.
+  it('no pide dos firmas si se pulsa durante la validación', async () => {
+    const s3 = simularS3()
+    const peticiones = simularApi(firmando())
+    const user = renderSubida()
+    const archivo = wav()
+    let liberar: () => void = () => {}
+    const lectura = new Promise<void>((resolve) => {
+      liberar = resolve
+    })
+    const slice = archivo.slice.bind(archivo)
+    Object.defineProperty(archivo, 'slice', {
+      value: (inicio?: number, fin?: number) => ({
+        arrayBuffer: async () => {
+          await lectura
+          return slice(inicio, fin).arrayBuffer()
+        },
+      }),
+    })
+
+    await user.upload(campo(), archivo)
+    await user.click(boton())
+
+    expect(boton().disabled).toBe(true)
+    expect(campo().disabled).toBe(true)
+    expect(textoEnRol('status', 'Preparando la subida…')).toBe(false)
+
+    await user.click(boton())
+    liberar()
+
+    await screen.findByRole('progressbar', { name: 'Progreso de la subida' })
+    expect(peticiones).toHaveLength(1)
+    expect(s3).toHaveLength(1)
+  })
+
   it('pide elegir un archivo', async () => {
     const s3 = simularS3()
     const peticiones = simularApi(firmando())
