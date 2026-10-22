@@ -296,6 +296,19 @@ describe('SongEditPage', () => {
     expect(nombre().value).toBe('Intro')
   })
 
+  // TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 test 1.
+  it('avisa de la cascada antes de eliminar', async () => {
+    simularApi(conPrecarga(() => ({ status: 204 })))
+    const user = renderEdicion()
+    await esperarPrecarga()
+
+    const dialogo = await abrirDialogo(user)
+
+    expect(dialogo.textContent).toContain(
+      'La canción y todas sus versiones dejarán de estar disponibles.',
+    )
+  })
+
   it('elimina tras confirmar y vuelve a la producción', async () => {
     const peticiones = simularApi(conPrecarga(() => ({ status: 204 })))
     const user = renderEdicion()

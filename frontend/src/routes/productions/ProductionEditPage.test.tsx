@@ -34,6 +34,9 @@ import {
  * TS-20 (HU-09) — ts-09.06, spec frontend HU-09 §4 tests 7 a 11: aviso del
  * formato y enlace «Nueva canción» según el total del listado. `conPrecarga`
  * acepta la producción que devuelve, para variar el formato.
+ *
+ * TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 tests 2 y 9: texto de la
+ * cascada y borrado desde el listado, que actualiza el límite del formato.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
@@ -238,6 +241,18 @@ describe('ProductionEditPage', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
     expect(borrados(peticiones)).toHaveLength(0)
     expect(nombre().value).toBe('Sesiones del álbum')
+  })
+
+  it('avisa de la cascada antes de eliminar la producción', async () => {
+    simularApi(conPrecarga(() => ({ status: 204 })))
+    const user = renderEdicion()
+    await esperarPrecarga()
+
+    const dialogo = await abrirDialogo(user)
+
+    expect(dialogo.textContent).toContain(
+      'La producción, sus canciones y todas sus versiones dejarán de estar disponibles.',
+    )
   })
 
   it('elimina tras confirmar y vuelve al artista', async () => {
@@ -476,5 +491,69 @@ describe('ProductionEditPage', () => {
     expect(formato().getAttribute('aria-invalid')).toBe('true')
     expect(textoEnRol('alert', mensaje)).toBe(false)
     expect(await textoDelAviso()).toContain('Un EP tiene de 2 a 6 canciones.')
+  })
+})
+
+describe('ProductionEditPage — borrado desde el listado', () => {
+  it('borrar desde el listado actualiza el límite del formato', async () => {
+    let borrada = false
+    const precarga = (canciones: RespuestaSimulada) =>
+      conPrecarga(() => ({ status: 500 }), canciones, produccion({ format: 'sencillo' }))
+    const peticiones = simularApi((p) => {
+      if (p.method === 'DELETE') {
+        borrada = true
+        return { status: 204 }
+      }
+      return precarga(borrada ? pagina([]) : pagina([cancion()]))(p)
+    })
+    const user = renderEdicion()
+    await esperarPrecarga()
+    await textoDelAviso()
+    expect(screen.queryByRole('link', { name: 'Nueva canción' })).toBeNull()
+
+    await user.click(await screen.findByRole('button', { name: 'Eliminar Intro' }))
+    await screen.findByRole('alertdialog')
+    await user.click(confirmar())
+
+    expect(await screen.findByRole('link', { name: 'Nueva canción' })).toBeTruthy()
+    expect(borrados(peticiones)).toEqual([
+      { method: 'DELETE', url: `/api/v1/songs/${cancion().id}`, body: undefined },
+    ])
+  })
+
+  it('borrar en la página 2 del listado actualiza el total del aviso', async () => {
+    // El recuento usa la página 1; invalidar solo la página visible lo dejaría
+    // desfasado. Con 17 canciones queda una en la página 2 y no hay retroceso.
+    const canciones = variasCanciones(17)
+    let borrada = false
+    const peticiones = simularApi((p) => {
+      if (p.method === 'DELETE') {
+        borrada = true
+        return { status: 204 }
+      }
+      const total = borrada ? 16 : 17
+      const segunda = borrada ? canciones.slice(16) : canciones.slice(15)
+      const listado =
+        (p.params as { page?: unknown } | undefined)?.page === 2
+          ? pagina(segunda, { current_page: 2, last_page: 2, from: 16, to: total, total })
+          : pagina(canciones.slice(0, 15), { last_page: 2, to: 15, total })
+      return conPrecarga(() => ({ status: 500 }), listado, produccion({ format: 'album' }))(p)
+    })
+    const user = renderEdicion()
+    await esperarPrecarga()
+    expect(await textoDelAviso()).toContain('Esta producción tiene 17 canciones.')
+
+    await user.click(await screen.findByRole('button', { name: 'Siguiente' }))
+    await user.click(await screen.findByRole('button', { name: 'Eliminar Canción 16' }))
+    await screen.findByRole('alertdialog')
+    await user.click(confirmar())
+
+    await waitFor(async () =>
+      expect(await textoDelAviso()).toContain('Esta producción tiene 16 canciones.'),
+    )
+    expect(screen.getByRole('link', { name: 'Canción 17' })).toBeTruthy()
+    expect(borrados(peticiones)).toEqual([
+      { method: 'DELETE', url: `/api/v1/songs/${canciones[15].id}`, body: undefined },
+    ])
   })
 })
