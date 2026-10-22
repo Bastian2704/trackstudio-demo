@@ -1,18 +1,49 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+
 import { Button } from '@/components/ui/button'
-import { fetchSongs } from './songApi'
-import { STATUS_LABELS } from './songSchema'
+import { deleteSong, fetchSongs } from './songApi'
+import { SONG_DELETE_DESCRIPTION, STATUS_LABELS, type Song } from './songSchema'
 
 export default function SongList({ productionId }: { productionId: string }) {
   const [page, setPage] = useState(1)
+  const [pending, setPending] = useState<Song | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const query = useQuery({
     queryKey: ['songs', 'list', productionId, page],
     queryFn: () => fetchSongs(productionId, page),
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: (song: Song) => deleteSong(song.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['songs', 'list', productionId] })
+      if (query.data?.data.length === 1 && page > 1) setPage(page - 1)
+      setPending(null)
+      setNotice('Canción eliminada.')
+    },
+    onError: () => setPending(null),
+  })
+
+  function confirmDelete(song: Song) {
+    setNotice(null)
+    deleteMutation.reset()
+    setPending(song)
+  }
 
   let body
   if (query.isPending) {
@@ -31,6 +62,9 @@ export default function SongList({ productionId }: { productionId: string }) {
               <th>Posición</th>
               <th>Canción</th>
               <th>Estado</th>
+              <th>
+                <span className="sr-only">Acciones</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -43,6 +77,15 @@ export default function SongList({ productionId }: { productionId: string }) {
                   </Link>
                 </td>
                 <td>{STATUS_LABELS[song.status]}</td>
+                <td>
+                  <Button
+                    variant="destructive"
+                    aria-label={`Eliminar ${song.name}`}
+                    onClick={() => confirmDelete(song)}
+                  >
+                    Eliminar
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -73,7 +116,40 @@ export default function SongList({ productionId }: { productionId: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">Canciones</h2>
+      {notice && (
+        <p role="status" className="text-sm">
+          {notice}
+        </p>
+      )}
+      {deleteMutation.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          No se pudo eliminar la canción. Inténtalo de nuevo.
+        </p>
+      )}
       {body}
+      <AlertDialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteMutation.isPending) setPending(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{`¿Eliminar «${pending?.name ?? ''}»?`}</AlertDialogTitle>
+            <AlertDialogDescription>{SONG_DELETE_DESCRIPTION}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => pending && deleteMutation.mutate(pending)}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   )
 }

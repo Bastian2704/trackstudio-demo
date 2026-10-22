@@ -21,7 +21,7 @@ import type { ApiErrorBody } from '@/lib/api'
 import VersionUpload from '@/routes/versions/VersionUpload'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
-import type { Song, SongInput } from './songSchema'
+import { SONG_DELETE_DESCRIPTION, type Song, type SongInput } from './songSchema'
 
 export default function SongEditPage() {
   const { id = '' } = useParams()
@@ -106,9 +106,7 @@ export default function SongEditPage() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar canción?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  La canción dejará de estar disponible.
-                </AlertDialogDescription>
+                <AlertDialogDescription>{SONG_DELETE_DESCRIPTION}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>

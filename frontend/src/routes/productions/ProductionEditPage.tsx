@@ -118,7 +118,7 @@ export default function ProductionEditPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Eliminar producción?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  La producción dejará de estar disponible.
+                  La producción, sus canciones y todas sus versiones dejarán de estar disponibles.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
