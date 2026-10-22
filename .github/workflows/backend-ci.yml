@@ -20,6 +20,8 @@ jobs:
         with:
           php-version: "8.4"
           coverage: none
+        env:
+          update: true
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/pint --test
 
@@ -31,6 +33,8 @@ jobs:
         with:
           php-version: "8.4"
           coverage: none
+        env:
+          update: true
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/phpstan analyse --no-progress
 
@@ -61,6 +65,8 @@ jobs:
           php-version: "8.4"
           extensions: pdo_pgsql
           coverage: none
+        env:
+          update: true
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env
       - run: php artisan key:generate
