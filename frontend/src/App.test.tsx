@@ -179,4 +179,21 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: encabezado })).toBeTruthy()
   })
+
+  /*
+   * TS-68 (épica TS-67) — ts-39.03, spec frontend TS-68 §4 tests 10 y 11.
+   */
+  it('las rutas autenticadas se pintan dentro del shell', async () => {
+    renderApp(contextoConRol('productor'), '/artistas/nuevo')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar artista' })).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: 'Principal' })).toBeTruthy()
+  })
+
+  it('la pantalla 403 no lleva shell', async () => {
+    renderApp(contextoConRol('productor'), '/403')
+
+    expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: 'Principal' })).toBeNull()
+  })
 })
