@@ -65,6 +65,7 @@ final class SongService
     public function deleteSong(Song $song): void
     {
         DB::transaction(function () use ($song): void {
+            $song->versions()->delete();
             $song->delete();
 
             Song::query()
