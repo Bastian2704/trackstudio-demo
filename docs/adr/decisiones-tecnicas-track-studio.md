@@ -57,7 +57,7 @@ Las herramientas de análisis estático se fijan por **versión exacta** (sin `^
 
 | Componente | Versión | Nota |
 |---|---|---|
-| PHP | **8.4.24** | Runtime real (contenedor Sail). Paridad con Railway. `config.platform.php` de `composer.json` pinneado al mismo valor |
+| PHP | **8.4.27** | Runtime real (contenedor Sail). Paridad con Railway. `config.platform.php` de `composer.json` pinneado al mismo valor. Mínimo de seguridad, ver nota TS-77 |
 | Laravel Framework | **13.29.0** | Esqueleto `laravel/laravel` 13.10.1 |
 | PostgreSQL | **18-alpine** | Contenedor Sail |
 | Laravel Sail | 1.67.0 | |
@@ -70,6 +70,14 @@ Las herramientas de análisis estático se fijan por **versión exacta** (sin `^
 | Vitest | **4.1.11** | Runner frontend (D11.2). La 5.x exige Node ≥ 22; subir junto con `.nvmrc` |
 
 > **Trampa registrada:** cuando el contenedor suba de parche de PHP (8.4.24 → 8.4.25), hay que actualizar `config.platform.php` al mismo valor o Composer falla la resolución.
+
+> **Hotfix de seguridad (2026-10-22, `TS-77`):** PHP2Shell (CVE-2026-109618 y CVE-2026-109619, CVSS v4.0 9.2, con explotación activa) afecta a toda 8.4 anterior a **8.4.27**. Se sube el parche dentro de la rama 8.4 (decisión del equipo; pasar a 8.5 queda para una tarea propia). Cómo se fija el runtime desde entonces:
+> - **Sail:** la imagen instala `php8.4` del PPA `ondrej/php` sin pin de parche; se reconstruye con `sail build --no-cache` para tomar la 8.4.27.
+> - **CI:** `shivammathur/setup-php` no acepta versión de parche en `php-version`, así que el workflow fija la rama (`"8.4"`) y fuerza el último parche con `env: update: true`.
+> - **Mínimo verificado:** `tests/Unit/PhpRuntimeTest.php` deja la suite en rojo si el runtime o `config.platform.php` quedan fuera de `>= 8.4.27, < 8.5`. Es lo que hace cumplir el pin en Sail y en CI.
+> - **Railway:** el equipo verifica `php -v` en staging y producción (`CLAUDE.md` §0.6).
+>
+> Drift corregido: el contenedor ya corría 8.4.26 (no 8.4.24) cuando se abrió TS-77; `config.platform.php` seguía en 8.4.24.
 
 **Justificación:** garantiza reproducibilidad del pipeline a lo largo de los 8 sprints y evita el desfase "pasa en local, falla en CI".
 → *ISO 25010: fiabilidad (madurez), mantenibilidad. Cubre: DoD (pipeline verde), RNF-04.*
