@@ -8,6 +8,8 @@ use App\Enums\ArtistStatus;
 use App\Enums\ProductionFormat;
 use App\Models\Artist;
 use App\Models\Production;
+use App\Models\Version;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class ProductionService
@@ -64,6 +66,13 @@ final class ProductionService
 
     public function deleteProduction(Production $production): void
     {
-        $production->delete();
+        DB::transaction(function () use ($production): void {
+            Version::query()
+                ->whereIn('song_id', $production->songs()->select('id'))
+                ->delete();
+
+            $production->songs()->delete();
+            $production->delete();
+        });
     }
 }

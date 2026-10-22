@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Enums\ArtistStatus;
 use App\Models\Production;
 use App\Models\Song;
+use App\Models\Version;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -15,6 +17,7 @@ uses(RefreshDatabase::class);
 |--------------------------------------------------------------------------
 |
 | Spec: docs/specs/backend/HU-10.md §3 y §4 (#24–#27).
+| TS-23 añade la cascada a versiones: docs/specs/backend/HU-12.md §3.2 y §4 (#1–#4).
 |
 */
 
@@ -100,4 +103,78 @@ it('rechaza el borrado sin identidad productora y conserva la fila', function (?
     'sin token' => [null, 401, 'UNAUTHENTICATED'],
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
+]);
+
+it('borra en cascada las versiones vigentes de la canción', function () {
+    $song = Song::factory()->create(['position' => 1]);
+    $versions = collect([
+        Version::factory()->create(['song_id' => $song->id, 'version_number' => 1]),
+        Version::factory()->verificada()->create(['song_id' => $song->id, 'version_number' => 2]),
+        Version::factory()->fallida()->create(['song_id' => $song->id, 'version_number' => 3]),
+    ]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->deleteJson("/api/v1/songs/{$song->id}")
+        ->assertNoContent();
+
+    $trashed = Version::withTrashed()->whereKey($versions->pluck('id'))->orderBy('version_number')->get();
+
+    expect(Version::query()->where('song_id', $song->id)->exists())->toBeFalse()
+        ->and($trashed)->toHaveCount(3)
+        ->and($trashed->every(fn (Version $version): bool => $version->deleted_at !== null))->toBeTrue()
+        ->and($trashed->pluck('s3_key', 'version_number')->all())
+        ->toBe($versions->pluck('s3_key', 'version_number')->all());
+});
+
+it('no toca las versiones de otras canciones', function () {
+    $song = Song::factory()->create(['position' => 1]);
+    $sibling = Song::factory()->create(['production_id' => $song->production_id, 'position' => 2]);
+    $foreign = Song::factory()->create(['position' => 1]);
+    Version::factory()->create(['song_id' => $song->id]);
+    $kept = collect([$sibling, $foreign])->map(fn (Song $other): Version => Version::factory()->create(['song_id' => $other->id]));
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->deleteJson("/api/v1/songs/{$song->id}")
+        ->assertNoContent();
+
+    expect(Version::query()->whereKey($kept->pluck('id'))->count())->toBe(2);
+});
+
+it('conserva la fecha de borrado de las versiones ya borradas', function () {
+    $song = Song::factory()->create(['position' => 1]);
+    $previous = Version::factory()->create(['song_id' => $song->id]);
+    $deletedAt = CarbonImmutable::parse('2026-10-01 10:00:00');
+    $this->travelTo($deletedAt);
+    $previous->delete();
+    $this->travelBack();
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->deleteJson("/api/v1/songs/{$song->id}")
+        ->assertNoContent();
+
+    expect(Version::withTrashed()->findOrFail($previous->id)->deleted_at?->equalTo($deletedAt))->toBeTrue();
+});
+
+it('es atómico si falla un paso', function (string $tabla, string $condicion) {
+    $production = Production::factory()->create();
+    $songs = crearCanciones($production, 3);
+    $target = $songs->firstOrFail();
+    $versions = collect([1, 2])->map(fn (int $number): Version => Version::factory()->create([
+        'song_id' => $target->id,
+        'version_number' => $number,
+    ]));
+    fallarAlActualizar($tabla, $condicion);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->deleteJson("/api/v1/songs/{$target->id}")
+        ->assertStatus(500)
+        ->assertJsonPath('code', 'INTERNAL_ERROR');
+
+    expect(Song::query()->whereKey($target->id)->exists())->toBeTrue()
+        ->and(Version::query()->whereKey($versions->pluck('id'))->count())->toBe(2)
+        ->and(Song::query()->where('production_id', $production->id)->orderBy('position')->pluck('position', 'id')->all())
+        ->toBe($songs->pluck('position', 'id')->all());
+})->with([
+    'falla al borrar versiones' => ['versions', 'OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL'],
+    'falla al compactar' => ['songs', 'OLD.position IS DISTINCT FROM NEW.position'],
 ]);

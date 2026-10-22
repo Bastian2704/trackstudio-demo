@@ -116,14 +116,14 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 ### TS-23 / ts-12 - HU-12 Eliminar canción con confirmación y cascada
 
-- [ ] `ts-12.01` Spec backend: borrado lógico transaccional de la canción y sus versiones, compactación de posiciones y conservación del audio (D4.5).
-- [ ] `ts-12.02` Tests backend en rojo: cascada, atomicidad, posiciones, permisos y no encontrado.
-- [ ] `ts-12.03` Código backend hasta verde (humano).
-- [ ] `ts-12.04` Review backend con C3.
-- [ ] `ts-12.05` Spec frontend: confirmación explícita con el texto de la cascada desde el listado.
-- [ ] `ts-12.06` Tests frontend en rojo.
-- [ ] `ts-12.07` Código frontend hasta verde (humano).
-- [ ] `ts-12.08` Review frontend con C3.
+- [x] `ts-12.01` Spec backend: borrado lógico transaccional de la canción y sus versiones, compactación de posiciones y conservación del audio (D4.5). Incluye la cascada producción → canciones → versiones (`modelo-sprint-2.md` §5.1.6).
+- [x] `ts-12.02` Tests backend en rojo: cascada, atomicidad, posiciones, permisos y no encontrado.
+- [x] `ts-12.03` Código backend hasta verde (equipo).
+- [x] `ts-12.04` Review backend con C3.
+- [x] `ts-12.05` Spec frontend: confirmación explícita con el texto de la cascada desde el listado.
+- [x] `ts-12.06` Tests frontend en rojo.
+- [x] `ts-12.07` Código frontend hasta verde (equipo).
+- [x] `ts-12.08` Review frontend con C3.
 - [ ] `ts-12.09` Comprobación en staging por el equipo.
 
 ## Tasks y línea transversal

@@ -9,6 +9,9 @@ export const STATUS_LABELS: Record<SongStatus, string> = {
   finalizada: 'Finalizada',
 }
 
+export const SONG_DELETE_DESCRIPTION =
+  'La canción y todas sus versiones dejarán de estar disponibles.'
+
 export const songInputSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio.'),
   status: z.enum(SONG_STATUSES).optional(),

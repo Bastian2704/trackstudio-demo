@@ -20,6 +20,10 @@ import {
  * Contrato de GET /api/v1/productions/{production}/songs?page=N: spec backend
  * §3.1, §3.3 y §3.4. La edición de canción se monta como marcador: el test 2
  * solo afirma el destino del enlace, no la página de HU-10.
+ *
+ * TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 tests 3 a 8: borrado por
+ * fila con confirmación. El test 1 de HU-11 incluye ahora el encabezado
+ * «Acciones», solo para lectores de pantalla (HU-12 §3.2).
  */
 const PRODUCTION_ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const URL_LISTADO = `/api/v1/productions/${PRODUCTION_ID}/songs`
@@ -79,6 +83,37 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
   return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
 }
 
+const CASCADA = 'La canción y todas sus versiones dejarán de estar disponibles.'
+const MENSAJE_BORRADO = 'No se pudo eliminar la canción. Inténtalo de nuevo.'
+
+function borrados(peticiones: PeticionRegistrada[]) {
+  return peticiones.filter((p) => p.method === 'DELETE')
+}
+
+function confirmar() {
+  return screen.getByRole<HTMLButtonElement>('button', { name: 'Eliminar' })
+}
+
+async function abrirDialogo(user: ReturnType<typeof userEvent.setup>, nombre: string) {
+  await user.click(await screen.findByRole('button', { name: `Eliminar ${nombre}` }))
+  return screen.findByRole('alertdialog')
+}
+
+/** Responde al listado con `antes` hasta el primer DELETE (204) y con `despues` a partir de él. */
+function conBorrado(
+  antes: () => RespuestaSimulada,
+  despues: () => RespuestaSimulada,
+  alBorrar: () => RespuestaSimulada | Promise<RespuestaSimulada> = () => ({ status: 204 }),
+) {
+  let borrada = false
+  return simularApi(async (p) => {
+    if (p.method !== 'DELETE') return borrada ? despues() : antes()
+    const respuesta = await alBorrar()
+    if (respuesta !== 'error de red' && respuesta.status === 204) borrada = true
+    return respuesta
+  })
+}
+
 describe('SongList', () => {
   it('lista las canciones en el orden del servidor', async () => {
     // Nombres fuera de orden alfabético: un orden propio del cliente los movería.
@@ -98,6 +133,7 @@ describe('SongList', () => {
       'Posición',
       'Canción',
       'Estado',
+      'Acciones',
     ])
     expect(columna(0)).toEqual(['1', '2', '3'])
     expect(columna(1)).toEqual(['Zafiro', 'Alba', 'Marea'])
@@ -218,5 +254,188 @@ describe('SongList', () => {
 
     expect(await screen.findByRole('link', { name: 'Pista 1' })).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Pista 16' })).toBeNull()
+  })
+})
+
+describe('SongList — borrado por fila', () => {
+  it('ofrece eliminar cada canción', async () => {
+    const canciones = [cancion({ name: 'Alba' }), cancion({ name: 'Marea' })]
+    const peticiones = simularApi(() => pagina(canciones))
+    const user = renderListado()
+    await screen.findByRole('table')
+
+    expect(screen.getByRole('button', { name: 'Eliminar Alba' })).toBeTruthy()
+    const dialogo = await abrirDialogo(user, 'Marea')
+    expect(dialogo.textContent).toContain('¿Eliminar «Marea»?')
+    expect(dialogo.textContent).toContain(CASCADA)
+    expect(dialogo.textContent).not.toContain('Alba')
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(borrados(peticiones)).toHaveLength(0)
+  })
+
+  it('elimina tras confirmar y refresca el listado', async () => {
+    const alba = cancion({ name: 'Alba', position: 1 })
+    const marea = cancion({ name: 'Marea', position: 2 })
+    const ola = cancion({ name: 'Ola', position: 3 })
+    const peticiones = conBorrado(
+      () => pagina([alba, marea, ola]),
+      () => pagina([alba, { ...ola, position: 2 }]),
+    )
+    const user = renderListado()
+    await screen.findByRole('table')
+
+    await abrirDialogo(user, 'Marea')
+    await user.click(confirmar())
+
+    await waitFor(() => expect(textoEnRol('status', 'Canción eliminada.')).toBe(true))
+    await waitFor(() => expect(columna(1)).toEqual(['Alba', 'Ola']))
+    expect(columna(0)).toEqual(['1', '2'])
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(borrados(peticiones)).toEqual([
+      { method: 'DELETE', url: `/api/v1/songs/${marea.id}`, body: undefined },
+    ])
+    expect(peticiones.filter((p) => p.method === 'GET')).toHaveLength(2)
+    expect(screen.queryByText('Edición de canción simulada')).toBeNull()
+  })
+
+  it('no elimina dos veces ni cierra el diálogo mientras borra', async () => {
+    let completar: (respuesta: RespuestaSimulada) => void = () => undefined
+    const peticiones = conBorrado(
+      () => pagina([cancion({ name: 'Alba' })]),
+      () => pagina([]),
+      () =>
+        new Promise<RespuestaSimulada>((resolve) => {
+          completar = resolve
+        }),
+    )
+    const user = renderListado()
+
+    await abrirDialogo(user, 'Alba')
+    await user.click(confirmar())
+    await waitFor(() => expect(borrados(peticiones)).toHaveLength(1))
+
+    expect(confirmar().disabled).toBe(true)
+    await user.click(confirmar())
+    expect(borrados(peticiones)).toHaveLength(1)
+
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('alertdialog')).toBeTruthy()
+
+    completar(problema(500, 'INTERNAL_ERROR'))
+    await waitFor(() => expect(textoEnRol('alert', MENSAJE_BORRADO)).toBe(true))
+  })
+
+  it.each<{ caso: string; respuesta: RespuestaSimulada }>([
+    { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
+    { caso: 'error de red', respuesta: 'error de red' },
+    { caso: '404 RESOURCE_NOT_FOUND', respuesta: problema(404, 'RESOURCE_NOT_FOUND') },
+  ])(
+    'un error al eliminar cierra el diálogo, avisa y permite reintentar: $caso',
+    async ({ respuesta }) => {
+      conBorrado(
+        () => pagina([cancion({ name: 'Alba' })]),
+        () => pagina([]),
+        () => respuesta,
+      )
+      const user = renderListado()
+
+      await abrirDialogo(user, 'Alba')
+      await user.click(confirmar())
+
+      await waitFor(() => expect(textoEnRol('alert', MENSAJE_BORRADO)).toBe(true))
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+      expect(columna(1)).toEqual(['Alba'])
+      expect(textoEnRol('status', 'Canción eliminada.')).toBe(false)
+
+      const dialogo = await abrirDialogo(user, 'Alba')
+      expect(dialogo.textContent).toContain('¿Eliminar «Alba»?')
+
+      // Reabrir borra el error anterior (§3.2); se cancela para poder consultarlo.
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+      expect(textoEnRol('alert', MENSAJE_BORRADO)).toBe(false)
+    },
+  )
+
+  it.each([
+    { caso: 'era la única de la página 2', quedan: 0, retrocede: true },
+    { caso: 'quedan canciones en la página 2', quedan: 1, retrocede: false },
+  ])(
+    'vuelve a la página anterior solo si se vacía la actual: $caso',
+    async ({ quedan, retrocede }) => {
+      const primeras = Array.from({ length: 15 }, (_, i) =>
+        cancion({ name: `Pista ${i + 1}`, position: i + 1 }),
+      )
+      const segunda = Array.from({ length: quedan + 1 }, (_, i) =>
+        cancion({ name: `Pista ${16 + i}`, position: 16 + i }),
+      )
+      const restantes = segunda.slice(1)
+      let borrada = false
+      const peticiones = simularApi((p) => {
+        if (p.method === 'DELETE') {
+          borrada = true
+          return { status: 204 }
+        }
+        const total = 15 + (borrada ? restantes : segunda).length
+        const lastPage = total > 15 ? 2 : 1
+        if (paginaPedida(p) !== 2) {
+          return pagina(primeras, { last_page: lastPage, from: 1, to: 15, total })
+        }
+        const filasPagina = borrada ? restantes : segunda
+        return pagina(filasPagina, {
+          current_page: 2,
+          last_page: lastPage,
+          from: filasPagina.length === 0 ? null : 16,
+          to: filasPagina.length === 0 ? null : total,
+          total,
+        })
+      })
+      const user = renderListado()
+
+      await user.click(await screen.findByRole('button', { name: 'Siguiente' }))
+      await abrirDialogo(user, segunda[0].name)
+      await user.click(confirmar())
+      await waitFor(() => expect(textoEnRol('status', 'Canción eliminada.')).toBe(true))
+
+      const trasBorrar = () =>
+        peticiones
+          .slice(peticiones.findIndex((p) => p.method === 'DELETE') + 1)
+          .filter((p) => p.method === 'GET')
+          .map(paginaPedida)
+
+      if (retrocede) {
+        expect(await screen.findByRole('link', { name: 'Pista 1' })).toBeTruthy()
+        expect(trasBorrar()).toContain(1)
+      } else {
+        expect(await screen.findByRole('link', { name: restantes[0].name })).toBeTruthy()
+        expect(trasBorrar()).not.toContain(1)
+      }
+    },
+  )
+
+  it('al abrir otra confirmación se borra el aviso anterior', async () => {
+    const alba = cancion({ name: 'Alba', position: 1 })
+    const marea = cancion({ name: 'Marea', position: 2 })
+    conBorrado(
+      () => pagina([alba, marea]),
+      () => pagina([{ ...marea, position: 1 }]),
+    )
+    const user = renderListado()
+
+    await abrirDialogo(user, 'Alba')
+    await user.click(confirmar())
+    await waitFor(() => expect(textoEnRol('status', 'Canción eliminada.')).toBe(true))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+
+    await abrirDialogo(user, 'Marea')
+    // Con el diálogo modal abierto, el resto de la página queda oculto a la
+    // accesibilidad: se cancela para poder consultar el aviso.
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+
+    expect(textoEnRol('status', 'Canción eliminada.')).toBe(false)
   })
 })

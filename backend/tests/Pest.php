@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route as DefinicionDeRuta;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -474,4 +475,28 @@ function crearCanciones(Production $production, int $cantidad): Collection
         ->count($cantidad)
         ->sequence(fn (Sequence $sequence): array => ['position' => $sequence->index + 1])
         ->create(['production_id' => $production->id]);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-12 (docs/specs/backend/HU-12.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Hace fallar en PostgreSQL todo UPDATE de `$tabla` que cumpla `$condicion`.
+ *
+ * Sirve para probar la atomicidad sin depender de cómo ni en qué orden
+ * escribe el Service. `RefreshDatabase` revierte el trigger con el test.
+ */
+function fallarAlActualizar(string $tabla, string $condicion): void
+{
+    DB::unprepared(sprintf(<<<'SQL'
+        CREATE FUNCTION fallo_inducido() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            RAISE EXCEPTION 'fallo inducido';
+        END $$;
+        CREATE TRIGGER fallo_inducido BEFORE UPDATE ON %s
+            FOR EACH ROW WHEN (%s) EXECUTE FUNCTION fallo_inducido();
+        SQL, $tabla, $condicion));
 }
