@@ -352,6 +352,11 @@ describe('SongList — borrado por fila', () => {
 
       const dialogo = await abrirDialogo(user, 'Alba')
       expect(dialogo.textContent).toContain('¿Eliminar «Alba»?')
+
+      // Reabrir borra el error anterior (§3.2); se cancela para poder consultarlo.
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }))
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+      expect(textoEnRol('alert', MENSAJE_BORRADO)).toBe(false)
     },
   )
 
