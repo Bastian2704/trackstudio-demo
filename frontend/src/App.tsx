@@ -2,6 +2,7 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { api, attachAuthInterceptor, attachErrorInterceptor } from '@/lib/api'
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import AppShell from './components/AppShell'
 import RequireAuth from './routes/RequireAuth'
 import RequireRole from './routes/RequireRole'
 import Home from './routes/Home'
@@ -62,18 +63,26 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/403" element={<Forbidden />} />
       <Route element={<RequireAuth />}>
-        <Route element={<RequireRole allowed={['productor', 'artista']} />}>
-          <Route path="/me" element={<MePage />} />
-        </Route>
-        <Route element={<RequireRole allowed={['productor']} />}>
-          <Route path="/productor" element={<ProducerOnly />} />
-          <Route path="/artistas" element={<ArtistListPage />} />
-          <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
-          <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
-          <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />
-          <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
-          <Route path="/producciones/:productionId/canciones/nueva" element={<SongCreatePage />} />
-          <Route path="/canciones/:id/editar" element={<SongEditPage />} />
+        <Route element={<AppShell />}>
+          <Route element={<RequireRole allowed={['productor', 'artista']} />}>
+            <Route path="/me" element={<MePage />} />
+          </Route>
+          <Route element={<RequireRole allowed={['productor']} />}>
+            <Route path="/productor" element={<ProducerOnly />} />
+            <Route path="/artistas" element={<ArtistListPage />} />
+            <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
+            <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
+            <Route
+              path="/artistas/:artistId/producciones/nueva"
+              element={<ProductionCreatePage />}
+            />
+            <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
+            <Route
+              path="/producciones/:productionId/canciones/nueva"
+              element={<SongCreatePage />}
+            />
+            <Route path="/canciones/:id/editar" element={<SongEditPage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,7 +2,6 @@ import type { AxiosError } from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import { api, type ApiErrorBody } from '@/lib/api'
 import { useRoles } from '@/hooks/useRole'
-import LogoutButton from '@/components/LogoutButton'
 
 interface Me {
   sub: string
@@ -21,10 +20,7 @@ export default function MePage() {
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-8">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Mi sesión</h1>
-        <LogoutButton />
-      </header>
+      <h1 className="text-xl font-semibold">Mi sesión</h1>
 
       <section className="space-y-1">
         <h2 className="text-sm text-muted-foreground">Rol (claim del token)</h2>
