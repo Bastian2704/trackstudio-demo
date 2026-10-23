@@ -34,6 +34,7 @@ Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es 
 | TS-68 | ts-39    | Task  |   — | UI Figma: base (tokens y shell con navegación)    | —                                                       |
 | TS-69 | ts-40    | Task  |   — | UI Figma: login, inicio, 403 y errores            | TS-68                                                   |
 | TS-70 | ts-41    | Task  |   — | UI Figma: artistas (HU-05..HU-07)                 | TS-68                                                   |
+| TS-79 | —        | Task  |   — | Docs: reconciliación, READMEs y repo de docs      | — (añadida el 2026-10-23)                               |
 
 ## Secuencia de ejecución
 
@@ -99,7 +100,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 - [x] `ts-11.05` Spec frontend: listado dentro de la producción, estados de carga/vacío/error y enlace a cada canción.
 - [x] `ts-11.06` Tests frontend en rojo.
 - [x] `ts-11.07` Código frontend hasta verde (humano).
-- [ ] `ts-11.08` Review frontend con C3.
+- [x] `ts-11.08` Review frontend con C3.
 - [ ] `ts-11.09` Comprobación en staging por el equipo.
 
 ### TS-24 / ts-13 - HU-13 Subir archivos de audio a una versión
@@ -136,7 +137,7 @@ El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del 
 - [x] Usuario o rol IAM de la API con mínimo privilegio (`PutObject`/`HeadObject`/`GetObject` sobre el bucket).
 - [x] CORS según D7.5, versioning, cifrado y lifecycle según D7.x.
 - [x] Credenciales solo en las variables de entorno de Railway y en el `.env` local; `.env.example` sin valores.
-- [ ] Evidencia no sensible en un comentario de TS-42.
+- [x] Evidencia no sensible en un comentario de TS-42 (2026-10-20).
 
 ### TS-68..TS-70 - Fidelidad visual con Figma (épica TS-67)
 
@@ -208,5 +209,5 @@ La misma del S2: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 - [x] Arrastre comentado en TS-46 y TS-35..TS-37.
 - [x] 2026-10-15: épica TS-67 y Tasks TS-68..TS-76 creadas con enlaces Blocks; TS-68..TS-70 en `TS Sprint 3`, el resto en el backlog con `target-s4`/`s5`/`s6`.
 - [x] 2026-10-22: checklist `ts-12.01`..`ts-12.08` marcada en TS-23 y comentario de evidencia con el PR #47 (CI en verde). `ts-12.09` (staging) sigue abierta.
-- [ ] Cerrar `TS Sprint 2` el 2026-10-15 (humano) y mover al S3 los incompletos TS-46, TS-53 y TS-35..TS-37.
-- [ ] Iniciar `TS Sprint 3` el 2026-10-19, después de la revisión con el dueño (humano).
+- [x] `TS Sprint 2` cerrado el 2026-10-16. TS-46 y TS-53 pasaron al S3; TS-35..TS-37 quedaron fuera por omisión y se movieron el 2026-10-23 (`TS-79`).
+- [x] `TS Sprint 3` iniciado el 2026-10-16 en Jira (fin: 2026-10-30).
