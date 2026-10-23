@@ -53,6 +53,7 @@ Del plan CI/CD del proyecto: `feature/* → develop (staging) → main (producci
 - `<scope>` (área del monorepo): `backend` · `frontend`
 - `TS-<id>`: clave de la historia/tarea en Jira
 - Ejemplo: `feat(backend): TS-34 responder 403 FORBIDDEN en formato D3.1`
+- **Sin trailers de autoría de agentes** (decisión del equipo, 2026-10-23): los mensajes de commit y las descripciones de PR **no** llevan `Co-Authored-By:` ni firmas tipo "Generated with…". La autoría es de quien commitea. Aplica a los bloques de comandos que entrega el agente (§4).
 
 > **Por qué este formato.** Reconcilia las dos formas que ya aparecen en los documentos del proyecto: el `CLAUDE.md` actual pide _"Conventional Commits con ID de historia — `TS-XX: descripción`"_, y el handoff de backend usó `chore(backend): scaffold Laravel 13 + Sail`. Este formato cumple las dos a la vez. **Si prefieres la forma corta `TS-<id>: descripción` sin `tipo(scope)`, dilo y se cambia aquí — es el único sitio donde vive la convención.**
 
