@@ -207,5 +207,6 @@ La misma del S2: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 - [x] Checklists `ts-11.xx`, `ts-12.xx` y `ts-13.xx` añadidas a TS-22, TS-23 y TS-24, con la frontera de alcance.
 - [x] Arrastre comentado en TS-46 y TS-35..TS-37.
 - [x] 2026-10-15: épica TS-67 y Tasks TS-68..TS-76 creadas con enlaces Blocks; TS-68..TS-70 en `TS Sprint 3`, el resto en el backlog con `target-s4`/`s5`/`s6`.
+- [x] 2026-10-22: checklist `ts-12.01`..`ts-12.08` marcada en TS-23 y comentario de evidencia con el PR #47 (CI en verde). `ts-12.09` (staging) sigue abierta.
 - [ ] Cerrar `TS Sprint 2` el 2026-10-15 (humano) y mover al S3 los incompletos TS-46, TS-53 y TS-35..TS-37.
 - [ ] Iniciar `TS Sprint 3` el 2026-10-19, después de la revisión con el dueño (humano).
