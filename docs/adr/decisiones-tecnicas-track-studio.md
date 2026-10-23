@@ -67,7 +67,12 @@ Las herramientas de análisis estático se fijan por **versión exacta** (sin `^
 | Larastan | 3.10 | Nivel 5, sobre PHPStan 2.x |
 | Pint | 1.30.5 | Preset `laravel` |
 | `auth0/login` | **^7** | Ver D4.8 |
-| Vitest | **4.1.11** | Runner frontend (D11.2). La 5.x exige Node ≥ 22; subir junto con `.nvmrc` |
+| Vitest | **4.1.12** | Runner frontend (D11.2). Mínimo de seguridad, ver nota TS-78. La 5.x queda para una tarea propia |
+| Node | **24.22.1** | Runtime frontend: `.nvmrc` (local y CI) y `engines` en `frontend/package.json` (`>=24.22.1 <25`, Vercel). Mínimo de seguridad, ver nota TS-78 |
+
+> **Hotfix de seguridad (2026-10-22, `TS-78`):** Node 20 está en fin de vida y tiene vulnerabilidades altas sin parche (CVE-2026-111497, RCE en el decodificador Brotli). Se sube a la LTS activa **24.22.1** (decisión del equipo; 22 está en mantenimiento y 26 aún no es LTS). `npm ci` solo avisa del `engines`: el mínimo lo hace cumplir `frontend/runtime.test.ts`, que también fija los parches corregidos de `axios`, `react-router(-dom)`, `vite` y `vitest`. Las dependencias transitivas se corrigen con `npm audit fix` sin `--force`.
+> - **Riesgo aceptado (decisión del equipo):** quedan 7 avisos altos de la cadena `shadcn` → `fast-glob` → `micromatch` → `braces` (GHSA-vfj7-8cjw-p6xm, sin versión corregida de `braces`). `npm audit fix --force` propone bajar `shadcn` a 1.0.0, que rompe `@import 'shadcn/tailwind.css'`. Es solo de desarrollo: el CLI no llega al bundle. Detalle y criterio de revisión en `docs/specs/frontend/TS-78.md` §3.4.
+> - **Vercel/Railway:** el equipo verifica `node -v` en el log del build de staging (`CLAUDE.md` §0.6).
 
 > **Trampa registrada:** cuando el contenedor suba de parche de PHP (8.4.24 → 8.4.25), hay que actualizar `config.platform.php` al mismo valor o Composer falla la resolución.
 

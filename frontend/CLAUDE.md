@@ -19,7 +19,7 @@ El pin real lo da `package-lock.json` (D2.1). Esta tabla resume lo que importa a
 | axios                 | **1.x**                           | Cliente único `api` en `src/lib/api.ts` (punto 5.5).                      |
 | `@auth0/auth0-react`  | **2.x**                           | Token en memoria (D5.1).                                                  |
 | Tailwind + shadcn/ui  | **4.x** + estilo `base-nova`      | Primitivas de `@base-ui/react`, no Radix (punto 5.3, `components.json`).  |
-| Vitest + RTL          | **4.1.11** + **16.x**             | D11.2. La 5.x de Vitest exige Node ≥ 22.                                  |
+| Vitest + RTL          | **4.1.12** + **16.x**             | D11.2. Mínimo y runtime (Node 24) en D2.1, nota TS-78.                    |
 
 ## 1. Comandos (desde `frontend/`)
 
