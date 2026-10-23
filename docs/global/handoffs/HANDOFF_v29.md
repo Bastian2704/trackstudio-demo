@@ -46,7 +46,7 @@ Faltan el CI verde en el PR y lo que hace el equipo en Railway: comprobar `php -
 
 ## 5. Drift detectado
 
-- Sin corregir y fuera de alcance: `.nvmrc` = `20.20.0`, una versión de Node en fin de vida y con vulnerabilidades altas (un hook avisó de CVE-2026-111497). Hay que subir a 22.23.4 o superior en una tarea propia. La nota de Vitest en D2.1 enlaza ese salto con `.nvmrc`.
+- Sin corregir y fuera de alcance: `.nvmrc` = `20.20.0`, una versión de Node en fin de vida y con vulnerabilidades altas (un hook avisó de CVE-2026-111497). Queda registrado en **`TS-78`**, junto con los 25 avisos de `npm audit` del frontend: 1 crítico y 18 altos. Los únicos que llegan al bundle son `axios` y `react-router-dom`. La nota de Vitest en D2.1 enlaza ese salto con `.nvmrc`.
 - Sin corregir, heredado: lo listado en v28 §5.
 
 ## 6. Bloqueos y pendientes
@@ -57,7 +57,7 @@ Faltan el CI verde en el PR y lo que hace el equipo en Railway: comprobar `php -
 ## 7. Próximos pasos
 
 1. Abrir el PR de TS-77 hacia `develop`, con CI verde y el cierre en Railway.
-2. Crear la tarea de subida de Node.
+2. `TS-78`: subir Node a 24.22.1 y corregir los avisos de `npm audit`. Falta que el equipo decida sobre `shadcn`, porque `npm audit fix` propone bajarlo a 1.0.0.
 3. Lo que quedó pendiente en v28 §7: el `.09` de staging de TS-20, TS-22, TS-23 y TS-24, y el cierre del sprint 3.
 
 ## 8. Cómo retomar el entorno
