@@ -22,6 +22,7 @@ backend/Homestead.json
 backend/.vagrant
 
 .php-cs-fixer.cache
+graphify-out/
 
 # Frontend (frontend/)
 frontend/dist/
