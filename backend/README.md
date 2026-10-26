@@ -1,58 +1,60 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Track Studio — Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST en Laravel 13 sobre PHP 8.4 y PostgreSQL 18. Todo corre dentro de **Sail** (Docker): `pest`, `pint` y `phpstan` no se ejecutan en el host.
 
-## About Laravel
+Las versiones exactas están en D2.1 del [ADR](../docs/adr/decisiones-tecnicas-track-studio.md). Las reglas de la capa están en [`CLAUDE.md`](CLAUDE.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requisitos
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Docker con Compose.
+- No hace falta PHP ni Composer en el host.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Primer arranque
 
 ```bash
-composer require laravel/boost --dev
+cd backend
+cp .env.example .env            # rellenar los valores (ver «Variables de entorno»)
 
-php artisan boost:install
+# Instalar vendor/ sin PHP en el host
+docker run --rm -u "$(id -u):$(id -g)" -v "$(pwd):/var/www/html" -w /var/www/html \
+  laravelsail/php84-composer:latest composer install --ignore-platform-reqs
+
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+La API queda en `http://localhost:8000` (`GET /api/v1/health`).
 
-## Contributing
+Después de cambiar el runtime (`sail build --no-cache`), basta con `sail up -d` y `sail composer install`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Comandos
 
-## Code of Conduct
+```bash
+./vendor/bin/sail up -d                                              # levantar
+./vendor/bin/sail pest                                               # tests
+./vendor/bin/sail pint --test                                        # formato (lo que corre el CI)
+./vendor/bin/sail php vendor/bin/phpstan analyse --memory-limit=2G   # Larastan
+./vendor/bin/sail artisan <comando>
+./vendor/bin/sail composer install                                   # nunca `update` sin tarea (D2.1)
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Antes de pedir un commit tiene que pasar la cadena de calidad: Pint, Larastan y Pest en verde ([`CLAUDE.md`](CLAUDE.md) §2).
 
-## Security Vulnerabilities
+## Variables de entorno
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+[`.env.example`](.env.example) tiene todos los nombres sin valores reales. Las propias del proyecto son:
 
-## License
+| Variable                                                                             | Para qué                                            |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `AUTH0_DOMAIN` · `AUTH0_AUDIENCE` · `AUTH0_ROLES_CLAIM`                              | Validación del JWT de Auth0 y claim de roles (D4.8) |
+| `AWS_ACCESS_KEY_ID` · `AWS_SECRET_ACCESS_KEY` · `AWS_DEFAULT_REGION` · `AWS_BUCKET` | Firma de subidas de audio a S3 (D7.x)               |
+| `CORS_ALLOWED_ORIGINS`                                                               | Orígenes del frontend permitidos                    |
+| `SENTRY_LARAVEL_DSN`                                                                 | Reporte de errores                                  |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Los valores reales viven solo en el `.env` local y en Railway. Nunca en el repo.
+
+## CI y despliegue
+
+- CI: [`.github/workflows/backend-ci.yml`](../.github/workflows/backend-ci.yml) corre Pint, Larastan y Pest contra PostgreSQL.
+- Despliegue: Railway. Cada despliegue migra con `migrate --force` (D9.2). El rollback está en el [runbook](../docs/global/runbook-mantenimiento.md) §4.
