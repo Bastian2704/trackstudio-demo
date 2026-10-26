@@ -31,7 +31,7 @@ npm run format         # Prettier, arregla
 npm run build          # tsc -b + vite build
 ```
 
-Antes de pedir un commit tiene que pasar la cadena de calidad: `format:check`, `lint`, `test` y `build` en verde ([`CLAUDE.md`](CLAUDE.md) §2).
+Antes de pedir un commit tiene que pasar la cadena de calidad: `format:check`, `lint`, `test` y `build` en verde.
 
 ## Variables de entorno
 
@@ -41,12 +41,12 @@ Antes de pedir un commit tiene que pasar la cadena de calidad: `format:check`, `
 | -------------------------------------------- | ------------------------------------------------------- |
 | `VITE_AUTH0_DOMAIN` · `VITE_AUTH0_CLIENT_ID` | Tenant y aplicación SPA de Auth0                        |
 | `VITE_AUTH0_AUDIENCE`                        | API de Auth0 (la misma que valida el backend)           |
-| `VITE_AUTH0_ROLE_CLAIM`                      | Claim de roles: `https://trackstudio.site/roles` (D4.8) |
-| `VITE_API_BASE_URL`                          | URL de la API (`http://localhost:8000` en local)        |
+| `VITE_AUTH0_ROLE_CLAIM`                      | Claim de roles: `https://trackstudio.site/roles`        |
+| `VITE_API_BASE_URL`                          | URL de la API (`http://localhost` contra Sail en local) |
 
 Todo lo que lleva el prefijo `VITE_` acaba dentro del bundle público. Nunca pongas secretos ahí.
 
 ## CI y despliegue
 
 - CI: [`.github/workflows/frontend-ci.yml`](../.github/workflows/frontend-ci.yml) corre Prettier, ESLint, Vitest y el build con la versión de `.nvmrc`.
-- Despliegue: Vercel (staging en `trackstudio-staging.vercel.app`). El rollback está en el [runbook](../docs/global/runbook-mantenimiento.md) §4.3.
+- Despliegue: Vercel (staging en `trackstudio-staging.vercel.app`). El rollback está en el [runbook](../docs/global/runbook-mantenimiento.md).

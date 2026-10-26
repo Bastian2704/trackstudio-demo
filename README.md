@@ -26,7 +26,7 @@ Es un monorepo sin herramienta de workspaces: cada capa se instala y se prueba p
 
 ## Arranque rápido
 
-1. Backend: [`backend/README.md`](backend/README.md). Levanta la API en `http://localhost:8000`.
+1. Backend: [`backend/README.md`](backend/README.md). Levanta la API en `http://localhost` (puerto 80, `APP_PORT`).
 2. Frontend: [`frontend/README.md`](frontend/README.md). Levanta la SPA en `http://localhost:5173`.
 
 Cada capa tiene su `.env.example`, con los nombres de las variables y sin valores reales.
