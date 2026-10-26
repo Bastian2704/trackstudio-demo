@@ -3,7 +3,7 @@
 **Periodo:** 2026-10-02 → 2026-10-07 · **Sprint:** 1 → 2 · **Capa(s):** backend / frontend / global / planificación
 **Qué es:** la unificación de `HANDOFF_v11.md` a `HANDOFF_v20.md` que pide la regla 9 de `PLANTILLA-HANDOFF.md`. Contiene **solo** lo de esos diez. El estado posterior está en `HANDOFF_v21.md` y siguientes.
 
-> Escrito el 2026-10-26 (`TS-79`), con retraso: la regla tocaba al cerrar v20. `HANDOFF_v20.md` se tituló «Consolidado v11–v20», pero era un resumen corto que además registraba el cierre del backend de TS-19. Este documento lo sustituye como consolidado, y lo de v20 se integra aquí como una sesión más. Cuando un dato de aquí choque con un handoff posterior, **manda el posterior**.
+> Escrito el 2026-10-26 (`TS-79`), con retraso: la regla tocaba al cerrar v20. `HANDOFF_v20.md` se tituló «Consolidado v11–v20», pero era un resumen corto que además registraba el cierre del backend de TS-19. Este documento lo sustituye como consolidado, y lo de v20 se integra aquí como una sesión más. Los originales se archivaron en [`trackstudio-documentacion/Handoffs`](https://github.com/Cheboy04/trackstudio-documentacion/tree/main/Handoffs). Cuando un dato de aquí choque con un handoff posterior, **manda el posterior**.
 
 ---
 
