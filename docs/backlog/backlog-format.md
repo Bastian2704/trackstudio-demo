@@ -7,7 +7,7 @@
 - [Roadmap](roadmap.md): 6 sprints de dos semanas, 3 releases y 92 SP dentro de 12 semanas; horizonte y control de capacidad.
 - [Backlog de Jira](jira-backlog.md): catálogo de épicas, Story y Task, y cobertura HU ↔ RF/RNF.
 - `sprints/sprint-NN.md` (pendientes): desglose por sprint con tickets, checklists y dependencias.
-- [imports/](imports/README.md): CSV de cada lote y tabla `local_id → clave TS-<n>`.
+- [`trackstudio-documentacion/Backlog/imports`](https://github.com/Cheboy04/trackstudio-documentacion/tree/main/Backlog/imports): CSV del lote inicial y su resultado (archivado). Las claves vigentes están en [jira-key-map.md](jira-key-map.md).
 - [Metodología SDD/TDD](../global/metodologia-sdd-tdd.md): ciclo, roles, compuertas C1-C5, Ready y Done.
 - [Reglas de git](../global/reglas-git.md): ramas, commits y entrega de comandos.
 - ADR (`docs/adr/decisiones-tecnicas-track-studio.md`): decisiones técnicas por número (`Dx.y`) y bloques ABIERTOS.
@@ -174,7 +174,7 @@ El scaffolding (Laravel 13 + Sail, React + Vite), ESLint/Prettier/Husky, la CI d
 
 1. Confirmar Jira Cloud, proyecto `TS` (team-managed), tipos Epic/Story/Task/Bug disponibles, campo Story point estimate y permisos de importación.
 2. Generar una fila por ticket explícito: épicas, Story, Task y los Sub-task o Bug justificados. Las casillas no generan filas.
-3. Asignar un `Work item ID` numérico solo para la importación y mantener en `imports/` la tabla `local_id → import_id → clave TS-<n>`.
+3. Asignar un `Work item ID` numérico solo para la importación y registrar las claves resultantes en [jira-key-map.md](jira-key-map.md). El CSV y su resultado se archivan en `trackstudio-documentacion/Backlog/imports` (`metodologia-sdd-tdd.md` §0).
 4. Incluir cada checklist completa en la Description, con IDs, casillas, Hecho cuando y orden. Serializar en UTF-8, con separador coma y comillas dobles, y verificar que no se pierdan saltos de línea ni caracteres con tilde.
 5. Mapear Work item ID, Work type, Summary, Description, Parent, Priority, Story point estimate y todas las columnas Labels.
 6. Importar primero una muestra (una Epic y una Story con un enlace Blocks), registrar las claves devueltas y comprobar padre, casillas y dirección del bloqueo. La muestra forma parte del lote; no se vuelve a crear.
@@ -188,4 +188,4 @@ En Jira Cloud, el importador CSV simple de creación masiva no conserva la jerar
 ## Siguiente paso
 
 1. Usar `sprints/sprint-02.md` como baseline del siguiente sprint y reconciliar sus checklists con Jira.
-2. Conservar `imports/` como evidencia histórica: la replanificación se aplica sobre los tickets existentes y nunca reimportando el lote inicial.
+2. Conservar el lote archivado en `trackstudio-documentacion/Backlog/imports` como evidencia histórica: la replanificación se aplica sobre los tickets existentes y nunca reimportando el lote inicial.

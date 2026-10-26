@@ -8,7 +8,7 @@ Este backlog descompone [el roadmap](roadmap.md) y gobierna el proyecto `TS` en 
 
 El proyecto `TS` está poblado en `medihealthec.atlassian.net` y Jira es la fuente de verdad. Este catálogo conserva el diseño del backlog; las claves vigentes y las unidades posteriores a la importación están en [`jira-key-map.md`](jira-key-map.md). Las checklists se mantienen en Jira y los documentos de sprint solo registran planificación y handoff.
 
-Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continúan desde `ts-29` y las épicas son `ts-epic-<slug>`. La clave real `TS-<n>` se registra en `imports/` después de importar.
+Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continúan desde `ts-29` y las épicas son `ts-epic-<slug>`. La clave real `TS-<n>` se registra en [jira-key-map.md](jira-key-map.md) después de importar.
 
 ## Catálogo de épicas
 
@@ -162,6 +162,6 @@ S1 y S2 tienen desglose local. S3-S6 conservan su alcance y ventana objetivo con
 - Lote inicial único: **49 filas** (11 épicas + 28 Story + 10 Task). Las casillas de checklist no generan filas.
 - Etiquetas por ticket: `local-<id>`, `release-rN`, `target-sN`, `capa-*`, `riesgo-*`, `backlog-oficial`.
 - Enlaces Blocks: se generan desde la columna "Bloqueado por". Si el importador no los resuelve, se hace una segunda pasada con las claves reales.
-- La tabla `local_id → import_id → TS-<n>` y el resultado de la importación se registran en `imports/`. El procedimiento completo está en [backlog-format.md](backlog-format.md#preparación-del-csv).
+- La tabla `local_id → import_id → TS-<n>` y el resultado de la importación se registran en [jira-key-map.md](jira-key-map.md); el CSV y su resultado se archivan en `trackstudio-documentacion/Backlog/imports`. El procedimiento completo está en [backlog-format.md](backlog-format.md#preparación-del-csv).
 
 La preparación produjo `sprints/sprint-01.md` y el CSV del lote inicial. Este bloque se conserva como historial; no se debe volver a importar el lote.

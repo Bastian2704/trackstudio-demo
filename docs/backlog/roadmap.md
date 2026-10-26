@@ -152,7 +152,7 @@ Epic -> Story o Task con checklist detallada
 Sub-task solo cuando necesita seguimiento propio
 ```
 
-Release y sprint son atributos de planificación, no padres. Jira es la fuente de verdad operativa; el mapa vigente está en [`jira-key-map.md`](jira-key-map.md). Los CSV de `imports/` son evidencia histórica y no se regeneran ni reimportan para aplicar esta replanificación.
+Release y sprint son atributos de planificación, no padres. Jira es la fuente de verdad operativa; el mapa vigente está en [`jira-key-map.md`](jira-key-map.md). Los CSV de importación, archivados en `trackstudio-documentacion/Backlog/imports`, son evidencia histórica y no se regeneran ni reimportan para aplicar esta replanificación.
 
 ## Siguiente paso
 
