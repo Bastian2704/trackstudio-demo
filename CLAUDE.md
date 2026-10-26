@@ -33,7 +33,7 @@ Antes de escribir una spec, un test o proponer una implementación:
 
 1. Este `CLAUDE.md` (raíz) + el `CLAUDE.md` de la capa donde voy a trabajar.
 2. `docs/global/metodologia-sdd-tdd.md` — el ciclo, las compuertas, el reparto de roles.
-3. El último `docs/global/handoffs/HANDOFF_vN.md` — estado, decisiones y trampas de la sesión anterior.
+3. En `docs/global/handoffs/`: el último consolidado y, después, los `HANDOFF_vN.md` sueltos posteriores, del más antiguo al más reciente. Ahí están el estado, las decisiones y las trampas. La regla de consolidación está en `docs/global/PLANTILLA-HANDOFF.md` §9.
 4. La **spec de la HU** en `docs/specs/…` y sus criterios de aceptación en Jira.
 5. Consulto `graphify` antes de escribir tests o proponer código, para reutilizar en vez de reescribir.
 
@@ -52,7 +52,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 │   ├── global/
 │   │   ├── metodologia-sdd-tdd.md
 │   │   ├── reglas-git.md
-│   │   └── handoffs/HANDOFF_vN.md
+│   │   ├── PLANTILLA-HANDOFF.md  ← §9: consolidación y archivo
+│   │   └── handoffs/             ← consolidados + HANDOFF_vN.md posteriores
 │   ├── adr/decisiones-tecnicas-track-studio.md   ← ADR (fuente de verdad técnica)
 │   ├── specs/
 │   │   ├── PLANTILLA-SPEC.md
@@ -81,7 +82,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 | `docs/global/reglas-git.md`                    | Ramas, commits, entrega de comandos | Todo lo de git                  |
 | `docs/adr/decisiones-tecnicas-track-studio.md` | Decisiones cerradas (`Dx.y`)        | Lo técnico decidido             |
 | `docs/specs/…`                                 | Contrato + tests por HU y capa      | El "cómo" de cada historia      |
-| `docs/global/handoffs/HANDOFF_vN.md`           | Estado entre sesiones               | Memoria de continuidad          |
+| `docs/global/handoffs/`                        | Estado entre sesiones               | Memoria de continuidad          |
+| Repo `trackstudio-documentacion`               | Historial archivado, tesis          | Nada vigente (metodología §0)   |
 
 ---
 

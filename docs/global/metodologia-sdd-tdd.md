@@ -18,7 +18,10 @@ Cada afirmación tiene un único dueño. Si dos documentos se contradicen, gana 
 | Reglas de comportamiento del agente                                | `CLAUDE.md` (raíz + el de cada capa)                             |
 | Convenciones de nombres                                            | `backend/docs/nomenclatura.md` · `frontend/docs/nomenclatura.md` |
 | Reglas de git                                                      | `docs/global/reglas-git.md`                                      |
-| Estado entre sesiones                                              | `docs/global/handoffs/HANDOFF_vN.md`                             |
+| Estado entre sesiones                                              | `docs/global/handoffs/` (consolidados + sueltos posteriores)     |
+| Historial que ya no se lee para trabajar                           | Repo [`trackstudio-documentacion`](https://github.com/Cheboy04/trackstudio-documentacion) |
+
+**Qué va al repo de documentación.** El repo de código guarda lo que una sesión lee para trabajar: `CLAUDE.md`, esta metodología, `reglas-git.md`, el ADR, las specs, el ERD, el backlog vivo y los handoffs vigentes. Al repo `trackstudio-documentacion` va el historial: los handoffs originales ya consolidados (`PLANTILLA-HANDOFF.md` §9), los artefactos de importación de un solo uso, la tesis y las revisiones con el profesor guía. Ese repo también es público, así que la regla 5 de `CLAUDE.md` (sin secretos ni datos reales) aplica igual. Lo archivado se cita por nombre, no con enlace relativo.
 
 **Regla anti-drift:** un valor concreto (un código de error, un nombre de claim, una versión, un criterio de aceptación) se escribe en **un solo archivo**. Los demás lo referencian. Duplicarlo es un bug esperando a que las dos copias se separen en silencio.
 
@@ -132,7 +135,7 @@ Regla común (D2.1): el pin real lo dan los lockfiles versionados; CI respeta el
 
 Antes de escribir un test o proponer una implementación, el agente consulta el grafo de conocimiento del código (`graphify query "<pregunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<concepto>"`). Sirve para **reutilizar en vez de reescribir** (¿ya existe este helper, este Service, esta interfaz?) y para que los tests referencien símbolos reales, no inventados. Tras modificar código, `graphify update .` mantiene el grafo al día (solo AST, sin costo de API).
 
-Es memoria **del código**, no de la conversación. La memoria entre sesiones la cargan los archivos versionados: las specs y el `HANDOFF_vN.md`.
+Es memoria **del código**, no de la conversación. La memoria entre sesiones la cargan los archivos versionados: las specs y los handoffs de `docs/global/handoffs/`.
 
 ---
 
