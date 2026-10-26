@@ -60,8 +60,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 │   │   ├── backend/HU-XX.md      ← specs de capa backend
 │   │   ├── frontend/HU-XX.md     ← specs de capa frontend
 │   │   └── HU-XX.md              ← specs transversales/globales (si aplica)
-│   ├── erd/
-│   └── rbac-matrix.md
+│   └── erd/                      ← la matriz RBAC no es archivo aparte: vive en el ADR (D8.1)
 ├── backend/
 │   ├── CLAUDE.md                 ← reglas de la capa backend (Laravel, BD)
 │   └── docs/                     ← nomenclatura y convenciones de backend
