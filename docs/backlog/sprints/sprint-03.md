@@ -3,7 +3,7 @@
 **Estado:** planificado el 2026-10-15. `TS Sprint 3` (id 38) creado en Jira; Jira manda sobre estado, checklist y criterios de aceptación.
 **Ventana:** 2026-10-19 a 2026-10-30. **Release:** R1 - Núcleo interno (MVP). Arranca tras la revisión del S2 con el dueño de Track Studio (lunes 2026-10-19).
 **Selección funcional:** `TS-20`, `TS-22`, `TS-23` y `TS-24` (13 SP). **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37` (HU-24..HU-26), sin contar los SP dos veces.
-**Tasks:** `TS-42` (bucket S3/IAM, humano), `TS-46` (evidencia de desarrollo) y el arrastre del S2. **D9.2** quedó decidida el 2026-10-15: Railway migra en cada despliegue (`migrate --force`).
+**Tasks:** `TS-42` (bucket S3/IAM, equipo), `TS-46` (evidencia de desarrollo) y el arrastre del S2. **D9.2** quedó decidida el 2026-10-15: Railway migra en cada despliegue (`migrate --force`).
 **Formato:** [campos y reglas de expansión](../backlog-format.md) · catálogo en [jira-backlog.md](../jira-backlog.md) · secuencia en [roadmap.md](../roadmap.md).
 
 ## Objetivo
@@ -19,7 +19,7 @@ Entregar en staging la gestión completa de canciones dentro de una producción:
 | Tasks sin SP          | TS-42, TS-46, TS-68..TS-70 y arrastre del S2              | Consumen la misma capacidad del sprint |
 | **Objetivo total**    | Funcional + transversal                                   |                 **15 SP equivalentes** |
 
-Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es un gate humano desde el día 1.
+Decisión del equipo (2026-10-15): se comprometen los 13 SP completos. TS-42 es un gate del equipo desde el día 1.
 
 ## Registros del sprint
 
@@ -27,9 +27,9 @@ Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es 
 | ----- | -------- | ----- | --: | ------------------------------------------------- | ------------------------------------------------------- |
 | TS-20 | ts-09    | Story |   3 | HU-09 Validar restricciones de formato            | TS-21 (Listo); contrato de TS-49 (`ts-09.10`)           |
 | TS-22 | ts-11    | Story |   2 | HU-11 Listar canciones con estado y posición      | TS-21 (Listo)                                           |
-| TS-24 | ts-13    | Story |   5 | HU-13 Subir archivos de audio a una versión       | **TS-42 (humano)**; ERD §3.5 (`create_versions_table`)  |
+| TS-24 | ts-13    | Story |   5 | HU-13 Subir archivos de audio a una versión       | **TS-42 (equipo)**; ERD §3.5 (`create_versions_table`)  |
 | TS-23 | ts-12    | Story |   3 | HU-12 Eliminar canción con confirmación y cascada | TS-22 (UI del listado) y tabla `versions` de TS-24      |
-| TS-42 | ts-31    | Task  |   — | Provisionar bucket S3 e IAM en us-east-1          | Acción humana externa; D7.1-D7.7                        |
+| TS-42 | ts-31    | Task  |   — | Provisionar bucket S3 e IAM en us-east-1          | Acción externa del equipo; D7.1-D7.7                        |
 | TS-46 | ts-35    | Task  |   — | Tesis: evidencia de desarrollo por sprint         | Evidencia de las entregas                               |
 | TS-68 | ts-39    | Task  |   — | UI Figma: base (tokens y shell con navegación)    | —                                                       |
 | TS-69 | ts-40    | Task  |   — | UI Figma: login, inicio, 403 y errores            | TS-68                                                   |
@@ -40,7 +40,7 @@ Decisión del humano (2026-10-15): se comprometen los 13 SP completos. TS-42 es 
 
 ```mermaid
 flowchart TD
-    K["TS-42 · bucket/IAM (humano)"] --> D["TS-24 · HU-13"]
+    K["TS-42 · bucket/IAM (equipo)"] --> D["TS-24 · HU-13"]
     A["TS-21 · songs (Listo)"] --> B["TS-20 · HU-09"]
     A --> C["TS-22 · HU-11"]
     C --> D
@@ -54,7 +54,7 @@ flowchart TD
 
 Orden recomendado:
 
-1. **Día 1:** el humano arranca TS-42. En paralelo se cierra el arrastre del S2.
+1. **Día 1:** el equipo arranca TS-42. En paralelo se cierra el arrastre del S2.
 2. TS-20 y TS-22 no dependen de infraestructura: van primero mientras se provisiona el bucket.
 3. TS-24 empieza su spec backend en cuanto TS-22 cierre la spec. El Red/Green que toca S3 necesita TS-42 listo.
 4. TS-23 al final: su cascada lógica alcanza las versiones de `versions` (TS-24).
@@ -76,18 +76,18 @@ Las mismas del S2: AC vigentes en Jira, nada ABIERTO del ADR en el camino, slice
 
 ## Desglose funcional
 
-Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..`.09`: spec backend, tests backend en rojo, código backend (humano), review backend con C3, spec frontend, tests frontend en rojo, código frontend (humano), review frontend con C3 y comprobación en staging por el equipo, que no bloquea el Done.
+Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..`.09`: spec backend, tests backend en rojo, código backend (equipo), review backend con C3, spec frontend, tests frontend en rojo, código frontend (equipo), review frontend con C3 y comprobación en staging por el equipo, que no bloquea el Done.
 
 ### TS-20 / ts-09 - HU-09 Validar restricciones de formato
 
 - [x] `ts-09.10` Contrato de formato aprobado en TS-49 (2026-10-05).
 - [x] `ts-09.01` Spec backend: matriz de reglas por formato, alta de canción, cambio de formato y errores D3.1.
 - [x] `ts-09.02` Tests backend en rojo: límites por formato, casos válidos, alta, edición y autorización.
-- [x] `ts-09.03` Código backend hasta verde (humano); Larastan y Pint limpios.
+- [x] `ts-09.03` Código backend hasta verde (equipo); Larastan y Pint limpios.
 - [x] `ts-09.04` Review backend con C3.
 - [x] `ts-09.05` Spec frontend: validación coherente con el backend y presentación del 422.
 - [x] `ts-09.06` Tests frontend en rojo.
-- [x] `ts-09.07` Código frontend hasta verde (humano).
+- [x] `ts-09.07` Código frontend hasta verde (equipo).
 - [x] `ts-09.08` Review frontend con C3.
 - [ ] `ts-09.09` Comprobación en staging por el equipo.
 
@@ -95,11 +95,11 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 - [x] `ts-11.01` Spec backend: listado por producción, orden por `position`, estado, autorización (fila RBAC de `songs`, ADR 8.1), vacío y no encontrado.
 - [x] `ts-11.02` Tests backend en rojo: orden, estado, vacío, borradas excluidas, permisos y sin N+1.
-- [x] `ts-11.03` Código backend hasta verde (humano).
+- [x] `ts-11.03` Código backend hasta verde (equipo).
 - [x] `ts-11.04` Review backend con C3.
 - [x] `ts-11.05` Spec frontend: listado dentro de la producción, estados de carga/vacío/error y enlace a cada canción.
 - [x] `ts-11.06` Tests frontend en rojo.
-- [x] `ts-11.07` Código frontend hasta verde (humano).
+- [x] `ts-11.07` Código frontend hasta verde (equipo).
 - [x] `ts-11.08` Review frontend con C3.
 - [ ] `ts-11.09` Comprobación en staging por el equipo.
 
@@ -107,7 +107,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 - [x] `ts-13.01` Spec backend: firma, reserva de `version_number` con `FOR UPDATE`, fila `pendiente`, key D7.3, condiciones de la presigned POST (D7.7), errores D3.1 y fila RBAC de `versions` (ADR 8.1).
 - [x] `ts-13.02` Tests backend en rojo: tipo/tamaño inválidos, numeración, key, canción inexistente o borrada, permisos y migración.
-- [x] `ts-13.03` Código backend hasta verde (humano): `create_versions_table` según ERD §3.5. Larastan y Pint limpios.
+- [x] `ts-13.03` Código backend hasta verde (equipo): `create_versions_table` según ERD §3.5. Larastan y Pint limpios.
 - [x] `ts-13.04` Review backend con C3.
 - [x] `ts-13.05` Spec frontend: selección del archivo, validación previa, normalización de `content_type`, POST directo con progreso (< 3 s, RNF-03), caducidad de 15 min y errores.
 - [x] `ts-13.06` Tests frontend en rojo.
@@ -129,7 +129,7 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 ## Tasks y línea transversal
 
-### TS-42 / ts-31 - Bucket S3 e IAM (humano)
+### TS-42 / ts-31 - Bucket S3 e IAM (equipo)
 
 El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del sprint).
 
@@ -141,7 +141,7 @@ El agente no toca AWS (`CLAUDE.md` §0.6). Fecha límite: 2026-10-23 (mitad del 
 
 ### TS-68..TS-70 - Fidelidad visual con Figma (épica TS-67)
 
-Añadidas el 2026-10-15. Primero la base (tokens y shell con navegación lateral), luego login/errores y artistas, cuya funcionalidad ya está Done. Cada Task tiene su checklist `.01`..`.05` en Jira (inventario de marcos, enmienda de spec, tests solo donde cambia el comportamiento, código del humano y review contra Figma). Producciones y canciones (TS-71, TS-72) van en S4, porque TS-20, TS-22 y TS-23 cambian esas pantallas en este sprint.
+Añadidas el 2026-10-15. Primero la base (tokens y shell con navegación lateral), luego login/errores y artistas, cuya funcionalidad ya está Done. Cada Task tiene su checklist `.01`..`.05` en Jira (inventario de marcos, enmienda de spec, tests solo donde cambia el comportamiento, código del equipo y review contra Figma). Producciones y canciones (TS-71, TS-72) van en S4, porque TS-20, TS-22 y TS-23 cambian esas pantallas en este sprint.
 
 ### TS-46 / ts-35 - Evidencia de desarrollo
 
@@ -157,7 +157,7 @@ Añadidas el 2026-10-15. Primero la base (tokens y shell con navegación lateral
 
 ## Arrastre del S2
 
-Decisión del humano (2026-10-15): la revisión con el dueño de Track Studio es el lunes 2026-10-19 y el S3 arranca ese día. Estos pendientes se arrastran **sin sumar SP** y se cierran en la semana 1:
+Decisión del equipo (2026-10-15): la revisión con el dueño de Track Studio es el lunes 2026-10-19 y el S3 arranca ese día. Estos pendientes se arrastran **sin sumar SP** y se cierran en la semana 1:
 
 | Pendiente                                                  | Origen                      | Bloqueo                    |
 | ---------------------------------------------------------- | --------------------------- | -------------------------- |

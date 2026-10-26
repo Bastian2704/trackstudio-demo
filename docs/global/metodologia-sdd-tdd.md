@@ -39,28 +39,28 @@ Un test que no puede fallar no prueba nada; una spec que el código ya no cumple
 
 ## 2. Reparto de roles — modo "híbrido SDD" (Opción 3)
 
-Este proyecto es un Capstone: la **autoría del código de aplicación es humana**. El agente es un **socio de SDD/TDD y mentor**, no el implementador. Esta regla tiene prioridad sobre el comportamiento por defecto de Claude Code.
+Este proyecto es un Capstone: la **autoría del código de aplicación es del equipo**. El agente es un **socio de SDD/TDD y mentor**, no el implementador. Esta regla tiene prioridad sobre el comportamiento por defecto de Claude Code.
 
 | Paso del ciclo                                           | Quién                                                                  |
 | -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Redactar/actualizar la **spec** de la tarea              | **Agente** (el humano aprueba)                                         |
+| Redactar/actualizar la **spec** de la tarea              | **Agente** (el equipo aprueba)                                         |
 | Escribir los **tests** que fallan (fase roja)            | **Agente**                                                             |
-| Escribir el **código de aplicación** hasta verde         | **Humano** (Adrián / Sebastian)                                        |
-| **Ping-pong**: ajustar un test si el diseño lo justifica | **Humano propone → agente re-valida**                                  |
-| **Code review** del diff humano (§5)                     | **Agente** (el humano decide qué acepta)                               |
-| **Commit / push / PR**                                   | **Humano** (el agente solo entrega los comandos — ver `reglas-git.md`) |
+| Escribir el **código de aplicación** hasta verde         | **Equipo** (Adrián / Sebastian)                                        |
+| **Ping-pong**: ajustar un test si el diseño lo justifica | **Equipo propone → agente re-valida**                                  |
+| **Code review** del diff del equipo (§5)                     | **Agente** (el equipo decide qué acepta)                               |
+| **Commit / push / PR**                                   | **Equipo** (el agente solo entrega los comandos — ver `reglas-git.md`) |
 
 **Qué SÍ puede ejecutar el agente sin pedir permiso:** herramientas de solo lectura (`Read`, `Grep`, `Glob`, `graphify`, `git status/branch/log`), y **escribir/correr archivos de test** (crear el archivo de prueba y ejecutarlo para verlo en rojo es parte de su trabajo).
 
 **Qué NO ejecuta el agente:** código de aplicación del proyecto (controladores, servicios, componentes, migraciones, configuración de infra), ni ningún comando de escritura de git. Si cree que hace falta, lo **explica en pasos** y se detiene.
 
-**Excepción explícita:** si el humano lo pide para una acción puntual ("hazlo tú esta vez", "edítalo directamente"), el agente puede escribir ese código. La excepción es por tarea, no permanente.
+**Excepción explícita:** si el equipo lo pide para una acción puntual ("hazlo tú esta vez", "edítalo directamente"), el agente puede escribir ese código. La excepción es por tarea, no permanente.
 
 ---
 
 ## 3. SDD — Spec-Driven Development (spec-anchored)
 
-La spec vive junto al código y evoluciona con él. El objetivo es evitar el _intent drift_: que el agente (o el humano) derive lejos de la intención acordada.
+La spec vive junto al código y evoluciona con él. El objetivo es evitar el _intent drift_: que el agente (o el equipo) derive lejos de la intención acordada.
 
 **Qué es una "spec" en Track Studio.** Un archivo por HU y por capa: `docs/specs/backend/HU-XX.md`, `docs/specs/frontend/HU-XX.md`. **No** reescribe la historia ni sus criterios de aceptación (esos están en Jira). Elabora, para su capa:
 
@@ -80,12 +80,12 @@ La spec vive junto al código y evoluciona con él. El objetivo es evitar el _in
 
 Orden fijo. Cada tarea de una HU recorre:
 
-1. **Specify.** El agente lee la HU en Jira, sus criterios de aceptación, el ADR relevante y el código existente (`graphify` primero — §6). Redacta o actualiza la spec de capa. El humano la aprueba.
+1. **Specify.** El agente lee la HU en Jira, sus criterios de aceptación, el ADR relevante y el código existente (`graphify` primero — §6). Redacta o actualiza la spec de capa. El equipo la aprueba.
 2. **Red.** El agente escribe los tests derivados de los criterios de aceptación. **Deben fallar** al correrlos (aún no hay implementación). El agente los corre y muestra el rojo.
-3. **Green.** El **humano** implementa el código de aplicación hasta que los tests pasan. Puede consultar al agente ("¿cómo abordarías esta Policy?") — el agente guía, no teclea.
-4. **Ping-pong (si aplica).** Si el humano ve que un test choca con un diseño mejor, **lo dice y justifica**; el agente ajusta el test y re-confirma que sigue cubriendo el criterio de aceptación. Los tests no son intocables, pero no se relajan en silencio.
-5. **Review.** Con la suite en verde, el agente audita el diff humano (§5) y verifica que cada test **puede fallar**.
-6. **Commit.** El humano commitea; el agente solo entrega el bloque de comandos (ver `reglas-git.md`). El agente **se detiene**.
+3. **Green.** El **equipo** implementa el código de aplicación hasta que los tests pasan. Puede consultar al agente ("¿cómo abordarías esta Policy?") — el agente guía, no teclea.
+4. **Ping-pong (si aplica).** Si el equipo ve que un test choca con un diseño mejor, **lo dice y justifica**; el agente ajusta el test y re-confirma que sigue cubriendo el criterio de aceptación. Los tests no son intocables, pero no se relajan en silencio.
+5. **Review.** Con la suite en verde, el agente audita el diff del equipo (§5) y verifica que cada test **puede fallar**.
+6. **Commit.** El equipo commitea; el agente solo entrega el bloque de comandos (ver `reglas-git.md`). El agente **se detiene**.
 
 Iteraciones pequeñas: un diff revisable por vez, una tarea por vez. No "de paso" se tocan otras cosas.
 
@@ -111,7 +111,7 @@ Iteraciones pequeñas: un diff revisable por vez, una tarea por vez. No "de paso
 - **Tests que no pueden fallar** (C3).
 - **Drift docs↔código**: si la spec, el ADR o el handoff afirman algo que la implementación desmintió, se corrige en la misma pasada.
 
-El agente entrega la lista de hallazgos con `archivo:línea`, cada uno **arreglado** (por el humano, guiado) o **justificado por escrito**.
+El agente entrega la lista de hallazgos con `archivo:línea`, cada uno **arreglado** (por el equipo, guiado) o **justificado por escrito**.
 
 ---
 

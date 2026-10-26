@@ -14,9 +14,9 @@ El alcance proviene de `Documentacion.md`: RF-01 a RF-07, RNF-01 a RNF-07 y las 
 - Seis sprints de dos semanas. Si un sprint cumple su objetivo antes, se continúa con el siguiente sin esperar al calendario (ver [flujo continuo](#flujo-continuo-y-control-de-capacidad)).
 - Tres releases, heredados del plan de releases de la tesis, con R2 y R3 como gates distintos dentro de S6.
 - Estimación Fibonacci (1, 2, 3, 5), sin traducción directa a horas. Backlog invariable: 28 HU y 92 SP.
-- Capacidad: dos desarrolladores × 80 horas por sprint = 160 horas nominales. Specs, tests, revisión, integración, correcciones, documentación e infraestructura humana consumen esa misma capacidad. No se contabilizan horas de agentes ni se asume un multiplicador.
+- Capacidad: dos desarrolladores × 80 horas por sprint = 160 horas nominales. Specs, tests, revisión, integración, correcciones, documentación e infraestructura del equipo consumen esa misma capacidad. No se contabilizan horas de agentes ni se asume un multiplicador.
 - Capacidad objetivo restante desde S2: 76 SP en cinco sprints, promedio de 15,2 SP por sprint. La referencia nominal es S1, planificado con 16 SP.
-- Ciclo SDD/TDD híbrido: el agente escribe spec y tests en rojo y audita; el humano escribe el código de aplicación y hace todo lo de git.
+- Ciclo SDD/TDD híbrido: el agente escribe spec y tests en rojo y audita; el equipo escribe el código de aplicación y hace todo lo de git.
 - Cada sprint cierra con un incremento demostrable en staging (merge a `develop`). Solo R3 se despliega a producción.
 
 ## Hitos de avance
@@ -60,7 +60,7 @@ Los 8 SP de HU-24..HU-26 se cuentan una sola vez. Se ejecutan con subtareas o ev
 | ------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | S1     | HU-01..HU-04 (16 SP)                                            | Monorepo, CI front/back, login Auth0 y endpoint protegido con RBAC.                                                         | TS-15 quedó en `Listo` el 2026-10-02; el contrato RBAC está disponible para S2.                                                                |
 | S2     | HU-05..HU-08 y HU-10 (13 SP) + 2 SP de HU-24..HU-26             | Alta, edición, listado y estado de artistas; CRUD de producciones y de canciones; pruebas/evidencia de la superficie nueva. | Modelo de `productions` aprobado en TS-49. HU-10 sustituye a HU-09 el 2026-10-13: las reglas de formato cuentan canciones y necesitan `songs`. |
-| S3     | HU-09 y HU-11..HU-13 (13 SP) + 2 SP de HU-24..HU-26             | Reglas de formato por número de canciones, listado de canciones, borrado confirmado y subida WAV/MP3 ≤ 500 MB con progreso. | ERD de canciones/versiones aprobado; bucket S3 e IAM de TS-42 configurados por el humano.                                                      |
+| S3     | HU-09 y HU-11..HU-13 (13 SP) + 2 SP de HU-24..HU-26             | Reglas de formato por número de canciones, listado de canciones, borrado confirmado y subida WAV/MP3 ≤ 500 MB con progreso. | ERD de canciones/versiones aprobado; bucket S3 e IAM de TS-42 configurados por el equipo.                                                      |
 | S4     | HU-14..HU-16 (13 SP) + 2 SP de HU-24..HU-26                     | Versionado secuencial, reproductor y URLs prefirmadas. **Cierre R1.**                                                       | Expiración/refresco de URLs e integridad por hash (RNF-02, RNF-05).                                                                            |
 | S5     | HU-17..HU-19 (13 SP) + 2 SP de HU-24..HU-26                     | Comentarios sobre la línea de tiempo, navegación y borrado propio; ensayo de aceptación.                                    | Sincronización reproductor-comentarios; producción debe quedar preparada al cierre.                                                            |
 | S6     | HU-20..HU-23 (11 SP), HU-27..HU-28 (5 SP) y cierre HU-24..HU-26 | Acceso del artista, sesiones, regresión/RNF, R2 en staging, producción y aceptación final. **Cierre R2 y R3.**              | S6 no tiene holgura: dominio, Resend, infraestructura productiva y documentación deben llegar preparados desde S2-S5.                          |
@@ -131,8 +131,8 @@ El backlog conserva completos RF-01 a RF-07, RNF-01 a RNF-07, HU-01 a HU-28 y la
 - **S3:** ADR D7.1-D7.7 está cerrado; los gates vivos son ERD e infraestructura manual TS-42.
 - **Fin de S5:** dominio, correo e infraestructura productiva preparados; inventario de pruebas/RNF y guion de aceptación casi completos.
 - **S6/R2:** HU-20..HU-23 y regresión crítica en staging antes de producción.
-- **S6/R3:** merge a `main`, infraestructura y aceptación requieren acciones/aprobación humanas.
-- Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo humano. El agente documenta la dependencia y se detiene.
+- **S6/R3:** merge a `main`, infraestructura y aceptación requieren acciones/aprobación del equipo.
+- Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo. El agente documenta la dependencia y se detiene.
 
 ## Discrepancias a reconciliar
 
@@ -158,5 +158,5 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 
 1. S2 cerrado el 2026-10-15 con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Revisión con el dueño de Track Studio el 2026-10-19.
 2. Iniciar `TS Sprint 3` el 2026-10-19 con [`sprints/sprint-03.md`](sprints/sprint-03.md) como baseline de ejecución: TS-20, TS-22, TS-24 y TS-23 (13 SP) más la reserva de TS-35..TS-37.
-3. Gate humano del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. D9.2 quedó decidida el 2026-10-15 (migraciones automáticas en Railway).
+3. Gate del equipo del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. D9.2 quedó decidida el 2026-10-15 (migraciones automáticas en Railway).
 4. Cerrar en la semana 1 el arrastre del S2 (evidencia de TS-46/TS-53, calidad S2 y comprobaciones en staging).

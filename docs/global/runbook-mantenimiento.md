@@ -84,7 +84,7 @@ Pausar los monitores evita alertas falsas. Además, el tiempo que un monitor est
 
 ## 4. Rollback de un despliegue (D9.4)
 
-> Lo ejecuta el humano desde los paneles. Nunca se usa `migrate:rollback` en staging ni en producción.
+> Lo ejecuta el equipo desde los paneles. Nunca se usa `migrate:rollback` en staging ni en producción.
 
 ### 4.1 Antes de cada merge a `main` (solo producción)
 

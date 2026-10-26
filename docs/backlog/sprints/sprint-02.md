@@ -1,6 +1,6 @@
 # Sprint 2 - Artistas y producciones
 
-**Estado:** cerrado el 2026-10-15 (un día antes de la ventana, por decisión del humano) con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Los pendientes se arrastran al [Sprint 3](sprint-03.md#arrastre-del-s2). Baseline aprobada y reconciliada con Jira el 2026-10-02. `TS Sprint 2` es el sprint futuro id 37; Jira manda sobre estado, checklist y criterios de aceptación.
+**Estado:** cerrado el 2026-10-15 (un día antes de la ventana, por decisión del equipo) con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Los pendientes se arrastran al [Sprint 3](sprint-03.md#arrastre-del-s2). Baseline aprobada y reconciliada con Jira el 2026-10-02. `TS Sprint 2` es el sprint futuro id 37; Jira manda sobre estado, checklist y criterios de aceptación.
 **Ventana:** 2026-10-05 a 2026-10-16. **Release:** R1 - Núcleo interno (MVP).
 **Selección funcional:** `TS-16`..`TS-19` y `TS-21` (13 SP; TS-21 sustituye a TS-20 el 2026-10-13). **Reserva transversal:** 2 SP equivalentes para trabajo incremental de `TS-35`..`TS-37` (HU-24..HU-26), sin contar los SP dos veces.
 **Tasks:** `TS-41` (dominio/DNS), `TS-46` (evidencia de desarrollo) y `TS-49` (ERD completo).
@@ -32,9 +32,9 @@ Las Tasks no se convierten artificialmente a SP. Si su esfuerzo real amenaza el 
 | TS-18 | ts-07    | Story |   2 | HU-07 Cambiar el estado de un artista           | TS-16                                      |
 | TS-19 | ts-08    | Story |   3 | HU-08 Registrar, editar y eliminar producciones | TS-16 y slice `productions` de TS-49       |
 | TS-21 | ts-10    | Story |   3 | HU-10 Registrar, editar y eliminar canciones    | TS-19 y TS-49 (ERD §3.4)                   |
-| TS-41 | ts-30    | Task  |   — | Configurar dominio y DNS                        | Acción humana externa                      |
+| TS-41 | ts-30    | Task  |   — | Configurar dominio y DNS                        | Acción externa del equipo                      |
 | TS-46 | ts-35    | Task  |   — | Tesis: evidencia de desarrollo por sprint       | Evidencia de las entregas                  |
-| TS-49 | ts-38    | Task  |   — | Diseñar y cerrar el ERD                         | Aprobación humana del diseño               |
+| TS-49 | ts-38    | Task  |   — | Diseñar y cerrar el ERD                         | Aprobación del equipo del diseño               |
 
 TS-17 puede iniciar su spec y el listado de artistas después de TS-16, pero no cumple su aceptación completa hasta que TS-19 permita demostrar producciones asociadas. Esta dependencia quedó enlazada en Jira el 2026-10-02.
 
@@ -87,11 +87,11 @@ Alcance del sprint: alta y edición por productor sobre el modelo `artists` ya a
 
 - [x] `ts-05.01` Spec backend. Hecho cuando: `docs/specs/backend/HU-05.md` está aprobada, referencia los AC de Jira y define validación, unicidad, autorización, persistencia y errores D3.1. Orden interno: TS-54 y contrato TS-15.
 - [x] `ts-05.02` Tests backend en rojo. Hecho cuando: los casos de alta/edición, duplicados, validación, autorización y no encontrado fallan por la razón correcta. Orden interno: ts-05.01.
-- [x] `ts-05.03` Código backend hasta verde (humano). Hecho cuando: migración/modelo/servicio/controlador autorizados por la spec; tests, Larastan y Pint limpios. Orden interno: ts-05.02.
+- [x] `ts-05.03` Código backend hasta verde (equipo). Hecho cuando: migración/modelo/servicio/controlador autorizados por la spec; tests, Larastan y Pint limpios. Orden interno: ts-05.02.
 - [x] `ts-05.04` Review backend. Hecho cuando: hallazgos resueltos o justificados y cada test no trivial fue probado en rojo (C3). Orden interno: ts-05.03.
 - [x] `ts-05.05` Spec frontend. Hecho cuando: `docs/specs/frontend/HU-05.md` está aprobada y define formulario, estados, errores y contrato con backend sin duplicarlo. Orden interno: ts-05.01.
 - [x] `ts-05.06` Tests frontend en rojo. Hecho cuando: alta/edición, validación, duplicados, permisos y estados asíncronos fallan por la razón correcta. Orden interno: ts-05.05.
-- [x] `ts-05.07` Código frontend hasta verde (humano). Hecho cuando: tests, TypeScript, ESLint y Prettier limpios. Orden interno: ts-05.06.
+- [x] `ts-05.07` Código frontend hasta verde (equipo). Hecho cuando: tests, TypeScript, ESLint y Prettier limpios. Orden interno: ts-05.06.
 - [x] `ts-05.08` Review frontend. Hecho cuando: hallazgos resueltos o justificados y C3 demostrada. Orden interno: ts-05.07.
 - [x] `ts-05.09` Integración y cierre. Hecho cuando: PR a `develop`, CI verde, productor crea/edita en staging, artista queda rechazado y AC/RNF aplicables tienen evidencia. Orden interno: ts-05.04, ts-05.08 y TS-15 integrado.
 
@@ -101,11 +101,11 @@ Alcance del sprint: listado ordenado con estado y producciones asociadas. Excluy
 
 - [x] `ts-06.01` Spec backend aprobada con consulta, orden, forma de respuesta, autorización y comportamiento sin resultados. Orden interno: ts-05.01; puede prepararse antes de cerrar TS-19.
 - [x] `ts-06.02` Tests backend en rojo para orden, estado, asociaciones, vacío y permisos. Orden interno: ts-06.01.
-- [x] `ts-06.03` Código backend hasta verde (humano), sin N+1 y con Larastan/Pint limpios. Orden interno: ts-06.02 y backend TS-19 disponible para la asociación completa.
+- [x] `ts-06.03` Código backend hasta verde (equipo), sin N+1 y con Larastan/Pint limpios. Orden interno: ts-06.02 y backend TS-19 disponible para la asociación completa.
 - [x] `ts-06.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-06.03.
 - [x] `ts-06.05` Spec frontend aprobada para lista, estados vacío/carga/error y representación de producciones asociadas. Orden interno: ts-06.01.
 - [x] `ts-06.06` Tests frontend en rojo para datos, orden visible, vacío, error y permisos. Orden interno: ts-06.05.
-- [x] `ts-06.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-06.06.
+- [x] `ts-06.07` Código frontend hasta verde (equipo); TypeScript, ESLint y Prettier limpios. Orden interno: ts-06.06.
 - [x] `ts-06.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-06.07.
 - [ ] `ts-06.09` Integración y cierre. Hecho cuando: listado completo demostrado en staging con al menos un artista con producción y uno sin producción; CI y AC verdes. Orden interno: ts-06.04, ts-06.08 y ts-08.09.
 
@@ -115,11 +115,11 @@ Alcance del sprint: el productor desactiva y reactiva artistas dentro del catál
 
 - [x] `ts-07.01` Spec backend aprobada con estados válidos, transiciones, autorización, auditoría y errores. Orden interno: ts-05.01.
 - [x] `ts-07.02` Tests backend en rojo para cada estado, transición inválida, permisos, no encontrado y auditoría. Orden interno: ts-07.01.
-- [x] `ts-07.03` Código backend hasta verde (humano); Larastan y Pint limpios. Orden interno: ts-07.02.
+- [x] `ts-07.03` Código backend hasta verde (equipo); Larastan y Pint limpios. Orden interno: ts-07.02.
 - [x] `ts-07.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-07.03.
 - [x] `ts-07.05` Spec frontend aprobada para cambio de estado, confirmación si aplica, feedback y errores. Orden interno: ts-07.01.
 - [x] `ts-07.06` Tests frontend en rojo para estados, acción, error y permisos. Orden interno: ts-07.05.
-- [x] `ts-07.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
+- [x] `ts-07.07` Código frontend hasta verde (equipo); TypeScript, ESLint y Prettier limpios. Orden interno: ts-07.06.
 - [x] `ts-07.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-07.07.
 - [ ] `ts-07.09` Integración y cierre. Hecho cuando: los tres estados se demuestran en staging, persisten y quedan auditables; CI y AC verdes. Orden interno: ts-07.04, ts-07.08 y TS-15 integrado.
 
@@ -130,25 +130,25 @@ Alcance del sprint: CRUD de producciones asociadas a un artista y a un formato. 
 - [x] `ts-08.10` Aprobar en TS-49 el slice de `productions`: atributos, FK a `artists`, formato, borrado, índices y trazabilidad a RF-02. Orden interno: ts-38.02, ts-38.03 y ts-38.05. **Hecho el 2026-10-05:** `docs/erd/modelo-sprint-2.md` §5.
 - [x] `ts-08.01` Spec backend aprobada con CRUD, asociación, autorización, borrado y errores D3.1. **Hecho el 2026-10-07:** `docs/specs/backend/HU-08.md`. Orden interno: ts-08.10 y ts-05.01.
 - [x] `ts-08.02` Tests backend en rojo para alta/edición/borrado, artista inexistente, formato inválido, permisos y no encontrado. **Hecho el 2026-10-07:** 69 casos TS-19 fallan por tabla/modelo/rutas ausentes; la suite previa conserva su verde con `APP_LOCALE=es`. Orden interno: ts-08.01.
-- [x] `ts-08.03` Código backend hasta verde (humano); migración basada en TS-49, Larastan y Pint limpios. **Hecho el 2026-10-07:** CRUD singular de producciones implementado; Pint y PHPStan pasan; batería TS-19 verde (77 tests, 379 aserciones). Orden interno: ts-08.02.
+- [x] `ts-08.03` Código backend hasta verde (equipo); migración basada en TS-49, Larastan y Pint limpios. **Hecho el 2026-10-07:** CRUD singular de producciones implementado; Pint y PHPStan pasan; batería TS-19 verde (77 tests, 379 aserciones). Orden interno: ts-08.02.
 - [x] `ts-08.04` Review backend con C3 y hallazgos cerrados. **Hecho el 2026-10-07:** 34 mutaciones demostraron el rojo de esquema, rutas, Policy, validación, unicidad, Resource, persistencia y soft delete; suite completa verde con `APP_LOCALE=es` (205 tests, 974 aserciones; 1 skip de token Auth0 real). Orden interno: ts-08.03.
 - [x] `ts-08.05` Spec frontend aprobada para CRUD, selección de artista/formato, confirmación de borrado y estados asíncronos. Orden interno: ts-08.01.
 - [x] `ts-08.06` Tests frontend en rojo para CRUD, errores, confirmación y permisos. Orden interno: ts-08.05.
-- [x] `ts-08.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-08.06.
+- [x] `ts-08.07` Código frontend hasta verde (equipo); TypeScript, ESLint y Prettier limpios. Orden interno: ts-08.06.
 - [x] `ts-08.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-08.07.
 - [ ] `ts-08.09` Integración y cierre. Hecho cuando: CRUD completo demostrado en staging, asociación válida, CI y AC verdes. Orden interno: ts-08.04, ts-08.08 y TS-15 integrado.
 
 ### TS-21 / ts-10 - HU-10 Registrar, editar y eliminar canciones
 
-**Adelantada de S3 el 2026-10-13** por decisión del humano, en lugar de TS-20 (ver nota abajo). Alcance: alta, edición y borrado simple de canciones dentro de una producción, con el diseño de `docs/erd/modelo-completo.md` §3.4. El borrado con confirmación y cascada es HU-12; el listado con estado y posición, HU-11; el máximo de canciones por formato, TS-20 (S3).
+**Adelantada de S3 el 2026-10-13** por decisión del equipo, en lugar de TS-20 (ver nota abajo). Alcance: alta, edición y borrado simple de canciones dentro de una producción, con el diseño de `docs/erd/modelo-completo.md` §3.4. El borrado con confirmación y cascada es HU-12; el listado con estado y posición, HU-11; el máximo de canciones por formato, TS-20 (S3).
 
 - [x] `ts-10.01` Spec backend aprobada con CRUD, posición, estado inicial, unicidad, autorización y errores D3.1. Orden interno: TS-19 y TS-49.
 - [x] `ts-10.02` Tests backend en rojo para alta/edición/borrado, producción inexistente, duplicados, validación, permisos y no encontrado. Orden interno: ts-10.01.
-- [x] `ts-10.03` Código backend hasta verde (humano); migración `create_songs_table` basada en TS-49, Larastan y Pint limpios. Orden interno: ts-10.02.
+- [x] `ts-10.03` Código backend hasta verde (equipo); migración `create_songs_table` basada en TS-49, Larastan y Pint limpios. Orden interno: ts-10.02.
 - [x] `ts-10.04` Review backend con C3 y hallazgos cerrados. Orden interno: ts-10.03.
 - [x] `ts-10.05` Spec frontend aprobada y enlazada a la backend. Orden interno: ts-10.01.
 - [x] `ts-10.06` Tests frontend en rojo para alta/edición/borrado, validación, duplicados, permisos y estados asíncronos. Orden interno: ts-10.05.
-- [x] `ts-10.07` Código frontend hasta verde (humano); TypeScript, ESLint y Prettier limpios. Orden interno: ts-10.06.
+- [x] `ts-10.07` Código frontend hasta verde (equipo); TypeScript, ESLint y Prettier limpios. Orden interno: ts-10.06.
 - [x] `ts-10.08` Review frontend con C3 y hallazgos cerrados. Orden interno: ts-10.07.
 - [ ] `ts-10.09` Comprobación en staging por el equipo; no bloquea el Done. Orden interno: ts-10.04 y ts-10.08.
 
@@ -164,11 +164,11 @@ TS-54 ya aprobó el modelo mínimo de `users`/`artists`. S2 debe completar el di
 - [x] Completar `ts-38.02`, `ts-38.03` y `ts-38.05` para `productions` antes de TS-19 (2026-10-05).
 - [x] Completar el inventario y diseño de `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, aplicando D6.x y D7.x (2026-10-06).
 - [x] `ts-38.08` Versionar el ERD completo en `docs/erd/` con trazabilidad RF/HU: `docs/erd/modelo-completo.md`.
-- [x] `ts-38.09` Obtener aprobación humana, actualizar dependencias y cerrar TS-49. Aprobación obtenida el 2026-10-06 y ADR actualizado (ERD CERRADO). TS-49 en `Listo` en Jira (verificado el 2026-10-13).
+- [x] `ts-38.09` Obtener aprobación del equipo, actualizar dependencias y cerrar TS-49. Aprobación obtenida el 2026-10-06 y ADR actualizado (ERD CERRADO). TS-49 en `Listo` en Jira (verificado el 2026-10-13).
 
 ### TS-41 / ts-30 - Dominio y DNS
 
-Trabajo humano de infraestructura. No bloquea el CRUD de S2, pero sí Resend y la preparación productiva.
+Trabajo del equipo de infraestructura. No bloquea el CRUD de S2, pero sí Resend y la preparación productiva.
 
 **Dividida el 2026-10-08:** TS-41 se queda con Resend y la documentación. El DNS de producción (`@`, `www`, `api`) pasa a **TS-63**, que bloquea a TS-44. Staging no tiene subdominio propio.
 
@@ -221,7 +221,7 @@ Estas son HU-24..HU-26 en Jira; no deben confundirse con los IDs locales de las 
 
 ## Definition of Done del sprint
 
-Una Story está Done cuando: specs aprobadas, tests vistos en rojo y luego verdes, C3 demostrada, review sin hallazgos abiertos, PR integrado en `develop`, CI verde, AC de Jira y RNF aplicables verificados, documentación sin drift y handoff actualizado. **Desde el 2026-10-13 (decisión del humano):** la comprobación en staging (`ts-XX.09`) la hace el equipo aparte y no bloquea el Done.
+Una Story está Done cuando: specs aprobadas, tests vistos en rojo y luego verdes, C3 demostrada, review sin hallazgos abiertos, PR integrado en `develop`, CI verde, AC de Jira y RNF aplicables verificados, documentación sin drift y handoff actualizado. **Desde el 2026-10-13 (decisión del equipo):** la comprobación en staging (`ts-XX.09`) la hace el equipo aparte y no bloquea el Done.
 
 El sprint puede cerrar por calendario con trabajo pendiente, pero el objetivo no se declara cumplido ni se contabilizan SP si falta cualquiera de esas condiciones.
 

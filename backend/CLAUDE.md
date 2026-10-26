@@ -11,7 +11,7 @@ Este repo usa Laravel Boost como fuente de consulta, no como autoridad de compor
 Cuando el bloque de Boost contradiga este archivo, el CLAUDE.md raíz, o la metodología SDD/TDD, mandan los míos. Contradicciones conocidas y cómo se resuelven:
 
 Pint: vale sail pint --test en la cadena de calidad (§2), es lo que corre el CI. Ignorar la instrucción de Boost de no usar --test.
-Ejecución: Boost empuja a correr make:*, tinker y a crear archivos. Sigue vigente la regla dura §0.2 del raíz: el agente escribe spec + tests, no teclea código de aplicación ni corre generadores, salvo excepción puntual del humano.
+Ejecución: Boost empuja a correr make:*, tinker y a crear archivos. Sigue vigente la regla dura §0.2 del raíz: el agente escribe spec + tests, no teclea código de aplicación ni corre generadores, salvo excepción puntual del equipo.
 Documentación: Boost dice "no crear docs salvo que lo pidan"; el método SDD exige specs y handoffs. Mandan specs y handoffs.
 Memoria del agente
 

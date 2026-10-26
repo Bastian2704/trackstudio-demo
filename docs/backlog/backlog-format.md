@@ -63,7 +63,7 @@ Criterios de aceptación:
 
 Referencias: <RF/RNF, ADR Dx.y, docs/specs/…/HU-NN.md, roadmap>.
 
-Dependencia externa: <infraestructura humana, bloque ABIERTO del ADR o persona>.   # Solo si aplica.
+Dependencia externa: <infraestructura del equipo, bloque ABIERTO del ADR o persona>.   # Solo si aplica.
 
 Checklist de ejecución:
 <casillas con ID, trabajo, Hecho cuando y orden interno>
@@ -76,17 +76,17 @@ Checklist de ejecución:
 
 ## Checklist estándar por capa
 
-Cada Story parte de esta plantilla y la ajusta a su historia: se eliminan las casillas de la capa que no aplique y se añaden casillas específicas (reglas de negocio, RNF concretos). Las casillas siguen el reparto de roles de la metodología (§2): el agente escribe la spec y los tests en rojo y audita; el humano escribe el código de aplicación y hace git.
+Cada Story parte de esta plantilla y la ajusta a su historia: se eliminan las casillas de la capa que no aplique y se añaden casillas específicas (reglas de negocio, RNF concretos). Las casillas siguen el reparto de roles de la metodología (§2): el agente escribe la spec y los tests en rojo y audita; el equipo escribe el código de aplicación y hace git.
 
 | Casilla | Trabajo                              | Hecho cuando                                                                                             |
 | ------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `.01`   | Spec backend                         | `docs/specs/backend/HU-NN.md` aprobada por el humano, anclada al ADR, sin copiar AC.                     |
+| `.01`   | Spec backend                         | `docs/specs/backend/HU-NN.md` aprobada por el equipo, anclada al ADR, sin copiar AC.                     |
 | `.02`   | Tests backend en rojo (agente)       | Tests Pest de feature/unit escritos y vistos fallar por la razón correcta (C2).                          |
-| `.03`   | Código backend hasta verde (humano)  | Tests en verde; Larastan nivel 5 y Pint limpios.                                                         |
+| `.03`   | Código backend hasta verde (equipo)  | Tests en verde; Larastan nivel 5 y Pint limpios.                                                         |
 | `.04`   | Review backend                       | Hallazgos con `archivo:línea` resueltos o justificados; cada test no trivial probado en rojo (C3).       |
 | `.05`   | Spec frontend                        | `docs/specs/frontend/HU-NN.md` aprobada; enlazada a la spec backend sin repetir contrato.                |
 | `.06`   | Tests frontend en rojo (agente)      | Tests Vitest escritos y vistos fallar.                                                                   |
-| `.07`   | Código frontend hasta verde (humano) | Tests en verde; `tsc --noEmit`, ESLint y Prettier limpios.                                               |
+| `.07`   | Código frontend hasta verde (equipo) | Tests en verde; `tsc --noEmit`, ESLint y Prettier limpios.                                               |
 | `.08`   | Review frontend                      | Igual que `.04` para la capa frontend.                                                                   |
 | `.09`   | Integración y cierre                 | PR a `develop` con CI verde; AC verificados en staging; RNF aplicables comprobados; handoff actualizado. |
 
@@ -135,7 +135,7 @@ Al dividir una historia, se reparten sus criterios y casillas sin omitir ni dupl
 | `owner`            | Adrián o Sebastian, solo cuando esté confirmado.                                                                      | Assignee; no se duplica en la Description.                               |
 | `references`       | HU-NN, RF/RNF, ADR `Dx.y`, spec de capa.                                                                              | Sección Referencias.                                                     |
 | `blocked_by`       | local_ids predecesores y motivo.                                                                                      | Enlace Blocks: el predecesor bloquea al sucesor.                         |
-| `external_blocker` | Infraestructura humana, decisión o persona externa, con la siguiente acción.                                          | Sección Dependencia externa; si afecta a varios tickets, Task + enlaces. |
+| `external_blocker` | Infraestructura del equipo, decisión o persona externa, con la siguiente acción.                                          | Sección Dependencia externa; si afecta a varios tickets, Task + enlaces. |
 | `split_reason`     | Motivo para crear un Sub-task o dividir una historia.                                                                 | Description del nuevo ticket y referencia desde el original.             |
 | `evidence`         | PR, run de CI, captura de staging. Vacío hasta ejecutar.                                                              | Comentario o Description posterior, sin datos sensibles.                 |
 
@@ -147,7 +147,7 @@ Todos los tickets entran al backlog oficial sin assignee ni evidencia. Siguen si
 - El orden entre casillas se conserva en la Description; no se exporta como enlaces Blocks.
 - Parent expresa pertenencia; no crea un bloqueo. No se crean ciclos entre un ticket y sus hijos.
 - **Gate del ADR:** una historia que depende de un bloque ABIERTO no es Ready. El bloque 7 (subida de audio a S3) está cerrado desde 2026-08-18; para HU-13..16 los gates vigentes son el ERD, el alcance del sprint y la infraestructura `TS-42`.
-- **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo humano. Se registran como Dependencia externa o como Task enlazada; el agente no los toca.
+- **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo. Se registran como Dependencia externa o como Task enlazada; el agente no los toca.
 - **Compuertas del método:** C1 (sin spec aprobada no hay tests), C2 (sin test en rojo no hay código), C3 (todo test se prueba rompiéndolo), C4 (frontera real para contratos externos) y C5 (sin tests no hay tarea terminada). Marcar casillas no las sustituye.
 - **Done:** código integrado en `develop` por PR con pipeline verde, tests pasando, AC cumplidos, RNF aplicables verificados y revisión en el Sprint Review. El release se libera cuando todas sus historias cumplen Done.
 - Un bloqueo documentado sigue siendo un bloqueo. El sprint puede cerrar por calendario, pero su objetivo no se declara cumplido si faltan criterios.

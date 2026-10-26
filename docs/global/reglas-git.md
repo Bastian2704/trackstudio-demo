@@ -8,7 +8,7 @@ Documento **global**. Define el modelo de ramas y **qué puede y qué no puede h
 
 ## 1. Regla dura: el agente lee, no escribe
 
-El control de versiones lo ejerce **exclusivamente el equipo humano**. Cada commit del repositorio es un punto donde una persona leyó un diff y dijo que sí. Los commits frecuentes son además la red de reversión si algo se cuela — más importante todavía porque **el repo es público** (`D2.2`): un secreto o un dato real del cliente que entra al historial no se borra con un commit más.
+El control de versiones lo ejerce **exclusivamente el equipo**. Cada commit del repositorio es un punto donde una persona leyó un diff y dijo que sí. Los commits frecuentes son además la red de reversión si algo se cuela — más importante todavía porque **el repo es público** (`D2.2`): un secreto o un dato real del cliente que entra al historial no se borra con un commit más.
 
 | El agente **SÍ** (solo lectura)                               | El agente **NUNCA** (escritura)               |
 | ------------------------------------------------------------- | --------------------------------------------- |
