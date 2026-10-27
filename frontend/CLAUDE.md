@@ -31,7 +31,7 @@ npm run format:check   # Prettier, sin modificar
 npm run format         # Prettier, arregla
 npm run build          # tsc -b + vite build
 npm ci                 # instalar (nunca `npm install` en CI — D2.1)
-npx shadcn add <x>     # añadir un componente de shadcn (código de aplicación: lo ejecuta el humano)
+npx shadcn add <x>     # añadir un componente de shadcn (código de aplicación: lo ejecuta el equipo)
 ```
 
 ## 2. Cadena de calidad antes de pedir commit

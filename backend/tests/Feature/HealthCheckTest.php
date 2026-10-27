@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Exceptions;
 |
 | `/api/v1/health` es un reporte de estado, no un error: queda EXENTO de
 | D3.1 (ver D9.3). Misma forma en 200 y en 503 para que el monitor lea
-| `"status":"ok"` como keyword y un humano lea `checks.database`.
+| `"status":"ok"` como keyword y una persona lea `checks.database`.
 |
 */
 

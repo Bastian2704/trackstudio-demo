@@ -2,7 +2,7 @@
 
 > **Jira:** `TS-49` (`ts-38.01`..`ts-38.09`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado) y [`modelo-sprint-2.md`](modelo-sprint-2.md) (delta de S2, slice de `productions` aprobado el 2026-10-05)
-> **Estado:** **aprobado por el humano el 2026-10-06.** Cierra el ERD (`ts-38.09`).
+> **Estado:** **aprobado por el equipo el 2026-10-06.** Cierra el ERD (`ts-38.09`).
 
 ## 1. Alcance y precedencia
 
@@ -45,7 +45,7 @@ Es el destino de las FK de autoría: `artists.created_by`, `artists.user_id`, `v
 
 Diccionario en `modelo-minimo-sprint-1.md` §3.2 y delta en `modelo-sprint-2.md` §2–§3. **Sin cambios de esquema.**
 
-**Catálogo de estados canónico** (decisión del humano del 2026-10-05): `invitado`, `activo` e `inactivo` (D6.3). Los AC de `TS-18` (HU-07) que hablan de «activo/suspendido/bloqueado» se corrigen en Jira para que coincidan con este catálogo.
+**Catálogo de estados canónico** (decisión del equipo del 2026-10-05): `invitado`, `activo` e `inactivo` (D6.3). Los AC de `TS-18` (HU-07) que hablan de «activo/suspendido/bloqueado» se corrigen en Jira para que coincidan con este catálogo.
 
 `artists` es también el sujeto de los accesos (§3.7): un artista puede recibir acceso antes de tener cuenta, y su `user_id` lo enlaza con la identidad cuando se registra (D6.2, D6.4).
 
@@ -104,7 +104,7 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 | `id` | `uuid` | `NOT NULL` | PK | Identificador (D6.1). |
 | `song_id` | `uuid` | `NOT NULL` | FK → `songs.id`; cubierto por el único `versions_song_id_version_number_unique` | Canción a la que pertenece. |
 | `version_number` | `integer` | `NOT NULL` | `CHECK (version_number > 0)`; **único total** `(song_id, version_number)`, que incluye las filas borradas | Número secuencial, automático e inmodificable (HU-14, D7.3). |
-| `label` | `varchar(100)` | `NULL` | — | Nombre corto opcional que escribe el productor al subir (p. ej., «Master final»). Si es `NULL`, el historial muestra «v{version_number}» (HU-14; decisión del humano del 2026-10-06). |
+| `label` | `varchar(100)` | `NULL` | — | Nombre corto opcional que escribe el productor al subir (p. ej., «Master final»). Si es `NULL`, el historial muestra «v{version_number}» (HU-14; decisión del equipo del 2026-10-06). |
 | `description` | `text` | `NULL` | — | Descripción opcional (HU-14). |
 | `s3_key` | `varchar(512)` | `NOT NULL` | `UNIQUE` | `{artist_id}/{production_id}/{song_id}/v{version_number}.{ext}` (D7.3). |
 | `content_type` | `varchar(50)` | `NOT NULL` | `CHECK (content_type IN ('audio/wav', 'audio/mpeg'))` | Tipo declarado y fijado como condición de la presigned URL (D7.7). El frontend normaliza las variantes (`audio/x-wav`, `audio/wave`) a `audio/wav`. La extensión del key se deriva de aquí (`wav`/`mp3`). |
@@ -192,7 +192,7 @@ No hay `updated_at` (los comentarios no se editan, HU-19; en el modelo, `UPDATED
 
 ### 3.7 `production_access`
 
-**Propósito.** RF-06: HU-20 (otorgar y revocar con invitación) y HU-21 (vista restringida). Sprint objetivo: S6. Sustituye el sujeto `user_id` de D6.5 por `artist_id` (decisión del humano del 2026-10-05).
+**Propósito.** RF-06: HU-20 (otorgar y revocar con invitación) y HU-21 (vista restringida). Sprint objetivo: S6. Sustituye el sujeto `user_id` de D6.5 por `artist_id` (decisión del equipo del 2026-10-05).
 
 **Diccionario.**
 
@@ -217,7 +217,7 @@ No hay `updated_at` (los comentarios no se editan, HU-19; en el modelo, `UPDATED
 
 **Ciclo de vida.** Al otorgar (HU-20) se crea la fila y se dispara la invitación. Si el artista todavía no tiene `user_id`, el Service emite el token de D6.4 (`artists.invitation_token`, `invited_at`, `invitation_expires_at`) y envía el correo por Resend (`MailerContract`). Si ya tiene cuenta, se le notifica el acceso nuevo. La revocación marca `revoked_at`.
 
-**Autorización.** Solo el productor otorga y revoca. El artista ve sus propios accesos (D8.1). **Solo se concede acceso al artista dueño** de la producción (`production_access.artist_id = productions.artist_id`), porque los AC de HU-20 hablan de «su producción». Es una regla del Service de HU-20 (422 si no se cumple), no del esquema (decisión del humano del 2026-10-06).
+**Autorización.** Solo el productor otorga y revoca. El artista ve sus propios accesos (D8.1). **Solo se concede acceso al artista dueño** de la producción (`production_access.artist_id = productions.artist_id`), porque los AC de HU-20 hablan de «su producción». Es una regla del Service de HU-20 (422 si no se cumple), no del esquema (decisión del equipo del 2026-10-06).
 
 **Decisiones y alternativas.**
 
@@ -240,7 +240,7 @@ La regla del dueño se aplica en el Service y no con una FK compuesta `(producti
 | Columna | Tipo PostgreSQL | Nulabilidad | Restricciones e índices | Propósito |
 | --- | --- | --- | --- | --- |
 | `id` | `uuid` | `NOT NULL` | PK | Identificador (D6.1). |
-| `production_id` | `uuid` | `NOT NULL` | FK → `productions.id`; índice `studio_sessions_production_id_index` | El «proyecto existente» del AC de HU-22 es una producción (decisión del humano del 2026-10-05). |
+| `production_id` | `uuid` | `NOT NULL` | FK → `productions.id`; índice `studio_sessions_production_id_index` | El «proyecto existente» del AC de HU-22 es una producción (decisión del equipo del 2026-10-05). |
 | `starts_at` | `timestamptz` | `NOT NULL` | Índice `studio_sessions_starts_at_index` (D6.7) | Inicio de la sesión (UTC, D3.2). |
 | `ends_at` | `timestamptz` | `NOT NULL` | `CHECK (ends_at > starts_at)` | Fin de la sesión. |
 | `status` | `varchar(20)` | `NOT NULL` | `CHECK (status IN ('solicitada', 'confirmada', 'cancelada'))`, sin default | Estado de la sesión (HU-22, HU-23). |
@@ -440,6 +440,6 @@ El DDL derivado de §3 se ejecutó el 2026-10-05 contra el PostgreSQL de Sail de
 ## 9. Aprobación
 
 - **Propuesta:** 2026-10-05 (corte 2 de `TS-49`).
-- **Aprobado por:** el humano (Bastian2704), 2026-10-06.
+- **Aprobado por:** el equipo (Bastian2704), 2026-10-06.
 
 Al aprobarse, se actualizan en la misma rama: D6.5/D6.7/D4.6 y el «Estado del ERD» del ADR (pasa a CERRADO), `sprint-02.md` y Jira (`TS-49`, `TS-18`, `TS-20` y las notas obsoletas del bloque 7 en `TS-21`..`TS-33`).

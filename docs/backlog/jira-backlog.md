@@ -8,7 +8,7 @@ Este backlog descompone [el roadmap](roadmap.md) y gobierna el proyecto `TS` en 
 
 El proyecto `TS` está poblado en `medihealthec.atlassian.net` y Jira es la fuente de verdad. Este catálogo conserva el diseño del backlog; las claves vigentes y las unidades posteriores a la importación están en [`jira-key-map.md`](jira-key-map.md). Las checklists se mantienen en Jira y los documentos de sprint solo registran planificación y handoff.
 
-Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continúan desde `ts-29` y las épicas son `ts-epic-<slug>`. La clave real `TS-<n>` se registra en `imports/` después de importar.
+Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continúan desde `ts-29` y las épicas son `ts-epic-<slug>`. La clave real `TS-<n>` se registra en [jira-key-map.md](jira-key-map.md) después de importar.
 
 ## Catálogo de épicas
 
@@ -27,7 +27,7 @@ Identificadores: `ts-01`..`ts-28` corresponden a HU-01..HU-28, las Task continú
 | ts-epic-thesis        | —    | Documento de tesis              | Secciones de diseño, desarrollo, pruebas y resultados del documento de titulación, con evidencia del proyecto.                                    | ts-34..ts-37                             | S2-S6   |
 | ts-epic-ui            | TS-67 | Fidelidad visual con Figma     | El frontend se ve igual que el prototipo de Figma: tokens, shell con navegación lateral y una Task por módulo. Excluye los elementos del prototipo sin RF. | ts-39..ts-47                             | S3-S6   |
 
-Todo el trabajo de infraestructura cuelga de `ts-epic-infra`: repositorio y CI (HU-01, HU-02), entrega a producción (HU-27), las cinco Task de infraestructura humana y el ERD (ts-38), que es transversal a todos los módulos. El bucket S3 (ts-31) va bajo esta épica aunque bloquee a HU-13. Calidad y aceptación consolida la evidencia integral, pero cada historia conserva sus propios tests y su review.
+Todo el trabajo de infraestructura cuelga de `ts-epic-infra`: repositorio y CI (HU-01, HU-02), entrega a producción (HU-27), las cinco Task de infraestructura del equipo y el ERD (ts-38), que es transversal a todos los módulos. El bucket S3 (ts-31) va bajo esta épica aunque bloquee a HU-13. Calidad y aceptación consolida la evidencia integral, pero cada historia conserva sus propios tests y su review.
 
 ## Cobertura del alcance aprobado
 
@@ -102,7 +102,7 @@ La historia y los criterios de aceptación de cada Story se copiaron del Anexo C
 | ts-35 | Tesis: Desarrollo de la solución (evidencia SCRUM por sprint)        | ts-epic-thesis | S2-S6  | transversal | docs  | normal   | —             | —                                                  |
 | ts-36 | Tesis: Pruebas y evaluación de la solución                           | ts-epic-thesis | S2-S6  | transversal | docs  | normal   | ts-24, ts-25  | —                                                  |
 | ts-37 | Tesis: Resultados, ética, conclusiones, trabajo futuro y resumen     | ts-epic-thesis | S5-S6  | transversal | docs  | normal   | ts-28         | —                                                  |
-| ts-38 | Diseñar y cerrar el ERD del modelo de datos                          | ts-epic-infra  | S1-S2  | R1          | docs  | datos    | —             | Hito mínimo S1 en TS-54; aprobación humana         |
+| ts-38 | Diseñar y cerrar el ERD del modelo de datos                          | ts-epic-infra  | S1-S2  | R1          | docs  | datos    | —             | Hito mínimo S1 en TS-54; aprobación del equipo         |
 
 | ts-39 | UI Figma: base (tokens y shell con navegación lateral) | ts-epic-ui | S3 | transversal | front | normal | — | Prototipo de Figma «Track Studio» |
 | ts-40 | UI Figma: login, inicio, 403 y errores | ts-epic-ui | S3 | transversal | front | normal | ts-39 | Prototipo de Figma «Track Studio» |
@@ -114,9 +114,9 @@ La historia y los criterios de aceptación de cada Story se copiaron del Anexo C
 | ts-46 | UI Figma: acceso del artista (HU-20, HU-21) | ts-epic-ui | S6 | transversal | front | normal | ts-39, ts-20, ts-21 | Prototipo de Figma «Track Studio» |
 | ts-47 | UI Figma: sesiones de estudio (HU-22, HU-23) | ts-epic-ui | S6 | transversal | front | normal | ts-39, ts-22, ts-23 | Prototipo de Figma «Track Studio» |
 
-Tasks ts-39..ts-47 (`TS-68`..`TS-76`, añadidas el 2026-10-15): cada una entra en el primer sprint en que la funcionalidad de su módulo ya está Done, y la bloquean la base (ts-39) y esas HU mediante enlaces Blocks. El código lo escribe el humano; el agente redacta la enmienda de spec, los tests y la review.
+Tasks ts-39..ts-47 (`TS-68`..`TS-76`, añadidas el 2026-10-15): cada una entra en el primer sprint en que la funcionalidad de su módulo ya está Done, y la bloquean la base (ts-39) y esas HU mediante enlaces Blocks. El código lo escribe el equipo; el agente redacta la enmienda de spec, los tests y la review.
 
-Las Task de infraestructura las ejecuta el equipo humano (`CLAUDE.md` regla 6). El agente las señala como dependencia y se detiene. ts-38 es documentación de diseño, no infraestructura: el agente puede redactar el ERD y el humano lo aprueba. Bloquea a las historias que necesitan tablas aún no diseñadas; `users` y `artists` se aprobaron en `TS-54`, y el slice `productions` debe aprobarse antes de TS-19. Las Task no llevan SP; su esfuerzo consume la misma capacidad del sprint. ts-35 se actualiza en cada sprint y se cierra en S6.
+Las Task de infraestructura las ejecuta el equipo (`CLAUDE.md` regla 6). El agente las señala como dependencia y se detiene. ts-38 es documentación de diseño, no infraestructura: el agente puede redactar el ERD y el equipo lo aprueba. Bloquea a las historias que necesitan tablas aún no diseñadas; `users` y `artists` se aprobaron en `TS-54`, y el slice `productions` debe aprobarse antes de TS-19. Las Task no llevan SP; su esfuerzo consume la misma capacidad del sprint. ts-35 se actualiza en cada sprint y se cierra en S6.
 
 ## Sprint 1
 
@@ -162,6 +162,6 @@ S1 y S2 tienen desglose local. S3-S6 conservan su alcance y ventana objetivo con
 - Lote inicial único: **49 filas** (11 épicas + 28 Story + 10 Task). Las casillas de checklist no generan filas.
 - Etiquetas por ticket: `local-<id>`, `release-rN`, `target-sN`, `capa-*`, `riesgo-*`, `backlog-oficial`.
 - Enlaces Blocks: se generan desde la columna "Bloqueado por". Si el importador no los resuelve, se hace una segunda pasada con las claves reales.
-- La tabla `local_id → import_id → TS-<n>` y el resultado de la importación se registran en `imports/`. El procedimiento completo está en [backlog-format.md](backlog-format.md#preparación-del-csv).
+- La tabla `local_id → import_id → TS-<n>` y el resultado de la importación se registran en [jira-key-map.md](jira-key-map.md); el CSV y su resultado se archivan en `trackstudio-documentacion/Backlog/imports`. El procedimiento completo está en [backlog-format.md](backlog-format.md#preparación-del-csv).
 
 La preparación produjo `sprints/sprint-01.md` y el CSV del lote inicial. Este bloque se conserva como historial; no se debe volver a importar el lote.

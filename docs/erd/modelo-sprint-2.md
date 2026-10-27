@@ -2,7 +2,7 @@
 
 > **Jira:** `TS-16` (HU-05) · `TS-49`, slice de `productions` (`ts-08.10`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado)
-> **Estado:** la ampliación de `artists` (§2–§4) se integró con `TS-16` (PR #30). El slice de `productions` (§5) quedó **aprobado por el humano el 2026-10-05** (`ts-08.10`).
+> **Estado:** la ampliación de `artists` (§2–§4) se integró con `TS-16` (PR #30). El slice de `productions` (§5) quedó **aprobado por el equipo el 2026-10-05** (`ts-08.10`).
 
 ## 1. Alcance
 
@@ -53,7 +53,7 @@ Cubre RF-02: HU-08 (`TS-19`) y HU-09 (`TS-20`). Los AC de HU-08 exigen que la pr
 2. **El formato es un enum cerrado** con valores en español, igual que `artists.status` (D6.3): `sencillo`, `ep` y `album`. Se guarda como `varchar` con `CHECK` y se castea a un backed enum de PHP (D4.6), validado con `Rule::enum()`.
 3. **El nombre es único dentro del artista y solo entre las producciones vigentes**, con el mismo criterio que §2.1: no distingue mayúsculas, la aplicación recorta espacios antes de comparar, y una producción con soft delete libera su nombre. Dos artistas distintos pueden tener producciones con el mismo nombre. La validación amigable (422) vive en la aplicación; el índice es la última barrera.
 4. **No se guarda ningún dato derivado.** Quedan fuera la duración total, el número de canciones, el porcentaje de avance y la portada (este último lo excluye TS-19). Las reglas de formato se calculan contando las canciones vigentes cuando haga falta.
-5. **Las reglas de formato cuentan canciones, no minutos** (decisión del humano del 2026-10-05, que sustituye el AC «EP no supera 30 min» de `TS-20`): sencillo = 1 canción, EP = 2 a 6, álbum = 7 o más. **Solo bloquean los máximos**: no se puede añadir una canción que supere el máximo del formato ni cambiar a un formato que no admite las canciones que ya existen. Los mínimos son informativos mientras la producción está en curso. El esquema no necesita columnas para esto. El dueño del contrato funcional es la spec de HU-09. En S2 no existe `songs`, así que toda producción tiene 0 canciones y el cambio de formato siempre es válido; el bloqueo al añadir canciones llega con HU-10 (S3).
+5. **Las reglas de formato cuentan canciones, no minutos** (decisión del equipo del 2026-10-05, que sustituye el AC «EP no supera 30 min» de `TS-20`): sencillo = 1 canción, EP = 2 a 6, álbum = 7 o más. **Solo bloquean los máximos**: no se puede añadir una canción que supere el máximo del formato ni cambiar a un formato que no admite las canciones que ya existen. Los mínimos son informativos mientras la producción está en curso. El esquema no necesita columnas para esto. El dueño del contrato funcional es la spec de HU-09. En S2 no existe `songs`, así que toda producción tiene 0 canciones y el cambio de formato siempre es válido; el bloqueo al añadir canciones llega con HU-10 (S3).
 6. **Borrado lógico** (`deleted_at`, D4.5). La cascada lógica hacia `songs` y `versions` la hará el Service cuando esas tablas existan (HU-12, S3). Los objetos de S3 no se tocan (D4.5).
 7. **Sin `created_by`.** Hay un único productor (D8.1) y ningún AC pide auditar quién crea la producción. `artists.created_by` existe por el enlace de cuentas de S1, y ese motivo no aplica aquí.
 8. **La regla «¿se puede crear una producción para un artista `inactivo`?»** es de negocio, no de esquema. La decide la spec de HU-08. Lo mas probable es que sea no.
@@ -108,7 +108,7 @@ erDiagram
 
 ### 5.5 Migración
 
-`create_productions_table`, con una sola intención: crea la tabla de §5.2 con su FK, el índice de la FK, el único parcial y el `CHECK` de formato. No toca otras tablas. Su `down()` elimina la tabla. La escribe el humano en `TS-19` (`ts-08.03`), después de que la spec esté aprobada y los tests estén en rojo.
+`create_productions_table`, con una sola intención: crea la tabla de §5.2 con su FK, el índice de la FK, el único parcial y el `CHECK` de formato. No toca otras tablas. Su `down()` elimina la tabla. La escribe el equipo en `TS-19` (`ts-08.03`), después de que la spec esté aprobada y los tests estén en rojo.
 
 ## 6. Trazabilidad
 

@@ -578,15 +578,15 @@ Configurado en `backend/config/cors.php`. La autenticación es por `Authorizatio
 
 ### D9.2 — Migraciones automáticas en cada despliegue de Railway (2026-10-15)
 
-**Decisión del humano:** Railway ejecuta `php artisan migrate --force` en cada build/despliegue del backend. Ya no hay paso manual: la migración de una HU llega a staging en cuanto se mergea en `develop`. `--force` es obligatorio porque Laravel pide confirmación en `APP_ENV=production`.
+**Decisión del equipo:** Railway ejecuta `php artisan migrate --force` en cada build/despliegue del backend. Ya no hay paso manual: la migración de una HU llega a staging en cuanto se mergea en `develop`. `--force` es obligatorio porque Laravel pide confirmación en `APP_ENV=production`.
 
-**Riesgo aceptado:** una migración rota se aplica sin intervención humana. Mitigaciones: toda migración pasa por CI (Pest monta el esquema completo con `RefreshDatabase`) y por la review de su HU antes del merge, y producción solo recibe lo que ya se aplicó en staging (`develop` → `main` con aprobación, 9.1). El procedimiento de vuelta atrás está en **D9.4**.
+**Riesgo aceptado:** una migración rota se aplica sin intervención del equipo. Mitigaciones: toda migración pasa por CI (Pest monta el esquema completo con `RefreshDatabase`) y por la review de su HU antes del merge, y producción solo recibe lo que ya se aplicó en staging (`develop` → `main` con aprobación, 9.1). El procedimiento de vuelta atrás está en **D9.4**.
 
 **Efecto:** se desbloquean las comprobaciones en staging (`.09`) que esperaban este punto, y se resuelve la trampa 1 del handoff v25 para staging. La configuración vive en Railway: el agente no la toca (`CLAUDE.md` §0.6).
 
 ### D9.4 — Rollback: plataforma + expand/contract + corrección hacia adelante (2026-10-15)
 
-**Decisión del humano.** Un fallo de despliegue se resuelve en tres capas:
+**Decisión del equipo.** Un fallo de despliegue se resuelve en tres capas:
 
 1. **Código:** se vuelve al despliegue anterior desde el panel: «Rollback» en Railway (backend) e «Instant Rollback» en Vercel (frontend). Con D9.2, el `migrate --force` del despliegue anterior no hace nada (su código no trae migraciones nuevas), así que el esquema se queda como está.
 2. **Esquema (expand/contract):** como el código viejo tiene que funcionar con el esquema nuevo, toda migración es **aditiva y compatible hacia atrás**: tablas nuevas, columnas que admiten nulos o tienen valor por defecto, índices. Borrar, renombrar o endurecer una restricción se hace en un despliegue **posterior**, cuando ningún código desplegado usa lo viejo. **Nunca** se ejecuta `migrate:rollback` en staging ni en producción: los `down()` no se prueban y pueden perder datos.
@@ -594,7 +594,7 @@ Configurado en `backend/config/cors.php`. La autenticación es por `Authorizatio
 
 Después de cualquier rollback se corrige **hacia adelante**: `git revert` o un hotfix sobre la rama afectada, para que el repo vuelva a coincidir con lo desplegado. Staging no lleva copia de BD, porque sus datos son sintéticos.
 
-**Quién:** el rollback, la copia y la restauración los ejecuta el humano (`CLAUDE.md` §0.6). El agente documenta el procedimiento, en `docs/global/runbook-mantenimiento.md` §4, y en cada review de una HU con migración comprueba que esta sea aditiva o esté partida en expand/contract.
+**Quién:** el rollback, la copia y la restauración los ejecuta el equipo (`CLAUDE.md` §0.6). El agente documenta el procedimiento, en `docs/global/runbook-mantenimiento.md` §4, y en cada review de una HU con migración comprueba que esta sea aditiva o esté partida en expand/contract.
 
 **Alternativas descartadas:** `migrate:rollback` manual (sus `down()` no se prueban, pueden perder datos y se ejecutarían bajo presión) y solo `git revert` (tarda lo que el CI más el build, y no arregla el esquema).
 

@@ -9,7 +9,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 ## 0. Reglas duras (no negociables)
 
 1. **No ejecuto escritura de git.** Ni `commit`, `push`, `merge`, `branch`, `checkout`, `reset`, `tag`, `stash`. **Sí leo** (`git status/branch/log/diff`). Entrego los comandos de escritura ya rellenados y me detengo. → `docs/global/reglas-git.md`.
-2. **No tecleo el código de aplicación del proyecto** (controladores, servicios, componentes, migraciones, configuración de infra). Mi trabajo es: escribir la **spec**, escribir los **tests en rojo**, y **auditar** el diff que teclea el humano. El código de aplicación lo escribe una persona (Opción 3 / híbrido SDD). → `docs/global/metodologia-sdd-tdd.md`. **Excepción:** si el humano me lo pide para una acción puntual ("hazlo tú esta vez"), puedo escribir ese código; la excepción es por tarea, no permanente.
+2. **No tecleo el código de aplicación del proyecto** (controladores, servicios, componentes, migraciones, configuración de infra). Mi trabajo es: escribir la **spec**, escribir los **tests en rojo**, y **auditar** el diff que teclea el equipo. El código de aplicación lo escribe una persona (Opción 3 / híbrido SDD). → `docs/global/metodologia-sdd-tdd.md`. **Excepción:** si el equipo me lo pide para una acción puntual ("hazlo tú esta vez"), puedo escribir ese código; la excepción es por tarea, no permanente.
 3. **Un cambio a la vez, una tarea a la vez.** No toco "de paso" otras cosas fuera del diff de la tarea.
 4. **La fuente de verdad manda.** Historias/AC → Jira. Decisiones técnicas → ADR (por número: `D3.1`, `D4.8`…). Si el código debe diferir de la spec, **primero se actualiza la spec** (misma sesión).
 5. **Secretos nunca al repo ni al cliente.** El repo es **público** (`D2.2`): jamás secretos ni datos reales del cliente en código, config o historial. `.env` siempre en `.gitignore`; `.env.example` versionado sin valores reales.
@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec. En S3, el gate externo vivo es **`TS-42`** (bucket/IAM, humano) para HU-13.)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec. En S3, el gate externo vivo es **`TS-42`** (bucket/IAM, equipo) para HU-13.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 
@@ -33,11 +33,11 @@ Antes de escribir una spec, un test o proponer una implementación:
 
 1. Este `CLAUDE.md` (raíz) + el `CLAUDE.md` de la capa donde voy a trabajar.
 2. `docs/global/metodologia-sdd-tdd.md` — el ciclo, las compuertas, el reparto de roles.
-3. El último `docs/global/handoffs/HANDOFF_vN.md` — estado, decisiones y trampas de la sesión anterior.
+3. En `docs/global/handoffs/`: el último consolidado y, después, los `HANDOFF_vN.md` sueltos posteriores, del más antiguo al más reciente. Ahí están el estado, las decisiones y las trampas. La regla de consolidación está en `docs/global/PLANTILLA-HANDOFF.md` §9.
 4. La **spec de la HU** en `docs/specs/…` y sus criterios de aceptación en Jira.
 5. Consulto `graphify` antes de escribir tests o proponer código, para reutilizar en vez de reescribir.
 
-**Al cerrar una tarea**, reporto: qué hice, qué archivos toqué, qué falta, los hallazgos del review (§5 de la metodología), y **entrego el bloque de comandos git**. Luego me detengo — el humano commitea.
+**Al cerrar una tarea**, reporto: qué hice, qué archivos toqué, qué falta, los hallazgos del review (§5 de la metodología), y **entrego el bloque de comandos git**. Luego me detengo — el equipo commitea.
 
 ---
 
@@ -52,15 +52,15 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 │   ├── global/
 │   │   ├── metodologia-sdd-tdd.md
 │   │   ├── reglas-git.md
-│   │   └── handoffs/HANDOFF_vN.md
+│   │   ├── PLANTILLA-HANDOFF.md  ← §9: consolidación y archivo
+│   │   └── handoffs/             ← consolidados + HANDOFF_vN.md posteriores
 │   ├── adr/decisiones-tecnicas-track-studio.md   ← ADR (fuente de verdad técnica)
 │   ├── specs/
 │   │   ├── PLANTILLA-SPEC.md
 │   │   ├── backend/HU-XX.md      ← specs de capa backend
 │   │   ├── frontend/HU-XX.md     ← specs de capa frontend
 │   │   └── HU-XX.md              ← specs transversales/globales (si aplica)
-│   ├── erd/
-│   └── rbac-matrix.md
+│   └── erd/                      ← la matriz RBAC no es archivo aparte: vive en el ADR (D8.1)
 ├── backend/
 │   ├── CLAUDE.md                 ← reglas de la capa backend (Laravel, BD)
 │   └── docs/                     ← nomenclatura y convenciones de backend
@@ -81,7 +81,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 | `docs/global/reglas-git.md`                    | Ramas, commits, entrega de comandos | Todo lo de git                  |
 | `docs/adr/decisiones-tecnicas-track-studio.md` | Decisiones cerradas (`Dx.y`)        | Lo técnico decidido             |
 | `docs/specs/…`                                 | Contrato + tests por HU y capa      | El "cómo" de cada historia      |
-| `docs/global/handoffs/HANDOFF_vN.md`           | Estado entre sesiones               | Memoria de continuidad          |
+| `docs/global/handoffs/`                        | Estado entre sesiones               | Memoria de continuidad          |
+| Repo `trackstudio-documentacion`               | Historial archivado, tesis          | Nada vigente (metodología §0)   |
 
 ---
 
@@ -94,7 +95,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 > **Actualizado el 2026-10-13:** `TS-21` (HU-10, canciones) se adelanta de S3 a S2 y `TS-20` (HU-09) pasa a S3. Se levanta el veto de `songs` **solo para TS-21**.
 
 - Se permiten en S2 las migraciones e interfaces de `artists` y `productions` que estén cubiertas por una spec aprobada y por el slice correspondiente del ERD. No se inventa el esquema desde la implementación.
-- Subida de archivos, S3 de aplicación, `versions` y presigned POST (D7.1, enmendada el 2026-10-20; antes PUT): solo dentro de `TS-24`, con `TS-42` (bucket/IAM, humano) listo. Fuera de esa historia siguen vetados.
+- Subida de archivos, S3 de aplicación, `versions` y presigned POST (D7.1, enmendada el 2026-10-20; antes PUT): solo dentro de `TS-24`, con `TS-42` (bucket/IAM, equipo) listo. Fuera de esa historia siguen vetados.
 - `songs` ya existe (`TS-21`, Listo). En S3 se amplía con el máximo por formato (`TS-20`), el listado (`TS-22`) y el borrado en cascada (`TS-23`), según `docs/erd/modelo-completo.md` §3.4.
 - No crear migraciones de `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
 - No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.

@@ -57,7 +57,7 @@ Copia este archivo y rellénalo. **Dónde vive la spec:**
 | 1   | `…`                  | …          | …                             |
 | 2   | `…`                  | …          | …                             |
 
-## 5. Notas de implementación (para el humano)
+## 5. Notas de implementación (para el equipo)
 
 <!-- Pistas del agente para la fase Green: qué helper reutilizar (graphify), qué orden, qué trampa evitar. NO es el código. -->
 

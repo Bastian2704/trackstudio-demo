@@ -1,6 +1,6 @@
 # PLANTILLA — Handoff entre sesiones
 
-Copia a `docs/global/handoffs/HANDOFF_vN.md` (N incremental; **no se sobrescribe** el anterior). Es **memoria entre sesiones**, no una spec. Las specs viven en `docs/specs/`; las decisiones cerradas en el ADR.
+Copia a `docs/global/handoffs/HANDOFF_vN.md` (N incremental; **no se sobrescribe** el anterior; cada 10, consolidación según §9). Es **memoria entre sesiones**, no una spec. Las specs viven en `docs/specs/`; las decisiones cerradas en el ADR.
 
 **Por qué versionado y por qué largo:** el contexto de un chat no persiste y una sesión de agente se reinicia. Todo lo que importa vive en archivos. Cada handoff anota no solo lo que se hizo, sino **la trampa que costó tiempo**, para que la siguiente sesión no la repita.
 
@@ -43,6 +43,12 @@ Copia a `docs/global/handoffs/HANDOFF_vN.md` (N incremental; **no se sobrescribe
 
 <Solo si algo del setup cambió respecto al handoff anterior. Si no, referenciar el handoff previo.>
 
-## 9. Regla
+## 9. Regla de consolidación y archivo
 
-<Cada 10 sesiones de Handoff crear uno nuevo unificando todos los 10 previos nada más>
+Esta sección es de la plantilla y no se copia al handoff.
+
+- Un handoff escrito no se edita. Las correcciones van al siguiente.
+- Al escribir un handoff múltiplo de 10 (v40, v50…), se crea `HANDOFF_v<N-9>-v<N>_consolidado.md` con lo de esos diez y nada más. Es un archivo nuevo; no reemplaza a ningún otro consolidado.
+- Los diez originales se mueven a [`trackstudio-documentacion/Handoffs`](https://github.com/Cheboy04/trackstudio-documentacion/tree/main/Handoffs). Antes de borrarlos de aquí se comprueban con `cmp`, y se añade su fila al `README.md` de esa carpeta. Cada repo lleva su propio commit.
+- En `docs/global/handoffs/` quedan solo los consolidados y los handoffs sueltos posteriores al último consolidado.
+- Un handoff archivado se cita por nombre (`HANDOFF_v25` §3.2), no con enlace relativo.

@@ -11,7 +11,7 @@ Este repo usa Laravel Boost como fuente de consulta, no como autoridad de compor
 Cuando el bloque de Boost contradiga este archivo, el CLAUDE.md raíz, o la metodología SDD/TDD, mandan los míos. Contradicciones conocidas y cómo se resuelven:
 
 Pint: vale sail pint --test en la cadena de calidad (§2), es lo que corre el CI. Ignorar la instrucción de Boost de no usar --test.
-Ejecución: Boost empuja a correr make:*, tinker y a crear archivos. Sigue vigente la regla dura §0.2 del raíz: el agente escribe spec + tests, no teclea código de aplicación ni corre generadores, salvo excepción puntual del humano.
+Ejecución: Boost empuja a correr make:*, tinker y a crear archivos. Sigue vigente la regla dura §0.2 del raíz: el agente escribe spec + tests, no teclea código de aplicación ni corre generadores, salvo excepción puntual del equipo.
 Documentación: Boost dice "no crear docs salvo que lo pidan"; el método SDD exige specs y handoffs. Mandan specs y handoffs.
 Memoria del agente
 
@@ -88,11 +88,11 @@ Flujo de un request (D3.1): `Middleware(JWT/claim) → Form Request → Controll
 - **`auth0_sub` en `users`: único e indexado** (clave de búsqueda por request; corrección registrada en el handoff de backend sobre una omisión de D6.7).
 - Factories con Faker para todos los modelos; seeder de prod solo la cuenta real del productor; seeder de dev/staging con dataset **en español** y al menos una canción con cuatro versiones paralelas — **D6.8**.
 
-## 6. Qué NO hacer todavía (backend) — alcance vigente de Sprint 2
+## 6. Qué NO hacer todavía (backend)
 
-> **Dueño único: `CLAUDE.md` raíz §5** (actualizado por `TS-60` el 2026-10-02). La lista de vetos vigente vive allí y no se copia aquí: dos copias se separan en silencio (metodología §0). Si un veto se levanta, se levanta primero en el raíz.
+> **Dueño único: `CLAUDE.md` raíz §5**, que fija el alcance del sprint vigente. La lista de vetos vigente vive allí y no se copia aquí: dos copias se separan en silencio (metodología §0). Si un veto se levanta, se levanta primero en el raíz.
 
-Regla propia de esta capa: una migración o un modelo Eloquent solo nace de un **ERD aprobado en `docs/erd/`** (S1: `modelo-minimo-sprint-1.md`, cerrado; S2: `modelo-sprint-2.md`, que prevalece donde lo modifica) **y** de una spec aprobada. No se inventa el esquema desde la implementación.
+Regla propia de esta capa: una migración o un modelo Eloquent solo nace de un **ERD aprobado en `docs/erd/`** (`modelo-completo.md`, cerrado el 2026-10-06 en `TS-49`; su §1 fija la precedencia sobre `modelo-minimo-sprint-1.md` y `modelo-sprint-2.md`) **y** de una spec aprobada. No se inventa el esquema desde la implementación.
 
 Toda migración es **aditiva y compatible hacia atrás** (D9.4, expand/contract): Railway migra en cada despliegue (D9.2) y el rollback de plataforma deja el esquema nuevo con el código viejo. Borrar, renombrar o endurecer restricciones va en un despliegue posterior. La review lo comprueba en cada HU con migración.
 
@@ -103,9 +103,6 @@ Nombres de clases, métodos, variables, migraciones y tests: **`backend/docs/nom
 ---
 
 **Fuentes de los datos técnicos de este documento:** php.net (release 8.4); Laravel Docs 13.x (Pint); PER Coding Style (php-fig.org); handoff de backend del proyecto (versiones instaladas y verificadas).
-
-**CLAUDE.md de laravel por defecto está en backend/CLAUDE_bk.md** Leelo la primera vez y mira si es importante mantenerlo
-capaz contenga alguna instalación para agentes. después evaluar si es necesario eliminarlo.
 
 ===
 

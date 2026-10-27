@@ -8,7 +8,7 @@ Documento **global**. Define el modelo de ramas y **qué puede y qué no puede h
 
 ## 1. Regla dura: el agente lee, no escribe
 
-El control de versiones lo ejerce **exclusivamente el equipo humano**. Cada commit del repositorio es un punto donde una persona leyó un diff y dijo que sí. Los commits frecuentes son además la red de reversión si algo se cuela — más importante todavía porque **el repo es público** (`D2.2`): un secreto o un dato real del cliente que entra al historial no se borra con un commit más.
+El control de versiones lo ejerce **exclusivamente el equipo**. Cada commit del repositorio es un punto donde una persona leyó un diff y dijo que sí. Los commits frecuentes son además la red de reversión si algo se cuela — más importante todavía porque **el repo es público** (`D2.2`): un secreto o un dato real del cliente que entra al historial no se borra con un commit más.
 
 | El agente **SÍ** (solo lectura)                               | El agente **NUNCA** (escritura)               |
 | ------------------------------------------------------------- | --------------------------------------------- |
@@ -31,7 +31,8 @@ Del plan CI/CD del proyecto: `feature/* → develop (staging) → main (producci
 | `main`                   | Producción. Instancia operativa de Milenium Sound.        | —         | — (solo por PR desde `develop`, con aprobación manual) |
 | `develop`                | Integración / staging. Un merge aquí despliega a staging. | `main`    | —                                                      |
 | `feature/TS-<id>-<slug>` | Una historia/tarea.                                       | `develop` | `develop` por **Pull Request**                         |
-| `fix/<slug>`             | Corrección menor no atada a una historia.                 | `develop` | `develop` por PR                                       |
+| `fix/TS-<id>-<slug>`     | Corrección (dependencias, CI, despliegue, bug).           | `develop` | `develop` por PR                                       |
+| `chore/TS-<id>-<slug>`   | Mantenimiento sin cambio funcional (docs, configuración). | `develop` | `develop` por PR                                       |
 | `hotfix/<slug>`          | Urgencia en producción.                                   | `main`    | `main` **y** `develop`                                 |
 
 - **Nunca `push` directo a `main` ni a `develop`.** Todo entra por PR con 1 review y CI verde (`TS-13`). `main` y `develop` tienen rulesets activos con esos requisitos.
@@ -41,20 +42,21 @@ Del plan CI/CD del proyecto: `feature/* → develop (staging) → main (producci
 
 ## 3. Convención de nombres
 
-**Ramas:** `feature/TS-<id>-<slug>` — `<slug>` corto en `kebab-case`. Ej.: `feature/TS-34-forbidden-formato-d3-1`.
+**Ramas:** `<prefijo>/TS-<id>-<slug>` con el prefijo de §2 (`feature`, `fix`, `chore`) y `<slug>` corto en `kebab-case`. Ej.: `feature/TS-34-forbidden-formato-d3-1`. Toda rama lleva la clave de Jira; si el trabajo no tiene ticket, se crea antes de abrir la rama.
 
-**Commits — formato propuesto (a aprobar):**
+**Commits:**
 
 ```
 <tipo>(<scope>): TS-<id> <descripción imperativa breve>
 ```
 
-- `<tipo>`: `feat` · `fix` · `docs` · `ci`
-- `<scope>` (área del monorepo): `backend` · `frontend`
+- `<tipo>`: `feat` · `fix` · `test` · `docs` · `ci` · `chore`
+- `<scope>` (área del monorepo, opcional si el cambio cruza varias): `backend` · `frontend` · `global`
 - `TS-<id>`: clave de la historia/tarea en Jira
 - Ejemplo: `feat(backend): TS-34 responder 403 FORBIDDEN en formato D3.1`
+- **Sin trailers de autoría de agentes** (decisión del equipo, 2026-10-23): los mensajes de commit y las descripciones de PR **no** llevan `Co-Authored-By:` ni firmas tipo "Generated with…". La autoría es de quien commitea. Aplica a los bloques de comandos que entrega el agente (§4).
 
-> **Por qué este formato.** Reconcilia las dos formas que ya aparecen en los documentos del proyecto: el `CLAUDE.md` actual pide _"Conventional Commits con ID de historia — `TS-XX: descripción`"_, y el handoff de backend usó `chore(backend): scaffold Laravel 13 + Sail`. Este formato cumple las dos a la vez. **Si prefieres la forma corta `TS-<id>: descripción` sin `tipo(scope)`, dilo y se cambia aquí — es el único sitio donde vive la convención.**
+> **Por qué este formato.** Une Conventional Commits con la clave de Jira, y es el que usa el historial del repo. Este es el único sitio donde vive la convención.
 
 ---
 

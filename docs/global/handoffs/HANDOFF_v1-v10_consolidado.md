@@ -3,7 +3,7 @@
 **Periodo:** 2026-09-17 → 2026-10-02 · **Sprint:** 1 · **Capa(s):** backend / frontend / global / infra
 **Qué es:** la unificación de `HANDOFF_v1.md` a `HANDOFF_v10.md` que pide la regla 9 de `PLANTILLA-HANDOFF.md`. Contiene **solo** lo de esos diez. El estado posterior está en `HANDOFF_v11.md` y siguientes.
 
-> Se escribió el 2026-10-05, con retraso: la regla tocaba al cerrar v10. Los originales v1–v10 se conservan como historial. Cuando un dato de aquí choque con un handoff posterior, **manda el posterior**.
+> Se escribió el 2026-10-05, con retraso: la regla tocaba al cerrar v10. Los originales v1–v10 se archivaron el 2026-10-26 (`TS-79`) en [`trackstudio-documentacion/Handoffs`](https://github.com/Cheboy04/trackstudio-documentacion/tree/main/Handoffs). Cuando un dato de aquí choque con un handoff posterior, **manda el posterior**.
 
 ---
 

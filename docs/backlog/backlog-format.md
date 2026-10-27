@@ -7,7 +7,7 @@
 - [Roadmap](roadmap.md): 6 sprints de dos semanas, 3 releases y 92 SP dentro de 12 semanas; horizonte y control de capacidad.
 - [Backlog de Jira](jira-backlog.md): catálogo de épicas, Story y Task, y cobertura HU ↔ RF/RNF.
 - `sprints/sprint-NN.md` (pendientes): desglose por sprint con tickets, checklists y dependencias.
-- [imports/](imports/README.md): CSV de cada lote y tabla `local_id → clave TS-<n>`.
+- [`trackstudio-documentacion/Backlog/imports`](https://github.com/Cheboy04/trackstudio-documentacion/tree/main/Backlog/imports): CSV del lote inicial y su resultado (archivado). Las claves vigentes están en [jira-key-map.md](jira-key-map.md).
 - [Metodología SDD/TDD](../global/metodologia-sdd-tdd.md): ciclo, roles, compuertas C1-C5, Ready y Done.
 - [Reglas de git](../global/reglas-git.md): ramas, commits y entrega de comandos.
 - ADR (`docs/adr/decisiones-tecnicas-track-studio.md`): decisiones técnicas por número (`Dx.y`) y bloques ABIERTOS.
@@ -63,7 +63,7 @@ Criterios de aceptación:
 
 Referencias: <RF/RNF, ADR Dx.y, docs/specs/…/HU-NN.md, roadmap>.
 
-Dependencia externa: <infraestructura humana, bloque ABIERTO del ADR o persona>.   # Solo si aplica.
+Dependencia externa: <infraestructura del equipo, bloque ABIERTO del ADR o persona>.   # Solo si aplica.
 
 Checklist de ejecución:
 <casillas con ID, trabajo, Hecho cuando y orden interno>
@@ -76,17 +76,17 @@ Checklist de ejecución:
 
 ## Checklist estándar por capa
 
-Cada Story parte de esta plantilla y la ajusta a su historia: se eliminan las casillas de la capa que no aplique y se añaden casillas específicas (reglas de negocio, RNF concretos). Las casillas siguen el reparto de roles de la metodología (§2): el agente escribe la spec y los tests en rojo y audita; el humano escribe el código de aplicación y hace git.
+Cada Story parte de esta plantilla y la ajusta a su historia: se eliminan las casillas de la capa que no aplique y se añaden casillas específicas (reglas de negocio, RNF concretos). Las casillas siguen el reparto de roles de la metodología (§2): el agente escribe la spec y los tests en rojo y audita; el equipo escribe el código de aplicación y hace git.
 
 | Casilla | Trabajo                              | Hecho cuando                                                                                             |
 | ------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `.01`   | Spec backend                         | `docs/specs/backend/HU-NN.md` aprobada por el humano, anclada al ADR, sin copiar AC.                     |
+| `.01`   | Spec backend                         | `docs/specs/backend/HU-NN.md` aprobada por el equipo, anclada al ADR, sin copiar AC.                     |
 | `.02`   | Tests backend en rojo (agente)       | Tests Pest de feature/unit escritos y vistos fallar por la razón correcta (C2).                          |
-| `.03`   | Código backend hasta verde (humano)  | Tests en verde; Larastan nivel 5 y Pint limpios.                                                         |
+| `.03`   | Código backend hasta verde (equipo)  | Tests en verde; Larastan nivel 5 y Pint limpios.                                                         |
 | `.04`   | Review backend                       | Hallazgos con `archivo:línea` resueltos o justificados; cada test no trivial probado en rojo (C3).       |
 | `.05`   | Spec frontend                        | `docs/specs/frontend/HU-NN.md` aprobada; enlazada a la spec backend sin repetir contrato.                |
 | `.06`   | Tests frontend en rojo (agente)      | Tests Vitest escritos y vistos fallar.                                                                   |
-| `.07`   | Código frontend hasta verde (humano) | Tests en verde; `tsc --noEmit`, ESLint y Prettier limpios.                                               |
+| `.07`   | Código frontend hasta verde (equipo) | Tests en verde; `tsc --noEmit`, ESLint y Prettier limpios.                                               |
 | `.08`   | Review frontend                      | Igual que `.04` para la capa frontend.                                                                   |
 | `.09`   | Integración y cierre                 | PR a `develop` con CI verde; AC verificados en staging; RNF aplicables comprobados; handoff actualizado. |
 
@@ -135,7 +135,7 @@ Al dividir una historia, se reparten sus criterios y casillas sin omitir ni dupl
 | `owner`            | Adrián o Sebastian, solo cuando esté confirmado.                                                                      | Assignee; no se duplica en la Description.                               |
 | `references`       | HU-NN, RF/RNF, ADR `Dx.y`, spec de capa.                                                                              | Sección Referencias.                                                     |
 | `blocked_by`       | local_ids predecesores y motivo.                                                                                      | Enlace Blocks: el predecesor bloquea al sucesor.                         |
-| `external_blocker` | Infraestructura humana, decisión o persona externa, con la siguiente acción.                                          | Sección Dependencia externa; si afecta a varios tickets, Task + enlaces. |
+| `external_blocker` | Infraestructura del equipo, decisión o persona externa, con la siguiente acción.                                          | Sección Dependencia externa; si afecta a varios tickets, Task + enlaces. |
 | `split_reason`     | Motivo para crear un Sub-task o dividir una historia.                                                                 | Description del nuevo ticket y referencia desde el original.             |
 | `evidence`         | PR, run de CI, captura de staging. Vacío hasta ejecutar.                                                              | Comentario o Description posterior, sin datos sensibles.                 |
 
@@ -147,7 +147,7 @@ Todos los tickets entran al backlog oficial sin assignee ni evidencia. Siguen si
 - El orden entre casillas se conserva en la Description; no se exporta como enlaces Blocks.
 - Parent expresa pertenencia; no crea un bloqueo. No se crean ciclos entre un ticket y sus hijos.
 - **Gate del ADR:** una historia que depende de un bloque ABIERTO no es Ready. El bloque 7 (subida de audio a S3) está cerrado desde 2026-08-18; para HU-13..16 los gates vigentes son el ERD, el alcance del sprint y la infraestructura `TS-42`.
-- **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo humano. Se registran como Dependencia externa o como Task enlazada; el agente no los toca.
+- **Infraestructura manual:** Railway, Vercel, Auth0, S3, DNS y Resend los configura el equipo. Se registran como Dependencia externa o como Task enlazada; el agente no los toca.
 - **Compuertas del método:** C1 (sin spec aprobada no hay tests), C2 (sin test en rojo no hay código), C3 (todo test se prueba rompiéndolo), C4 (frontera real para contratos externos) y C5 (sin tests no hay tarea terminada). Marcar casillas no las sustituye.
 - **Done:** código integrado en `develop` por PR con pipeline verde, tests pasando, AC cumplidos, RNF aplicables verificados y revisión en el Sprint Review. El release se libera cuando todas sus historias cumplen Done.
 - Un bloqueo documentado sigue siendo un bloqueo. El sprint puede cerrar por calendario, pero su objetivo no se declara cumplido si faltan criterios.
@@ -174,7 +174,7 @@ El scaffolding (Laravel 13 + Sail, React + Vite), ESLint/Prettier/Husky, la CI d
 
 1. Confirmar Jira Cloud, proyecto `TS` (team-managed), tipos Epic/Story/Task/Bug disponibles, campo Story point estimate y permisos de importación.
 2. Generar una fila por ticket explícito: épicas, Story, Task y los Sub-task o Bug justificados. Las casillas no generan filas.
-3. Asignar un `Work item ID` numérico solo para la importación y mantener en `imports/` la tabla `local_id → import_id → clave TS-<n>`.
+3. Asignar un `Work item ID` numérico solo para la importación y registrar las claves resultantes en [jira-key-map.md](jira-key-map.md). El CSV y su resultado se archivan en `trackstudio-documentacion/Backlog/imports` (`metodologia-sdd-tdd.md` §0).
 4. Incluir cada checklist completa en la Description, con IDs, casillas, Hecho cuando y orden. Serializar en UTF-8, con separador coma y comillas dobles, y verificar que no se pierdan saltos de línea ni caracteres con tilde.
 5. Mapear Work item ID, Work type, Summary, Description, Parent, Priority, Story point estimate y todas las columnas Labels.
 6. Importar primero una muestra (una Epic y una Story con un enlace Blocks), registrar las claves devueltas y comprobar padre, casillas y dirección del bloqueo. La muestra forma parte del lote; no se vuelve a crear.
@@ -188,4 +188,4 @@ En Jira Cloud, el importador CSV simple de creación masiva no conserva la jerar
 ## Siguiente paso
 
 1. Usar `sprints/sprint-02.md` como baseline del siguiente sprint y reconciliar sus checklists con Jira.
-2. Conservar `imports/` como evidencia histórica: la replanificación se aplica sobre los tickets existentes y nunca reimportando el lote inicial.
+2. Conservar el lote archivado en `trackstudio-documentacion/Backlog/imports` como evidencia histórica: la replanificación se aplica sobre los tickets existentes y nunca reimportando el lote inicial.
