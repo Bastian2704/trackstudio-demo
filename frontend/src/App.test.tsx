@@ -1,6 +1,7 @@
 import { Auth0Context, useAuth0 } from '@auth0/auth0-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -195,5 +196,35 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
     expect(screen.queryByRole('navigation', { name: 'Principal' })).toBeNull()
+  })
+
+  /*
+   * TS-69 — ts-40.03, spec frontend TS-69 §4 tests 2 y 3.
+   */
+  function contextoConErrorDeAuth0(loginWithRedirect = vi.fn().mockResolvedValue(undefined)) {
+    return contextoAuth0({
+      isLoading: false,
+      isAuthenticated: false,
+      error: new Error('Invalid state'),
+      getAccessTokenSilently: vi.fn().mockResolvedValue('token-de-prueba'),
+      loginWithRedirect,
+    })
+  }
+
+  it('el error de Auth0 muestra la pantalla de error con su detalle', () => {
+    renderApp(contextoConErrorDeAuth0(), '/')
+
+    expect(screen.getByRole('heading', { name: '¡Algo salió mal!' })).toBeTruthy()
+    expect(screen.getByText('No se pudo completar el inicio de sesión.')).toBeTruthy()
+    expect(screen.getByText('Detalle: Invalid state')).toBeTruthy()
+  })
+
+  it('reintentar vuelve a lanzar el login', async () => {
+    const loginWithRedirect = vi.fn().mockResolvedValue(undefined)
+    renderApp(contextoConErrorDeAuth0(loginWithRedirect), '/')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reintentar inicio de sesión' }))
+
+    expect(loginWithRedirect).toHaveBeenCalledTimes(1)
   })
 })
