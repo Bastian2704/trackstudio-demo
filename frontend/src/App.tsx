@@ -3,6 +3,8 @@ import { api, attachAuthInterceptor, attachErrorInterceptor } from '@/lib/api'
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import AppShell from './components/AppShell'
+import AuthCard from './components/AuthCard.tsx'
+import LoginButton from './components/LoginButton.tsx'
 import RequireAuth from './routes/RequireAuth'
 import RequireRole from './routes/RequireRole'
 import Home from './routes/Home'
@@ -37,27 +39,24 @@ function App() {
   }, [getAccessTokenSilently, loginWithRedirect, navigate])
 
   if (isLoading) {
-    return (
-      <div className="app-container">
-        <div className="loading-state">
-          <div className="loading-text">Cargando…</div>
-        </div>
-      </div>
-    )
+    return <div className="grid min-h-dvh place-items-center text-muted-foreground">Cargando…</div>
   }
 
   if (error) {
     return (
-      <div className="app-container">
-        <div className="error-state">
-          <div className="error-title">¡Algo salió mal!</div>
-          <div className="error-message">No se pudo completar el inicio de sesión</div>
-          <div className="error-sub-message">{error.message}</div>
-        </div>
-      </div>
+      <AuthCard
+        title="¡Algo salió mal!"
+        subtitle={
+          <>
+            <p>No se pudo completar el inicio de sesión.</p>
+            <p className="mt-1 text-xs text-placeholder">{`Detalle: ${error.message}`}</p>
+          </>
+        }
+      >
+        <LoginButton>Reintentar inicio de sesión</LoginButton>
+      </AuthCard>
     )
   }
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
