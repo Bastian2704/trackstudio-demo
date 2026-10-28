@@ -6,6 +6,7 @@ import { FORMAT_LABELS } from '../productions/productionSchema'
 import { fetchArtists } from './artistApi'
 import { STATUS_LABELS } from './artistSchema'
 import type { ArtistPage } from './artistSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 function pageFrom(raw: string | null): number {
   const n = Number(raw)
@@ -100,7 +101,7 @@ export default function ArtistListPage() {
   if (query.isPending) {
     body = <p>Cargando…</p>
   } else if (query.isError) {
-    body = <p role="alert">No se pudo cargar el listado de artistas.</p>
+    body = <ErrorAlert>No se pudo cargar el listado de artistas.</ErrorAlert>
   } else if (query.data.meta.total === 0) {
     body = <p>Aún no hay artistas registrados.</p>
   } else if (query.data.data.length === 0) {

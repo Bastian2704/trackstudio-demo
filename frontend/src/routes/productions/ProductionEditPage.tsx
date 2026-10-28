@@ -24,6 +24,7 @@ import ProductionForm from './ProductionForm'
 import ProductionFormatNotice from './ProductionFormatNotice'
 import { deleteProduction, fetchProduction, updateProduction } from './productionApi'
 import { FORMAT_RULES, type Production, type ProductionInput } from './productionSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 export default function ProductionEditPage() {
   const { id = '' } = useParams()
@@ -73,7 +74,7 @@ export default function ProductionEditPage() {
         <h1 className="text-xl font-semibold">
           {notFound ? 'Producción no encontrada' : 'Editar producción'}
         </h1>
-        {!notFound && <p role="alert">No se pudo cargar la producción.</p>}
+        {!notFound && <ErrorAlert>No se pudo cargar la producción.</ErrorAlert>}
       </main>
     )
   }
@@ -87,9 +88,7 @@ export default function ProductionEditPage() {
         </p>
       )}
       {deleteMutation.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          No se pudo eliminar la producción. Inténtalo de nuevo.
-        </p>
+        <ErrorAlert>No se pudo eliminar la producción. Inténtalo de nuevo.</ErrorAlert>
       )}
       {query.isPending ? (
         <p>Cargando…</p>

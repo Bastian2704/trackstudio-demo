@@ -14,6 +14,7 @@ import {
   type ProductionFormValues,
   type ProductionInput,
 } from './productionSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 const FIELDS = ['name', 'format'] as const
 
@@ -59,12 +60,7 @@ export default function ProductionForm({ values, submitLabel, onSubmit }: Produc
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="space-y-4">
-      {generalError && (
-        <p role="alert" className="text-sm text-destructive">
-          {generalError}
-        </p>
-      )}
-
+      {generalError && <ErrorAlert>{generalError}</ErrorAlert>}
       <div className="space-y-2">
         <Label htmlFor="production-name">Nombre</Label>
         <Input

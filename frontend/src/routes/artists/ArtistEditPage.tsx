@@ -22,6 +22,7 @@ import ArtistForm from './ArtistForm'
 import { fetchArtist, updateArtist, changeArtistStatus } from './artistApi'
 import { STATUS_LABELS } from './artistSchema'
 import type { Artist, ArtistInput } from './artistSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 export default function ArtistEditPage() {
   const { id = '' } = useParams()
@@ -64,7 +65,7 @@ export default function ArtistEditPage() {
         <h1 className="text-xl font-semibold">
           {notFound ? 'Artista no encontrado' : 'Editar artista'}
         </h1>
-        {!notFound && <p role="alert">No se pudo cargar el artista.</p>}
+        {!notFound && <ErrorAlert>No se pudo cargar el artista.</ErrorAlert>}
       </main>
     )
   }
@@ -81,9 +82,7 @@ export default function ArtistEditPage() {
         </p>
       )}
       {statusMutation.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          No se pudo cambiar el estado del artista. Inténtalo de nuevo.
-        </p>
+        <ErrorAlert>No se pudo cambiar el estado del artista. Inténtalo de nuevo.</ErrorAlert>
       )}
       {query.isPending ? (
         <p>Cargando…</p>
