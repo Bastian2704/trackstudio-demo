@@ -22,6 +22,7 @@ import VersionUpload from '@/routes/versions/VersionUpload'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import { SONG_DELETE_DESCRIPTION, type Song, type SongInput } from './songSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 export default function SongEditPage() {
   const { id = '' } = useParams()
@@ -62,7 +63,7 @@ export default function SongEditPage() {
         <h1 className="text-xl font-semibold">
           {notFound ? 'Canción no encontrada' : 'Editar canción'}
         </h1>
-        {!notFound && <p role="alert">No se pudo cargar la canción.</p>}
+        {!notFound && <ErrorAlert>No se pudo cargar la canción.</ErrorAlert>}
       </main>
     )
   }
@@ -76,9 +77,7 @@ export default function SongEditPage() {
         </p>
       )}
       {deleteMutation.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          No se pudo eliminar la canción. Inténtalo de nuevo.
-        </p>
+        <ErrorAlert>No se pudo eliminar la canción. Inténtalo de nuevo.</ErrorAlert>
       )}
       {query.isPending ? (
         <p>Cargando…</p>

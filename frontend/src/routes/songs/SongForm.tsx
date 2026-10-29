@@ -14,6 +14,7 @@ import {
   type SongFormValues,
   type SongInput,
 } from './songSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 const FIELDS = ['name', 'status'] as const
 
@@ -72,12 +73,7 @@ export default function SongForm({
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="space-y-4">
-      {generalError && (
-        <p role="alert" className="text-sm text-destructive">
-          {generalError}
-        </p>
-      )}
-
+      {generalError && <ErrorAlert>{generalError}</ErrorAlert>}
       <div className="space-y-2">
         <Label htmlFor="song-name">Nombre</Label>
         <Input id="song-name" aria-invalid={errors.name ? true : undefined} {...register('name')} />

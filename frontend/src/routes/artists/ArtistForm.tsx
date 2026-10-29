@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { ApiErrorBody } from '@/lib/api'
 import { artistInputSchema, type ArtistInput } from './artistSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 const FIELDS = ['name', 'email'] as const
 
@@ -50,11 +51,7 @@ export default function ArtistForm({ values, submitLabel, onSubmit }: ArtistForm
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="space-y-4">
-      {generalError && (
-        <p role="alert" className="text-sm text-destructive">
-          {generalError}
-        </p>
-      )}
+      {generalError && <ErrorAlert>{generalError}</ErrorAlert>}
 
       <div className="space-y-2">
         <Label htmlFor="artist-name">Nombre</Label>

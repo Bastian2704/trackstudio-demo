@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { deleteSong, fetchSongs } from './songApi'
 import { SONG_DELETE_DESCRIPTION, STATUS_LABELS, type Song } from './songSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 export default function SongList({ productionId }: { productionId: string }) {
   const [page, setPage] = useState(1)
@@ -49,7 +50,7 @@ export default function SongList({ productionId }: { productionId: string }) {
   if (query.isPending) {
     body = <p>Cargando canciones…</p>
   } else if (query.isError) {
-    body = <p role="alert">No se pudo cargar el listado de canciones.</p>
+    body = <ErrorAlert>No se pudo cargar el listado de canciones.</ErrorAlert>
   } else if (query.data.meta.total === 0) {
     body = <p>Esta producción aún no tiene canciones.</p>
   } else {
@@ -122,9 +123,7 @@ export default function SongList({ productionId }: { productionId: string }) {
         </p>
       )}
       {deleteMutation.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          No se pudo eliminar la canción. Inténtalo de nuevo.
-        </p>
+        <ErrorAlert>No se pudo eliminar la canción. Inténtalo de nuevo.</ErrorAlert>
       )}
       {body}
       <AlertDialog

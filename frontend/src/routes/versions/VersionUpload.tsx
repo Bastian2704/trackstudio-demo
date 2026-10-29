@@ -13,6 +13,7 @@ import {
   MAX_SIZE_BYTES,
   type AudioContentType,
 } from './versionSchema'
+import ErrorAlert from '@/components/ErrorAlert'
 
 async function validateFile(
   file: File | null,
@@ -95,11 +96,7 @@ export default function VersionUpload({ songId }: { songId: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">Subir versión</h2>
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      {error && <ErrorAlert>{error}</ErrorAlert>}
       {done && (
         <p role="status" className="text-sm">
           Archivo subido. La versión aparecerá en el historial cuando se verifique.

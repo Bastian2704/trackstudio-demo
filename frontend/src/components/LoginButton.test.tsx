@@ -23,4 +23,18 @@ describe('LoginButton', () => {
 
     expect(loginWithRedirect).toHaveBeenCalledTimes(1)
   })
+
+  /*
+   * TS-69 — ts-40.03, spec frontend TS-69 §4 test 4.
+   */
+  it('el nombre accesible es el texto, sin la flecha', () => {
+    vi.mocked(useAuth0).mockReturnValue(contextoAuth0({ loginWithRedirect: vi.fn() }))
+
+    const { unmount } = render(<LoginButton />)
+    expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeTruthy()
+    unmount()
+
+    render(<LoginButton>Reintentar inicio de sesión</LoginButton>)
+    expect(screen.getByRole('button', { name: 'Reintentar inicio de sesión' })).toBeTruthy()
+  })
 })

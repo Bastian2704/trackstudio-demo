@@ -1,15 +1,20 @@
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+
+import AuthCard from '@/components/AuthCard'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export default function Forbidden() {
   return (
-    <main className="grid min-h-dvh place-items-center p-8">
-      <div className="space-y-3 text-center">
-        <h1 className="text-2xl font-semibold">403 · Acceso denegado</h1>
-        <p className="text-muted-foreground">Tu cuenta no tiene permiso para ver esta página.</p>
-        <Link to="/" className="underline">
-          Volver al inicio
-        </Link>
-      </div>
-    </main>
+    <AuthCard
+      title="403 · Acceso denegado"
+      subtitle="Tu cuenta no tiene permiso para ver esta página."
+    >
+      <Link to="/" className={cn(buttonVariants({ size: 'cta' }))}>
+        Volver al inicio
+        <ArrowRight aria-hidden="true" />
+      </Link>
+    </AuthCard>
   )
 }
