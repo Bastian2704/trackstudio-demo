@@ -151,7 +151,7 @@ Añadidas el 2026-10-15. Primero la base (tokens y shell con navegación lateral
 
 ### TS-35..TS-37 - Calidad acumulativa de S3
 
-- [ ] `ts-24.s3.01` Inventariar los componentes críticos de canciones y subida, y enlazar sus pruebas unitarias.
+- [x] `ts-24.s3.01` Inventariar los componentes críticos de canciones y subida, y enlazar sus pruebas unitarias.
 - [ ] `ts-25.s3.01` Incorporar los endpoints de S3 (songs y versions) a la matriz de integración.
 - [ ] `ts-26.s3.01` Registrar defectos críticos y altos, y levantar evidencia de RNF-03 (progreso < 3 s) y de accesibilidad del listado y la subida.
 

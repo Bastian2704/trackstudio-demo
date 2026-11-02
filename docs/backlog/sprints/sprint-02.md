@@ -188,7 +188,7 @@ Trabajo del equipo de infraestructura. No bloquea el CRUD de S2, pero sí Resend
 
 Estas son HU-24..HU-26 en Jira; no deben confundirse con los IDs locales de las Tasks de tesis. Sus 8 SP se distribuyen como reserva en S2-S5 y se cierran en S6.
 
-- [ ] `ts-24.s2.01` Inventariar componentes críticos introducidos por artistas/producciones y enlazar sus pruebas unitarias existentes o faltantes.
+- [x] `ts-24.s2.01` Inventariar componentes críticos introducidos por artistas/producciones y enlazar sus pruebas unitarias existentes o faltantes.
 - [ ] `ts-25.s2.01` Incorporar endpoints S2 a la matriz de integración, cubriendo autenticación, rol, éxito, validación, no encontrado y conflicto cuando aplique.
 - [ ] `ts-26.s2.01` Registrar y resolver defectos críticos/altos de S2; levantar evidencia inicial de accesibilidad y tiempo de respuesta aplicable.
 - [x] Reconciliar estas unidades como checklist en Jira, sin asignar nuevamente los 8 SP de las historias padre (2026-10-02).
