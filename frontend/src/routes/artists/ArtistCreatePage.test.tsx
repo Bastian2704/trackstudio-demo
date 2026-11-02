@@ -18,7 +18,7 @@ import {
 /*
  * TS-16 (HU-05) — ts-05.06, spec frontend §4 tests 1 a 7.
  *
- * TS-70 (épica TS-67) — ts-41.03, spec frontend TS-70 §4 tests 4 a 7.
+ * TS-70 (épica TS-67) — ts-41.03, spec frontend TS-70 §4 tests 4 a 8.
  *
  * El alta es un modal hijo de /artistas, así que el listado se monta debajo:
  * el destino real tras el 201 es ese listado, con su aviso. <Ubicacion> expone
@@ -313,5 +313,21 @@ describe('ArtistCreatePage', () => {
     )
     expect(campo('Nombre').value).toBe('Luna Rivera')
     expect(campo('Email').value).toBe('luna.rivera@ejemplo.test')
+  })
+
+  it('un clic fuera no cierra el modal', async () => {
+    simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
+
+    await rellenar(user, 'Luna Rivera', '')
+    const fondo = document.querySelector('[data-slot="dialog-overlay"]')
+    if (!fondo) throw new Error('Falta el fondo del modal')
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: fondo },
+      { keys: '[/MouseLeft]', target: fondo },
+    ])
+
+    expect(screen.getByRole('dialog', { name: 'Registrar artista' })).toBeTruthy()
+    expect(campo('Nombre').value).toBe('Luna Rivera')
   })
 })

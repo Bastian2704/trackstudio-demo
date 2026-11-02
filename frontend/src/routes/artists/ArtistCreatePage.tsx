@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import ArtistForm from './ArtistForm'
 import { createArtist } from './artistApi'
 
@@ -11,17 +12,28 @@ export default function ArtistCreatePage() {
     mutationFn: createArtist,
     onSuccess: (artist) => {
       queryClient.setQueryData(['artists', artist.id], artist)
-      void navigate(`/artistas/${artist.id}/editar`, { state: { notice: 'Artista registrado.' } })
+      void queryClient.invalidateQueries({ queryKey: ['artists', 'list'] })
+      void navigate('/artistas', { state: { notice: 'Artista registrado.' } })
     },
   })
+  const close = () => void navigate('/artistas')
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-8">
-      <Link to="/artistas" className="text-sm underline">
-        Volver al listado
-      </Link>
-      <h1 className="text-xl font-semibold">Registrar artista</h1>
-      <ArtistForm submitLabel="Registrar" onSubmit={(input) => mutation.mutateAsync(input)} />
-    </main>
+    <Dialog
+      open
+      disablePointerDismissal
+      onOpenChange={(open) => {
+        if (!open && !mutation.isPending) close()
+      }}
+    >
+      <DialogContent>
+        <DialogTitle>Registrar artista</DialogTitle>
+        <ArtistForm
+          submitLabel="Registrar"
+          onSubmit={(input) => mutation.mutateAsync(input)}
+          onCancel={close}
+        />
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -82,7 +82,7 @@ export default function AppShell() {
           )}
         </header>
 
-        <div className="px-8 pt-8">
+        <div className="px-4 pt-4 pb-8 md:px-8 md:pt-8">
           <Outlet />
         </div>
       </div>

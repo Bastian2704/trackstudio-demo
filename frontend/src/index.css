@@ -45,6 +45,7 @@
 }
 
 :root {
+  color-scheme: dark;
   --background: #131313;
   --foreground: #e5e2e1;
   --card: rgba(26, 26, 26, 0.6);
