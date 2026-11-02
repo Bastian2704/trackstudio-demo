@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
+import { ChevronLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 
@@ -17,11 +18,13 @@ import {
 import { Button } from '@/components/ui/button'
 
 import { noticeFrom } from '@/lib/notice'
+import { cn } from '@/lib/utils'
 import type { ApiErrorBody } from '@/lib/api'
 import ArtistForm from './ArtistForm'
 import { fetchArtist, updateArtist, changeArtistStatus } from './artistApi'
-import { STATUS_LABELS } from './artistSchema'
+import ArtistStatusBadge from './ArtistStatusBadge'
 import type { Artist, ArtistInput } from './artistSchema'
+import { PANEL_CLASS, TITLE_CLASS } from './artistStyles'
 import ErrorAlert from '@/components/ErrorAlert'
 
 export default function ArtistEditPage() {
@@ -58,26 +61,32 @@ export default function ArtistEditPage() {
   if (query.isError) {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
-      <main className="mx-auto max-w-lg space-y-6 p-8">
-        <Link to="/artistas" className="text-sm underline">
+      <main className="mx-auto max-w-lg space-y-6">
+        <Link
+          to="/artistas"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          <ChevronLeft aria-hidden="true" className="size-4" />
           Volver al listado
         </Link>
-        <h1 className="text-xl font-semibold">
-          {notFound ? 'Artista no encontrado' : 'Editar artista'}
-        </h1>
+        <h1 className={TITLE_CLASS}>{notFound ? 'Artista no encontrado' : 'Editar artista'}</h1>
         {!notFound && <ErrorAlert>No se pudo cargar el artista.</ErrorAlert>}
       </main>
     )
   }
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-8">
-      <Link to="/artistas" className="text-sm underline">
+    <main className="mx-auto max-w-lg space-y-6">
+      <Link
+        to="/artistas"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:underline"
+      >
+        <ChevronLeft aria-hidden="true" className="size-4" />
         Volver al listado
       </Link>
-      <h1 className="text-xl font-semibold">Editar artista</h1>
+      <h1 className={TITLE_CLASS}>Editar artista</h1>
       {notice && (
-        <p role="status" className="text-sm">
+        <p role="status" className="text-sm text-muted-foreground">
           {notice}
         </p>
       )}
@@ -88,13 +97,17 @@ export default function ArtistEditPage() {
         <p>Cargando…</p>
       ) : (
         <>
-          <ArtistForm
-            values={{ name: query.data.name, email: query.data.email }}
-            submitLabel="Guardar cambios"
-            onSubmit={(input) => mutation.mutateAsync(input)}
-          />
-          <section className="space-y-3">
-            <p>Estado: {STATUS_LABELS[query.data.status]}</p>
+          <section className={cn(PANEL_CLASS, 'p-6')}>
+            <ArtistForm
+              values={{ name: query.data.name, email: query.data.email }}
+              submitLabel="Guardar cambios"
+              onSubmit={(input) => mutation.mutateAsync(input)}
+            />
+          </section>
+          <section className={cn(PANEL_CLASS, 'space-y-3 p-6')}>
+            <p className="text-sm">
+              Estado: <ArtistStatusBadge status={query.data.status} />
+            </p>
 
             {query.data.status === 'inactivo' ? (
               <Button

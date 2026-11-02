@@ -11,14 +11,17 @@ import { artistInputSchema, type ArtistInput } from './artistSchema'
 import ErrorAlert from '@/components/ErrorAlert'
 
 const FIELDS = ['name', 'email'] as const
+const LABEL_CLASS = 'text-xs font-semibold tracking-[0.6px] text-muted-foreground'
+const INPUT_CLASS = 'h-10 bg-muted'
 
 interface ArtistFormProps {
   values?: ArtistInput
   submitLabel: string
   onSubmit: (input: ArtistInput) => Promise<unknown>
+  onCancel?: () => void
 }
 
-export default function ArtistForm({ values, submitLabel, onSubmit }: ArtistFormProps) {
+export default function ArtistForm({ values, submitLabel, onSubmit, onCancel }: ArtistFormProps) {
   const [generalError, setGeneralError] = useState<string | null>(null)
   const {
     register,
@@ -54,9 +57,12 @@ export default function ArtistForm({ values, submitLabel, onSubmit }: ArtistForm
       {generalError && <ErrorAlert>{generalError}</ErrorAlert>}
 
       <div className="space-y-2">
-        <Label htmlFor="artist-name">Nombre</Label>
+        <Label htmlFor="artist-name" className={LABEL_CLASS}>
+          Nombre
+        </Label>
         <Input
           id="artist-name"
+          className={INPUT_CLASS}
           aria-invalid={errors.name ? true : undefined}
           {...register('name')}
         />
@@ -64,9 +70,12 @@ export default function ArtistForm({ values, submitLabel, onSubmit }: ArtistForm
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="artist-email">Email</Label>
+        <Label htmlFor="artist-email" className={LABEL_CLASS}>
+          Email
+        </Label>
         <Input
           id="artist-email"
+          className={INPUT_CLASS}
           type="email"
           aria-invalid={errors.email ? true : undefined}
           {...register('email')}
@@ -74,9 +83,22 @@ export default function ArtistForm({ values, submitLabel, onSubmit }: ArtistForm
         {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {submitLabel}
-      </Button>
+      <div className="flex justify-end gap-2">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-10 px-6"
+            disabled={isSubmitting}
+            onClick={onCancel}
+          >
+            Cancelar
+          </Button>
+        )}
+        <Button type="submit" className="h-10 px-6" disabled={isSubmitting}>
+          {submitLabel}
+        </Button>
+      </div>
     </form>
   )
 }

@@ -1,18 +1,29 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import ArtistCreatePage from '@/routes/artists/ArtistCreatePage'
-import ArtistEditPage from '@/routes/artists/ArtistEditPage'
-import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import ArtistListPage from '@/routes/artists/ArtistListPage'
+import {
+  pagina,
+  problema,
+  restaurarApi,
+  simularApi,
+  type PeticionRegistrada,
+  type RespuestaSimulada,
+} from '@/test/api'
 
 /*
  * TS-16 (HU-05) — ts-05.06, spec frontend §4 tests 1 a 7.
  *
- * La página de edición se monta junto a la de alta porque el test 1 afirma el
- * destino real tras el 201: la edición del artista creado, con su aviso.
+ * TS-70 (épica TS-67) — ts-41.03, spec frontend TS-70 §4 tests 4 a 8.
+ *
+ * El alta es un modal hijo de /artistas, así que el listado se monta debajo:
+ * el destino real tras el 201 es ese listado, con su aviso. <Ubicacion> expone
+ * la URL. Mientras el modal está abierto, el fondo queda oculto para las
+ * consultas por rol (por eso `hidden: true` al mirar debajo del modal).
  */
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 
@@ -33,7 +44,12 @@ afterEach(() => {
   restaurarApi()
 })
 
-function renderAlta() {
+function Ubicacion() {
+  const location = useLocation()
+  return <output aria-label="Ubicación actual">{location.pathname}</output>
+}
+
+async function renderAlta() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
@@ -42,14 +58,30 @@ function renderAlta() {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/artistas/nuevo']}>
         <Routes>
-          <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
-          <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
+          <Route path="/artistas" element={<ArtistListPage />}>
+            <Route path="nuevo" element={<ArtistCreatePage />} />
+          </Route>
         </Routes>
+        <Ubicacion />
       </MemoryRouter>
     </QueryClientProvider>,
   )
 
+  await screen.findByRole('dialog', { name: 'Registrar artista' })
   return userEvent.setup()
+}
+
+/** El listado de debajo del modal siempre responde; `responder` atiende solo el POST. */
+function simularAlta(responder: () => RespuestaSimulada | Promise<RespuestaSimulada>) {
+  return simularApi(({ method }) => (method === 'GET' ? pagina([]) : responder()))
+}
+
+function posts(peticiones: PeticionRegistrada[]) {
+  return peticiones.filter((p) => p.method === 'POST')
+}
+
+function ubicacion() {
+  return screen.getByRole('status', { name: 'Ubicación actual', hidden: true }).textContent
 }
 
 type Campo = 'Nombre' | 'Email'
@@ -72,26 +104,78 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
 }
 
 describe('ArtistCreatePage', () => {
-  it('registra el artista y abre su edición', async () => {
-    const peticiones = simularApi(({ method }) =>
-      method === 'POST'
-        ? { status: 201, data: { data: artista() } }
-        : { status: 200, data: { data: artista() } },
-    )
-    const user = renderAlta()
+  it('abre el alta en un modal sobre el listado', async () => {
+    simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    await renderAlta()
+
+    expect(screen.getByRole('dialog', { name: 'Registrar artista' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Artistas', hidden: true })).toBeTruthy()
+    expect(ubicacion()).toBe('/artistas/nuevo')
+  })
+
+  it('registra y vuelve al listado con el aviso', async () => {
+    const peticiones = simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
+    await waitFor(() => expect(peticiones.filter((p) => p.method === 'GET')).toHaveLength(1))
 
     await rellenar(user, 'Luna Rivera', 'Luna.Rivera@Ejemplo.test')
     await user.click(boton())
 
-    expect(await screen.findByRole('heading', { name: 'Editar artista' })).toBeTruthy()
-    expect(peticiones[0]).toEqual({
-      method: 'POST',
-      url: '/api/v1/artists',
-      body: { name: 'Luna Rivera', email: 'Luna.Rivera@Ejemplo.test' },
-    })
     await waitFor(() => expect(textoEnRol('status', 'Artista registrado.')).toBe(true))
-    await waitFor(() => expect(campo('Email').value).toBe('luna.rivera@ejemplo.test'))
-    expect(campo('Nombre').value).toBe('Luna Rivera')
+    expect(posts(peticiones)).toEqual([
+      {
+        method: 'POST',
+        url: '/api/v1/artists',
+        body: { name: 'Luna Rivera', email: 'Luna.Rivera@Ejemplo.test' },
+      },
+    ])
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(ubicacion()).toBe('/artistas')
+    await waitFor(() => expect(peticiones.filter((p) => p.method === 'GET')).toHaveLength(2))
+  })
+
+  it.each([
+    {
+      caso: 'Cancelar',
+      cerrar: (user: ReturnType<typeof userEvent.setup>) =>
+        user.click(screen.getByRole('button', { name: 'Cancelar' })),
+    },
+    {
+      caso: 'Escape',
+      cerrar: (user: ReturnType<typeof userEvent.setup>) => user.keyboard('{Escape}'),
+    },
+  ])('cancelar y Escape cierran sin guardar: $caso', async ({ cerrar }) => {
+    const peticiones = simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
+
+    await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
+    await cerrar(user)
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(ubicacion()).toBe('/artistas')
+    expect(posts(peticiones)).toHaveLength(0)
+  })
+
+  it('no se cierra mientras guarda', async () => {
+    let completar: (respuesta: RespuestaSimulada) => void = () => undefined
+    const peticiones = simularAlta(
+      () =>
+        new Promise<RespuestaSimulada>((resolve) => {
+          completar = resolve
+        }),
+    )
+    const user = await renderAlta()
+
+    await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
+    await user.click(boton())
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
+
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('dialog', { name: 'Registrar artista' })).toBeTruthy()
+    expect(ubicacion()).toBe('/artistas/nuevo')
+
+    completar(problema(500, 'INTERNAL_ERROR'))
+    await waitFor(() => expect(boton().disabled).toBe(false))
   })
 
   it.each<{ caso: string; nombre: string; email: string; errores: Partial<Record<Campo, string>> }>(
@@ -116,8 +200,8 @@ describe('ArtistCreatePage', () => {
       },
     ],
   )('valida en el cliente sin llamar a la API: $caso', async ({ nombre, email, errores }) => {
-    const peticiones = simularApi(() => ({ status: 201, data: { data: artista() } }))
-    const user = renderAlta()
+    const peticiones = simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
 
     await rellenar(user, nombre, email)
     await user.click(boton())
@@ -131,16 +215,12 @@ describe('ArtistCreatePage', () => {
     if (!('Nombre' in errores)) {
       expect(campo('Nombre').getAttribute('aria-invalid')).not.toBe('true')
     }
-    expect(peticiones).toHaveLength(0)
+    expect(posts(peticiones)).toHaveLength(0)
   })
 
   it('deja al servidor el máximo de longitud', async () => {
-    const peticiones = simularApi(({ method }) =>
-      method === 'POST'
-        ? { status: 201, data: { data: artista() } }
-        : { status: 200, data: { data: artista() } },
-    )
-    const user = renderAlta()
+    const peticiones = simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
     const nombreLargo = 'a'.repeat(256)
 
     await user.click(campo('Nombre'))
@@ -148,8 +228,11 @@ describe('ArtistCreatePage', () => {
     await user.type(campo('Email'), 'luna.rivera@ejemplo.test')
     await user.click(boton())
 
-    await waitFor(() => expect(peticiones.filter((p) => p.method === 'POST')).toHaveLength(1))
-    expect(peticiones[0].body).toEqual({ name: nombreLargo, email: 'luna.rivera@ejemplo.test' })
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
+    expect(posts(peticiones)[0].body).toEqual({
+      name: nombreLargo,
+      email: 'luna.rivera@ejemplo.test',
+    })
   })
 
   it.each([
@@ -168,8 +251,8 @@ describe('ArtistCreatePage', () => {
       otro: 'Nombre' as const,
     },
   ])('muestra en su campo el 422 del servidor: $caso', async ({ mensaje, errors, label, otro }) => {
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors }))
-    const user = renderAlta()
+    simularAlta(() => problema(422, 'VALIDATION_ERROR', { errors }))
+    const user = await renderAlta()
 
     await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
     await user.click(boton())
@@ -182,8 +265,10 @@ describe('ArtistCreatePage', () => {
   })
 
   it('un 422 sin campos conocidos da un aviso general', async () => {
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { otro: ['Campo inesperado.'] } }))
-    const user = renderAlta()
+    simularAlta(() =>
+      problema(422, 'VALIDATION_ERROR', { errors: { otro: ['Campo inesperado.'] } }),
+    )
+    const user = await renderAlta()
 
     await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
     await user.click(boton())
@@ -193,21 +278,21 @@ describe('ArtistCreatePage', () => {
 
   it('no envía dos veces mientras guarda', async () => {
     let completar: (respuesta: RespuestaSimulada) => void = () => undefined
-    const peticiones = simularApi(
+    const peticiones = simularAlta(
       () =>
         new Promise<RespuestaSimulada>((resolve) => {
           completar = resolve
         }),
     )
-    const user = renderAlta()
+    const user = await renderAlta()
 
     await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
     await user.click(boton())
-    await waitFor(() => expect(peticiones).toHaveLength(1))
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
 
     expect(boton().disabled).toBe(true)
     await user.click(boton())
-    expect(peticiones).toHaveLength(1)
+    expect(posts(peticiones)).toHaveLength(1)
 
     completar(problema(500, 'INTERNAL_ERROR'))
     await waitFor(() => expect(boton().disabled).toBe(false))
@@ -217,8 +302,8 @@ describe('ArtistCreatePage', () => {
     { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
     { caso: 'error de red', respuesta: 'error de red' as const },
   ])('un error del servidor o de red conserva lo escrito: $caso', async ({ respuesta }) => {
-    simularApi(() => respuesta)
-    const user = renderAlta()
+    simularAlta(() => respuesta)
+    const user = await renderAlta()
 
     await rellenar(user, 'Luna Rivera', 'luna.rivera@ejemplo.test')
     await user.click(boton())
@@ -230,14 +315,19 @@ describe('ArtistCreatePage', () => {
     expect(campo('Email').value).toBe('luna.rivera@ejemplo.test')
   })
 
-  /*
-   * TS-17 (HU-06) — ts-06.06, spec frontend HU-06 §4 test 14.
-   */
-  it('enlaza de vuelta al listado', () => {
-    renderAlta()
+  it('un clic fuera no cierra el modal', async () => {
+    simularAlta(() => ({ status: 201, data: { data: artista() } }))
+    const user = await renderAlta()
 
-    expect(screen.getByRole('link', { name: 'Volver al listado' }).getAttribute('href')).toBe(
-      '/artistas',
-    )
+    await rellenar(user, 'Luna Rivera', '')
+    const fondo = document.querySelector('[data-slot="dialog-overlay"]')
+    if (!fondo) throw new Error('Falta el fondo del modal')
+    await user.pointer([
+      { keys: '[MouseLeft>]', target: fondo },
+      { keys: '[/MouseLeft]', target: fondo },
+    ])
+
+    expect(screen.getByRole('dialog', { name: 'Registrar artista' })).toBeTruthy()
+    expect(campo('Nombre').value).toBe('Luna Rivera')
   })
 })

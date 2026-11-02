@@ -68,8 +68,9 @@ function App() {
           </Route>
           <Route element={<RequireRole allowed={['productor']} />}>
             <Route path="/productor" element={<ProducerOnly />} />
-            <Route path="/artistas" element={<ArtistListPage />} />
-            <Route path="/artistas/nuevo" element={<ArtistCreatePage />} />
+            <Route path="/artistas" element={<ArtistListPage />}>
+              <Route path="nuevo" element={<ArtistCreatePage />} />
+            </Route>
             <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
             <Route
               path="/artistas/:artistId/producciones/nueva"

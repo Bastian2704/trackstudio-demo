@@ -185,9 +185,9 @@ describe('App', () => {
    * TS-68 (épica TS-67) — ts-39.03, spec frontend TS-68 §4 tests 10 y 11.
    */
   it('las rutas autenticadas se pintan dentro del shell', async () => {
-    renderApp(contextoConRol('productor'), '/artistas/nuevo')
+    renderApp(contextoConRol('productor'), '/productor')
 
-    expect(await screen.findByRole('heading', { name: 'Registrar artista' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Acceso de productor' })).toBeTruthy()
     expect(screen.getByRole('navigation', { name: 'Principal' })).toBeTruthy()
   })
 
