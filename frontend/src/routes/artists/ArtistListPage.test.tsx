@@ -21,6 +21,8 @@ import {
  * La alta de producción se monta junto al listado porque el test 6 afirma el
  * destino real del enlace «Nueva producción»; <Ubicacion> expone la URL para
  * comprobar que la página vive en ?page (spec §3.2).
+ *
+ * TS-70 (épica TS-67) — ts-41.03, spec frontend TS-70 §4 tests 1 y 2.
  */
 const URL_LISTADO = '/api/v1/artists'
 
@@ -347,5 +349,37 @@ describe('ArtistListPage', () => {
     expect(aviso.textContent).toContain('No se pudo cargar el listado de artistas.')
     expect(screen.queryByRole('table')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Siguiente' })).toBeNull()
+  })
+
+  it('la tabla conserva sus roles aunque cambie el display', async () => {
+    simularApi(() => pagina([artista()]))
+    renderListado()
+
+    const elTabla = await tabla()
+
+    expect(elTabla.getAttribute('role')).toBe('table')
+    for (const grupo of elTabla.querySelectorAll('thead, tbody')) {
+      expect(grupo.getAttribute('role')).toBe('rowgroup')
+    }
+    for (const fila of elTabla.querySelectorAll('tr')) {
+      expect(fila.getAttribute('role')).toBe('row')
+    }
+    for (const encabezado of elTabla.querySelectorAll('th')) {
+      expect(encabezado.getAttribute('role')).toBe('columnheader')
+    }
+    for (const celda of elTabla.querySelectorAll('td')) {
+      expect(celda.getAttribute('role')).toBe('cell')
+    }
+  })
+
+  it('las celdas de datos llevan la etiqueta de su columna', async () => {
+    simularApi(() => pagina([artista(), artista()]))
+    renderListado()
+
+    for (const fila of await filas()) {
+      const [, contacto, producciones] = within(fila).getAllByRole('cell')
+      expect(contacto.getAttribute('data-label')).toBe('Contacto')
+      expect(producciones.getAttribute('data-label')).toBe('Producciones')
+    }
   })
 })
