@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\UserRepository;
 use App\Contracts\AudioStorageContract;
+use App\Contracts\HashVerifierContract;
 use App\Enums\AudioContentType;
 use App\Models\Production;
 use App\Models\Song;
@@ -398,7 +399,8 @@ function datosDeEdicionDeCancion(array $cambios = []): array
 */
 
 /** Claves exactas de `VersionResource` (spec §3.7). */
-const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'content_type', 'size_bytes', 'upload_status', 'created_at', 'updated_at'];
+/** Ampliadas en HU-14 §3.8: label, description, duration_ms y verified_at. */
+const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
 
 /**
  * Cuerpo válido de la firma: un WAV de ~46 MB. El archivo no viaja (D7.1).
@@ -499,4 +501,65 @@ function fallarAlActualizar(string $tabla, string $condicion): void
         CREATE TRIGGER fallo_inducido BEFORE UPDATE ON %s
             FOR EACH ROW WHEN (%s) EXECUTE FUNCTION fallo_inducido();
         SQL, $tabla, $condicion));
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-14 (docs/specs/backend/HU-14.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** MD5 de un objeto de una sola parte, como lo guarda la BD: sin comillas, en minúsculas. */
+const ETAG_DE_PRUEBA = '9b2cf535f27731c974343645a3985328';
+
+/**
+ * Cuerpo válido de la confirmación: el ETag tal como llega en la cabecera de S3
+ * (con comillas) y la duración leída del archivo.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeConfirmacion(array $cambios = []): array
+{
+    return array_merge([
+        'etag' => '"'.ETAG_DE_PRUEBA.'"',
+        'duration_ms' => 213450,
+    ], $cambios);
+}
+
+/**
+ * Sustituye `HashVerifierContract` por un doble y devuelve las keys consultadas.
+ *
+ * `$objeto` es lo que devolvería `HeadObject` (`null` = 403/404 de S3). Con
+ * `$falla`, registra la consulta y lanza esa excepción.
+ *
+ * @param  array{etag: string, size_bytes: int}|null  $objeto
+ * @return ArrayObject<int, string>
+ */
+function falsearVerificadorDeHash(?array $objeto, ?Throwable $falla = null): ArrayObject
+{
+    /** @var ArrayObject<int, string> $consultas */
+    $consultas = new ArrayObject;
+
+    app()->instance(HashVerifierContract::class, new class($consultas, $objeto, $falla) implements HashVerifierContract
+    {
+        /**
+         * @param  ArrayObject<int, string>  $consultas
+         * @param  array{etag: string, size_bytes: int}|null  $objeto
+         */
+        public function __construct(private ArrayObject $consultas, private ?array $objeto, private ?Throwable $falla) {}
+
+        public function inspect(string $key): ?array
+        {
+            $this->consultas->append($key);
+
+            if ($this->falla !== null) {
+                throw $this->falla;
+            }
+
+            return $this->objeto;
+        }
+    });
+
+    return $consultas;
 }
