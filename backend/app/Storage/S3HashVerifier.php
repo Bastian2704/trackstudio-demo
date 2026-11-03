@@ -17,7 +17,7 @@ final class S3HashVerifier implements HashVerifierContract
 
     /**
      * Sin ListBucket, S3 responde 403 a una key inexistente: 403 y 404
-     * significan, así que se decide por
+     * significan lo mismo, así que se decide por
      * el estado HTTP y no por el código de error de AWS.
      *
      * @return array{etag: string, size_bytes: int}|null
