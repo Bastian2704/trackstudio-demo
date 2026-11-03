@@ -1,11 +1,13 @@
 # Mapa vigente de claves Jira
 
 **Fuente de verdad:** Jira de MediHealth, proyecto `TS`, board 3.  
-**Última verificación:** 2026-10-15.
+**Última verificación:** 2026-11-03.
 
 **Planificación sincronizada 2026-10-02:** el roadmap activo termina en S6. `TS Sprint 2` (id 37) contiene TS-16..TS-20, TS-41, TS-46 y TS-49 (el 2026-10-13 TS-21 sustituye a TS-20, que vuelve al backlog con `target-s3`; también están TS-53 y TS-62); TS-35..TS-39 tienen objetivo S6 y TS-35..TS-37 conservan seguimiento incremental S2-S5.
 
 **Sprint 3 creado el 2026-10-15:** `TS Sprint 3` (id 38, futuro, 2026-10-19 a 2026-10-30) con TS-20, TS-22, TS-23, TS-24 (13 SP) y TS-42. Enlaces: TS-42 bloquea TS-24 y TS-24 bloquea TS-23. TS-46, TS-53 y TS-35..TS-37 pasan del S2 al S3 al cerrar `TS Sprint 2` (2026-10-15).
+
+**Sprint 4 planificado el 2026-11-03:** `TS Sprint 3` cerrado el 2026-11-03. `TS Sprint 4` (id 72, activo, 2026-11-02 a 2026-11-16) con TS-25, TS-26, TS-27 (13 SP), TS-71, TS-72, TS-45 y, por arrastre, TS-35..TS-37 y TS-46. Enlaces sin cambios: TS-24 bloquea TS-25 y TS-27; ambas bloquean TS-26.
 
 Este mapa evita confundir los IDs locales del backlog y las claves del tablero anterior con las claves actuales. Jira manda; si una fila difiere del tablero, se corrige aquí después de corregir Jira.
 
@@ -41,6 +43,7 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-80` | Story de `TS-2` (candidata)  | Mi perfil: ver mis datos (productor y artista); sustituye la pantalla técnica de `/me` | Por hacer; sin sprint, no Ready (2026-10-28) |
 | `TS-81` | Story de `TS-4` (candidata)  | Reorganizar artistas y producciones: listado de producciones con filtros por artista y tipo | Por hacer; sin sprint, no Ready, post-S6 (2026-11-02) |
 | `TS-82` | Story de `TS-7` (candidata)  | Notificaciones en la aplicación de comentarios y solicitudes de sesión | Por hacer; sin sprint, no Ready, post-S6 (2026-11-02) |
+| `TS-84` | Task de `TS-1`               | Sprint Planning S4                                                               | En curso; `TS Sprint 4` (2026-11-03) |
 
 ## Claves históricas
 
