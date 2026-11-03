@@ -3,9 +3,9 @@
 **Corte:** 2026-11-02, sobre `develop` en `682c2e0`. **Cubre:** `ts-26.s2.01` y `ts-26.s3.01`.
 **Cierre de la historia:** S6. Este registro es evidencia parcial; los criterios de aceptación viven en Jira.
 
-**Fuentes:** handoffs v21 a v33 y revisión del código en este corte. No hubo pruebas en staging, así que lo que depende de staging consta como sin verificar.
+**Fuentes:** handoffs v21 a v33 y revisión del código en este corte. No hubo pruebas en staging. El CORS del bucket y `APP_DEBUG` los comprobó el equipo en sus consolas el 2026-11-02.
 
-**Resultado:** no hay defectos críticos ni altos confirmados. Dos riesgos podrían ser altos y solo el equipo puede comprobarlos en staging (D-02 y D-03).
+**Resultado:** no hay defectos críticos ni altos confirmados.
 
 ## Severidad
 
@@ -20,11 +20,7 @@
 
 | ID | Sprint | Defecto | Severidad | Estado | Dueño | Qué hacer |
 | --- | --- | --- | --- | --- | --- | --- |
-| D-01 | S2 | Un 405 responde 500 `INTERNAL_ERROR`. `backend/bootstrap/app.php:174` trata como error interno toda excepción sin manejador, y no hay manejador para `MethodNotAllowedHttpException` | Medio | Confirmado en el código; sin ticket ni test | Equipo | Mapear las excepciones HTTP sin manejador a su estado, con su test. Requiere ticket |
-| D-02 | S3 | El CORS del bucket puede no permitir `POST`. El comentario de evidencia de `TS-42` dice `PUT/GET`; ADR D7.5 dice que se aplicó `POST/GET` | Alto si sigue en `PUT`: la subida falla en el navegador | Sin verificar | Equipo (regla 6) | Revisar el CORS del bucket y corregir la fuente que quede mal |
-| D-03 | S2 | `APP_DEBUG` en staging sin confirmar. Con `true`, el `detail` de un 500 incluye SQL y valores | Alto si está en `true` | Sin verificar | Equipo (regla 6) | Confirmar `APP_DEBUG=false` en Railway |
-| D-04 | S3 | El menú móvil no se cierra al navegar hacia atrás. `AppShell` lo cierra al pulsar un enlace, no al cambiar de ruta | Bajo | Abierto (handoff v31 §6) | Equipo | Ticket cuando se toque el shell |
-| D-05 | S3 | Quedan clases `dark:` en `frontend/src/components/ui/input.tsx` | Bajo | Abierto | Equipo | Limpiar al tocar el componente |
+| D-01 | S2 | Un 405 responde 500 `INTERNAL_ERROR`. `backend/bootstrap/app.php:174` trata como error interno toda excepción sin manejador, y no hay manejador para `MethodNotAllowedHttpException` | Medio | Confirmado en el código; registrado en `TS-83`, sin sprint | Equipo | Decidir el código de error (D3.1 no tiene uno para 405) y responder 405, con su test. Decisión del equipo (2026-11-02): no se agrega ahora al catálogo |
 
 ## Riesgos aceptados
 
@@ -32,6 +28,8 @@
 | --- | --- | --- |
 | R-01 | 7 avisos altos de la cadena `shadcn` → `braces`, sin corrección disponible. Solo afectan al desarrollo | `docs/specs/frontend/TS-78.md` §3.4 |
 | R-02 | Si se borra una canción con una subida en curso, el objeto queda en S3 sin fila vigente. La confirmación de S4 debe responder 404 | `docs/specs/backend/HU-12.md` §3.4 |
+| R-03 | D-04: el menú móvil no se cierra al navegar hacia atrás. `AppShell` lo cierra al pulsar un enlace, no al cambiar de ruta. No afecta al uso | Decisión del equipo, 2026-11-02 |
+| R-04 | D-05: quedan clases `dark:` en `frontend/src/components/ui/input.tsx`, componente generado por shadcn. Sin efecto funcional | Decisión del equipo, 2026-11-02 |
 
 ## Resueltos
 
@@ -39,12 +37,12 @@
 | --- | --- |
 | Línea en blanco de más en `SongList.tsx` (handoff v31 §6) | Ya no está en el código |
 | PHP y Node en versiones con avisos de seguridad | `TS-77` y `TS-78` |
+| D-02: el comentario de `TS-42` decía que el CORS del bucket permitía `PUT/GET`, frente a `POST/GET` en ADR D7.5 | Sin defecto: el equipo comprobó en AWS que permite `POST` y `GET` y que incluye el origen de staging en Vercel (2026-11-02). Queda desactualizado el comentario de `TS-42` |
+| D-03: `APP_DEBUG` en staging sin confirmar | Sin defecto: el equipo comprobó en Railway que está en `false` (2026-11-02) |
 
 ## Comprobaciones pendientes en staging
 
 Las `.09` no bloquean el Done, pero sin ellas no hay evidencia en staging de estas historias: `TS-17`, `TS-18`, `TS-19`, `TS-20`, `TS-21`, `TS-22`, `TS-23` y `TS-24`.
-
-Además, D-02 bloquea `ts-13.09` si el CORS sigue en `PUT`.
 
 ## Evidencia de RNF
 
