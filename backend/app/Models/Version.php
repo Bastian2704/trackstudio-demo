@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $version_number
@@ -21,6 +22,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $s3_key
  * @property ?string $etag
  * @property string $uploaded_by
+ * @property int $size_bytes
+ * @property ?string $label
+ * @property ?string $description
+ * @property ?int $duration_ms
+ * @property ?Carbon $verified_at
  */
 #[Fillable([
     'song_id',
@@ -30,6 +36,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'size_bytes',
     'upload_status',
     'uploaded_by',
+    'label',
+    'description',
     'etag',
     'verified_at',
     'duration_ms',
@@ -37,6 +45,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Version extends Model
 {
     public const MAX_SIZE_BYTES = 524288000;
+
+    /** Una pendiente sin confirmar caduca a los 15 min de la firma (D7.6) más 5 de margen (HU-14 §3.6). */
+    public const ABANDON_AFTER_MINUTES = 20;
 
     /** @use HasFactory<VersionFactory> */
     use HasFactory;
