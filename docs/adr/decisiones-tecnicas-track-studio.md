@@ -455,6 +455,16 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 
 **Headers:** `Content-Type` permitido en la solicitud; `ExposeHeaders` debe incluir `ETag` explícitamente (los navegadores no lo exponen a JS por defecto sin esto), necesario para D7.4.
 
+**Aplicado por el equipo (2026-11-03, `TS-25`):** configuración vigente del bucket, que sustituye a la anterior (no se guardó una copia de la anterior):
+
+```json
+[{ "AllowedOrigins": ["http://localhost:5173", "https://trackstudio-staging.vercel.app"],
+   "AllowedMethods": ["POST", "GET"], "AllowedHeaders": ["*"],
+   "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3000 }]
+```
+
+Cierra el drift de los handoffs v31–v33 (CORS con `PUT`, sin `POST` y sin `ExposeHeaders`). `AllowedHeaders` pasa de `Content-Type` a `*`, porque el POST `multipart/form-data` de D7.1 no se limita a esa cabecera. No abre acceso: el origen sigue cerrado a la lista y lo que S3 acepta lo fija la política firmada (D7.7).
+
 **⚠️ Revisar esta decisión en estos momentos concretos, no antes:**
 1. **El día del primer despliegue a staging en Vercel** (ya está en el checklist de `sprint-01-guia-arranque.md` §6, "CORS resuelto el mismo día del primer despliegue") — recién ahí se conoce el dominio real de Vercel a agregar a la lista de orígenes.
 2. **Cuando se configure el dominio de producción** (`trackstudio.site` o un subdominio) sobre Vercel — agregar ese origen a la lista.
