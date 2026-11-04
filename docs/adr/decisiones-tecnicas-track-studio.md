@@ -179,7 +179,7 @@ Todos los timestamps se persisten en **UTC** (`timestamptz` de PostgreSQL, `time
 
 → *ISO 25010: fiabilidad (corrección funcional). Cubre: RF-07.*
 
-**Abierto:** ¿el frontend muestra siempre UTC-5 fijo, o la zona local del navegador?
+**Presentación (decisión del equipo del 2026-11-04, HU-14 frontend):** el frontend muestra siempre **UTC-5 fijo** (`timeZone: 'America/Guayaquil'`), no la zona local del navegador: todos ven la misma hora, incluido un artista conectado desde otra zona. El formato lo fija la spec frontend que pinta la primera fecha ([`../specs/frontend/HU-14.md`](../specs/frontend/HU-14.md)).
 
 ---
 

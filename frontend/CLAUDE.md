@@ -54,7 +54,7 @@ Mismo orden que el job de `.github/workflows/frontend-ci.yml`:
 | Formularios         | punto 5.4           | React Hook Form + esquema Zod. El servidor es la fuente de verdad de la validación: el cliente solo adelanta lo que la spec de la HU diga, y pinta el 422 en su campo. |
 | Rutas por rol       | punto 5.6, **D4.8** | `RequireAuth` (sesión) → `RequireRole(allowed)` (claim de `VITE_AUTH0_ROLE_CLAIM`). Denegar por defecto. El backend sigue siendo quien autoriza de verdad.             |
 | Estado global       | punto 5.8 ABIERTO   | **No se introduce** Zustand/Redux/Context global hasta que se decida. Si una HU lo necesita, se señala y se detiene.                                                   |
-| Fechas              | **D3.2**            | Llegan en ISO 8601 con offset. Qué zona mostrar sigue **ABIERTO** en D3.2: una HU que pinte fechas lo señala antes de elegir.                                          |
+| Fechas              | **D3.2**            | Llegan en ISO 8601 con offset y se muestran siempre en UTC-5 fijo (`America/Guayaquil`), con el formateador único de la spec frontend HU-14 §3.6.                       |
 | Pruebas             | **D11.2**           | Vitest + React Testing Library.                                                                                                                                        |
 
 ## 4. Reglas de TypeScript y React
