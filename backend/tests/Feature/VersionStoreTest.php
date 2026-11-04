@@ -291,3 +291,49 @@ it('rechaza sin identidad o sin rol productor', function (?string $role, int $st
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| TS-25 — Enmienda de la firma: label y description (HU-14 §3.8, #23–#24)
+|--------------------------------------------------------------------------
+*/
+
+it('guarda la etiqueta y la descripción opcionales', function (array $changes, ?string $label, ?string $description) {
+    falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion($changes));
+
+    // Una clave ausente también se lee como null: sin esto, los casos nulos nacerían verdes (C2).
+    $response->assertCreated()
+        ->assertJsonStructure(['data' => ['label', 'description']])
+        ->assertJsonPath('data.label', $label)
+        ->assertJsonPath('data.description', $description);
+
+    $this->assertDatabaseHas('versions', [
+        'id' => $response->json('data.id'),
+        'label' => $label,
+        'description' => $description,
+    ]);
+})->with([
+    'con los dos' => [['label' => 'Master final', 'description' => 'Con la voz regrabada.'], 'Master final', 'Con la voz regrabada.'],
+    'sin ninguno' => [[], null, null],
+    'vacíos' => [['label' => '', 'description' => ''], null, null],
+    'en los límites' => [['label' => str_repeat('a', 100), 'description' => str_repeat('b', 1000)], str_repeat('a', 100), str_repeat('b', 1000)],
+]);
+
+it('valida la etiqueta y la descripción', function (array $changes, string $field) {
+    $llamadas = falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion($changes));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR');
+
+    expect(array_keys($response->json('errors')))->toBe([$field])
+        ->and(Version::withTrashed()->count())->toBe(0)
+        ->and($llamadas)->toHaveCount(0);
+})->with('etiquetas y descripciones invalidas');

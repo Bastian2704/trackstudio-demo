@@ -33,6 +33,8 @@ final class StoreVersionRequest extends FormRequest
                 'min:1',
                 'max:'.Version::MAX_SIZE_BYTES,
             ],
+            'label' => ['nullable', 'string', 'max:100'],
+            'description' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

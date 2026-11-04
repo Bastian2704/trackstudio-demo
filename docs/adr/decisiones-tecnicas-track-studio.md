@@ -179,7 +179,7 @@ Todos los timestamps se persisten en **UTC** (`timestamptz` de PostgreSQL, `time
 
 → *ISO 25010: fiabilidad (corrección funcional). Cubre: RF-07.*
 
-**Abierto:** ¿el frontend muestra siempre UTC-5 fijo, o la zona local del navegador?
+**Presentación (decisión del equipo del 2026-11-04, HU-14 frontend):** el frontend muestra siempre **UTC-5 fijo** (`timeZone: 'America/Guayaquil'`), no la zona local del navegador: todos ven la misma hora, incluido un artista conectado desde otra zona. El formato lo fija la spec frontend que pinta la primera fecha ([`../specs/frontend/HU-14.md`](../specs/frontend/HU-14.md)).
 
 ---
 
@@ -454,6 +454,16 @@ El navegador sube el archivo completo en una sola petición HTTP a la presigned 
 **Métodos:** `POST` (subir, desde la enmienda de D7.1 del 2026-10-20; antes `PUT`) y `GET` (por si en el futuro se sirve audio directo desde S3 con URL firmada en vez de proxy por el backend — todavía no decidido, es de la HU de reproducción). No se habilitan `PUT`, `DELETE` ni `*`. **Aplicado por el equipo (2026-10-20, `TS-42`):** el CORS del bucket permite `POST` y `GET`.
 
 **Headers:** `Content-Type` permitido en la solicitud; `ExposeHeaders` debe incluir `ETag` explícitamente (los navegadores no lo exponen a JS por defecto sin esto), necesario para D7.4.
+
+**Aplicado por el equipo (2026-11-03, `TS-25`):** configuración vigente del bucket, que sustituye a la anterior (no se guardó una copia de la anterior):
+
+```json
+[{ "AllowedOrigins": ["http://localhost:5173", "https://trackstudio-staging.vercel.app"],
+   "AllowedMethods": ["POST", "GET"], "AllowedHeaders": ["*"],
+   "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3000 }]
+```
+
+Cierra el drift de los handoffs v31–v33 (CORS con `PUT`, sin `POST` y sin `ExposeHeaders`). `AllowedHeaders` pasa de `Content-Type` a `*`, porque el POST `multipart/form-data` de D7.1 no se limita a esa cabecera. No abre acceso: el origen sigue cerrado a la lista y lo que S3 acepta lo fija la política firmada (D7.7).
 
 **⚠️ Revisar esta decisión en estos momentos concretos, no antes:**
 1. **El día del primer despliegue a staging en Vercel** (ya está en el checklist de `sprint-01-guia-arranque.md` §6, "CORS resuelto el mismo día del primer despliegue") — recién ahí se conoce el dominio real de Vercel a agregar a la lista de orígenes.

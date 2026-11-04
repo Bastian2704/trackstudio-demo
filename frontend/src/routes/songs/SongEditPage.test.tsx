@@ -14,7 +14,14 @@ import {
   type PeticionRegistrada,
   type RespuestaSimulada,
 } from '@/test/api'
-import { archivoDeAudio, firmaSimulada, simularS3 } from '@/test/s3'
+import { simularDuracion } from '@/test/audio'
+import {
+  archivoDeAudio,
+  confirmacionSimulada,
+  ETAG_DE_S3,
+  firmaSimulada,
+  simularS3,
+} from '@/test/s3'
 
 /*
  * TS-21 (HU-10) — ts-10.06, spec frontend §4 tests 11 a 19.
@@ -27,6 +34,10 @@ import { archivoDeAudio, firmaSimulada, simularS3 } from '@/test/s3'
  * el listado de la producción. Ese caso usa el `staleTime` de la app (30 s):
  * con el 0 por defecto de los tests, `SongList` volvería a pedir el listado al
  * montarse aunque nadie lo invalidara, y el test no podría fallar.
+ *
+ * TS-25 (HU-14) — ts-14.06, spec frontend HU-14 §4 tests 15 y 16: historial
+ * de versiones en la página. La precarga responde al historial con una página
+ * vacía; la subida necesita la duración simulada (HU-14 §3.4).
  */
 const PRODUCTION_ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const ID = '9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a'
@@ -73,6 +84,7 @@ function conPrecarga(
     if (peticion.method !== 'GET') return alResto(peticion)
     if (peticion.url === URL_CANCION) return { status: 200, data: { data: cancion() } }
     if (peticion.url === `${URL_PRODUCCION}/songs`) return pagina([])
+    if (peticion.url === `${URL_CANCION}/versions`) return pagina([])
     return { status: 200, data: { data: produccion() } }
   }
 }
@@ -413,6 +425,7 @@ describe('SongEditPage', () => {
  */
 describe('SongEditPage — subida de versiones', () => {
   it('muestra la subida de versiones de la canción', async () => {
+    simularDuracion(12.5)
     simularS3()
     const peticiones = simularApi(
       conPrecarga((peticion) =>
@@ -448,5 +461,58 @@ describe('SongEditPage — subida de versiones', () => {
     expect(await screen.findByRole('heading', { name: 'Canción no encontrada' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Subir versión' })).toBeNull()
     expect(screen.queryByLabelText('Archivo de audio')).toBeNull()
+  })
+})
+
+describe('SongEditPage — historial de versiones (HU-14)', () => {
+  it('muestra el historial y lo refresca al verificar una versión', async () => {
+    simularDuracion(12.5)
+    const s3 = simularS3()
+    let verificada = false
+    const peticiones = simularApi((peticion) => {
+      if (peticion.method === 'GET' && peticion.url === `${URL_CANCION}/versions`) {
+        return pagina(verificada ? [confirmacionSimulada(1, {}, ID).data.data] : [])
+      }
+      if (peticion.method === 'POST' && peticion.url === `${URL_CANCION}/versions`) {
+        return firmaSimulada(1, ID)
+      }
+      if (peticion.method === 'POST' && peticion.url.endsWith('/confirm')) {
+        verificada = true
+        return confirmacionSimulada(1, {}, ID)
+      }
+      return conPrecarga(() => ({ status: 500 }))(peticion)
+    })
+    renderEdicion()
+    const user = userEvent.setup({ applyAccept: false })
+    const historial = () =>
+      peticiones.filter((p) => p.method === 'GET' && p.url === `${URL_CANCION}/versions`)
+
+    await esperarPrecarga()
+    expect(await screen.findByRole('heading', { name: 'Historial de versiones' })).toBeTruthy()
+    expect(await screen.findByText('Todavía no hay versiones verificadas.')).toBeTruthy()
+    expect(historial()).toHaveLength(1)
+
+    await user.upload(
+      screen.getByLabelText('Archivo de audio'),
+      archivoDeAudio({ name: 'toma.wav', type: 'audio/wav', cabecera: 'wav' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Subir versión' }))
+    await waitFor(() => expect(s3).toHaveLength(1))
+    s3[0].responder(204, '', { ETag: ETAG_DE_S3 })
+
+    await waitFor(() => expect(textoEnRol('status', 'Versión v1 verificada.')).toBe(true))
+    await waitFor(() => expect(historial()).toHaveLength(2))
+    const items = await screen.findAllByRole('listitem')
+    expect(items.map((item) => item.querySelector('time') !== null)).toEqual([true])
+    expect(screen.getByText('v1')).toBeTruthy()
+  })
+
+  it('no muestra el historial si la canción no carga', async () => {
+    const peticiones = simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
+    renderEdicion()
+
+    expect(await screen.findByRole('heading', { name: 'Canción no encontrada' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Historial de versiones' })).toBeNull()
+    expect(peticiones.filter((p) => p.url.endsWith('/versions'))).toHaveLength(0)
   })
 })

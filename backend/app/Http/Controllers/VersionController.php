@@ -4,16 +4,33 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ConfirmVersionRequest;
 use App\Http\Requests\StoreVersionRequest;
 use App\Http\Resources\VersionResource;
 use App\Models\Song;
+use App\Models\Version;
 use App\Services\VersionService;
 use Auth0\Laravel\Users\StatelessUserContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class VersionController extends Controller
 {
     public function __construct(private VersionService $versions) {}
+
+    public function index(Song $song): AnonymousResourceCollection
+    {
+        return VersionResource::collection($this->versions->listVerifiedVersions($song));
+    }
+
+    public function confirm(
+        ConfirmVersionRequest $request,
+        Version $version
+    ): VersionResource {
+        return new VersionResource(
+            $this->versions->confirmVersion($version, $request->validated())
+        );
+    }
 
     public function store(
         StoreVersionRequest $request,

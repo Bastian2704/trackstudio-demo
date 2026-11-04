@@ -126,3 +126,17 @@ Route::post('/songs/{song}/versions', [VersionController::class, 'store'])
         'auth:auth0-api',
         'can:create,'.Version::class,
     ]);
+
+Route::get('/songs/{song}/versions', [VersionController::class, 'index'])
+    ->whereUuid('song')
+    ->middleware([
+        'auth:auth0-api',
+        'can:viewAny,'.Version::class,
+    ]);
+
+Route::post('/versions/{version}/confirm', [VersionController::class, 'confirm'])
+    ->whereUuid('version')
+    ->middleware([
+        'auth:auth0-api',
+        'can:confirm,version',
+    ]);

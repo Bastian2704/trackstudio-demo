@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ErrorCode;
+use App\Exceptions\ApiProblemException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -168,6 +169,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     $request,
                     'Has realizado demasiadas solicitudes. Inténtalo nuevamente más tarde.',
                 );
+            },
+        );
+
+        $exceptions->render(
+            function (ApiProblemException $exception, Request $request) use ($problem): ?JsonResponse {
+                if (! $request->is('api/*')) {
+                    return null;
+                }
+
+                return $problem($exception->errorCode, $request, $exception->getMessage());
             },
         );
 

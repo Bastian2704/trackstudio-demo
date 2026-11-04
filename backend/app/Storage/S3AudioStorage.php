@@ -14,6 +14,8 @@ final class S3AudioStorage implements AudioStorageContract
 {
     private const EXPIRATION_MINUTES = 15;
 
+    public function __construct(private S3Client $client) {}
+
     /**
      * @return array{url: string, fields: array<string, string>, expires_at: CarbonImmutable}
      */
@@ -22,16 +24,7 @@ final class S3AudioStorage implements AudioStorageContract
         AudioContentType $contentType,
         int $sizeBytes,
     ): array {
-        $config = config('filesystems.disks.s3');
-
-        $client = new S3Client([
-            'version' => 'latest',
-            'region' => $config['region'],
-            'credentials' => [
-                'key' => $config['key'],
-                'secret' => $config['secret'],
-            ],
-        ]);
+        $bucket = config('filesystems.disks.s3.bucket');
 
         $expiresAt = CarbonImmutable::now()->addMinutes(self::EXPIRATION_MINUTES);
 
@@ -41,15 +34,15 @@ final class S3AudioStorage implements AudioStorageContract
         ];
 
         $conditions = [
-            ['bucket' => $config['bucket']],
+            ['bucket' => $bucket],
             ['eq', '$key', $key],
             ['eq', '$Content-Type', $contentType->value],
             ['content-length-range', $sizeBytes, $sizeBytes],
         ];
 
         $postObject = new PostObjectV4(
-            $client,
-            $config['bucket'],
+            $this->client,
+            $bucket,
             $formInputs,
             $conditions,
             $expiresAt->getTimestamp(),

@@ -32,7 +32,8 @@ it('clasifica y protege todas las rutas de la API', function () {
         ->sortKeys()
         ->all();
 
-    // TS-16..TS-24: artistas, producciones, canciones y versiones, solo productor vía sus Policies.
+    // TS-16..TS-25: artistas, producciones, canciones y versiones, solo productor vía sus Policies.
+    // Inventario exacto: ninguna ruta PUT/PATCH/DELETE sobre versions/{version} (HU-14 §3.1).
     expect($inventario)->toBe([
         'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
         'DELETE api/v1/songs/{song}' => ['auth:auth0-api', 'can:delete,song'],
@@ -43,11 +44,13 @@ it('clasifica y protege todas las rutas de la API', function () {
         'GET api/v1/productions/{production}' => ['auth:auth0-api', 'can:view,production'],
         'GET api/v1/productions/{production}/songs' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Song'],
         'GET api/v1/songs/{song}' => ['auth:auth0-api', 'can:view,song'],
+        'GET api/v1/songs/{song}/versions' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Version'],
         'POST api/v1/artists' => ['auth:auth0-api', 'can:create,App\\Models\\Artist'],
         'POST api/v1/productions' => ['auth:auth0-api', 'can:create,App\\Models\\Production'],
         'POST api/v1/productions/{production}/songs' => ['auth:auth0-api', 'can:create,App\\Models\\Song'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
         'POST api/v1/songs/{song}/versions' => ['auth:auth0-api', 'can:create,App\\Models\\Version'],
+        'POST api/v1/versions/{version}/confirm' => ['auth:auth0-api', 'can:confirm,version'],
         'PUT api/v1/artists/{artist}' => ['auth:auth0-api', 'can:update,artist'],
         'PUT api/v1/artists/{artist}/status' => ['auth:auth0-api', 'can:changeStatus,artist'],
         'PUT api/v1/productions/{production}' => ['auth:auth0-api', 'can:update,production'],
@@ -84,4 +87,6 @@ it('restringe a UUID las rutas parametrizadas de canciones', function (string $m
     'edición' => ['PUT', 'api/v1/songs/{song}', 'song'],
     'borrado' => ['DELETE', 'api/v1/songs/{song}', 'song'],
     'subida' => ['POST', 'api/v1/songs/{song}/versions', 'song'],
+    'historial' => ['GET', 'api/v1/songs/{song}/versions', 'song'],
+    'confirmación' => ['POST', 'api/v1/versions/{version}/confirm', 'version'],
 ]);
