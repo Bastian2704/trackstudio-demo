@@ -485,7 +485,6 @@ function descripcion() {
 
 /** Sube, deja que S3 responda 204 con `ETag` y espera la petición de confirmación. */
 async function subirHastaConfirmar(
-  user: ReturnType<typeof userEvent.setup>,
   s3: PeticionS3[],
   peticiones: PeticionRegistrada[],
   intento = 1,
@@ -504,7 +503,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     const user = renderSubida()
 
     await subir(user, wav())
-    await subirHastaConfirmar(user, s3, peticiones)
+    await subirHastaConfirmar(s3, peticiones)
 
     const confirmaciones = peticiones.filter((p) => p.url.endsWith('/confirm'))
     expect(confirmaciones).toEqual([
@@ -573,7 +572,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     const user = renderSubida()
 
     await subir(user, wav())
-    await subirHastaConfirmar(user, s3, peticiones)
+    await subirHastaConfirmar(s3, peticiones)
 
     await waitFor(() => expect(textoEnRol('status', 'Verificando el archivo…')).toBe(true))
     expect(screen.queryByRole('progressbar')).toBeNull()
@@ -595,7 +594,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     await user.type(etiqueta(), 'Master final')
     await user.type(descripcion(), 'Con la voz regrabada.')
     await subir(user, wav())
-    await subirHastaConfirmar(user, s3, peticiones)
+    await subirHastaConfirmar(s3, peticiones)
 
     await waitFor(() => expect(textoEnRol('status', 'Versión v3 verificada.')).toBe(true))
     expect(textoEnRol('status', 'Verificando el archivo…')).toBe(false)
@@ -671,7 +670,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     await user.type(etiqueta(), 'Master')
     await user.type(descripcion(), 'Notas')
     await subir(user, wav())
-    await subirHastaConfirmar(user, s3, peticiones)
+    await subirHastaConfirmar(s3, peticiones)
 
     await waitFor(() => expect(textoEnRol('alert', texto)).toBe(true))
     expect(textoEnRol('status', 'verificada')).toBe(false)
@@ -694,7 +693,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     const user = renderSubida()
 
     await subir(user, wav())
-    await subirHastaConfirmar(user, s3, peticiones)
+    await subirHastaConfirmar(s3, peticiones)
     await waitFor(() => expect(textoEnRol('alert', DETALLE)).toBe(true))
 
     await user.click(boton())
@@ -702,7 +701,7 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     await waitFor(() => expect(s3).toHaveLength(2))
     expect(textoEnRol('alert', DETALLE)).toBe(false)
     expect(s3[1].body?.get('Policy')).toBe('politica-2')
-    await subirHastaConfirmar(user, s3, peticiones, 2)
+    await subirHastaConfirmar(s3, peticiones, 2)
 
     await waitFor(() => expect(textoEnRol('status', 'Versión v2 verificada.')).toBe(true))
     expect(peticiones.map((p) => p.url)).toEqual([
