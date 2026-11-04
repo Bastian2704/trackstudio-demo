@@ -6,6 +6,7 @@ import ErrorAlert from '@/components/ErrorAlert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import type { ApiErrorBody } from '@/lib/api'
 
 import { confirmVersion, createVersion, S3UploadError, uploadToS3, VerifyError } from './versionApi'
@@ -267,6 +268,7 @@ export default function VersionUpload({ songId }: { songId: string }) {
         <Input
           id="version-label"
           value={label}
+          maxLength={100}
           disabled={busy}
           onChange={(event) => setLabel(event.target.value)}
         />
@@ -275,12 +277,12 @@ export default function VersionUpload({ songId }: { songId: string }) {
       <div className="space-y-2">
         <Label htmlFor="version-description">Descripción (opcional)</Label>
 
-        <textarea
+        <Textarea
           id="version-description"
           value={description}
+          maxLength={1000}
           disabled={busy}
           onChange={(event) => setDescription(event.target.value)}
-          className="min-h-20 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-placeholder focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80"
         />
       </div>
 
