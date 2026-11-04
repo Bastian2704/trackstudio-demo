@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
 import VersionUpload from '@/routes/versions/VersionUpload'
+import VersionHistory from '@/routes/versions/VersionHistory'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import { SONG_DELETE_DESCRIPTION, type Song, type SongInput } from './songSchema'
@@ -93,6 +94,7 @@ export default function SongEditPage() {
             Volver a la producción
           </Link>
           <VersionUpload songId={id} />
+          <VersionHistory songId={id} />
           <AlertDialog
             open={confirmOpen}
             onOpenChange={(open) => {
