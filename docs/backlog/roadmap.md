@@ -159,7 +159,7 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 
 ## Siguiente paso
 
-1. S2 cerrado el 2026-10-15 con TS-16..TS-19 y TS-21 en `Listo` (13 SP). Revisión con el dueño de Track Studio el 2026-10-19.
-2. Iniciar `TS Sprint 3` el 2026-10-19 con [`sprints/sprint-03.md`](sprints/sprint-03.md) como baseline de ejecución: TS-20, TS-22, TS-24 y TS-23 (13 SP) más la reserva de TS-35..TS-37.
-3. Gate del equipo del día 1: TS-42 (bucket/IAM) antes del 2026-10-23. D9.2 quedó decidida el 2026-10-15 (migraciones automáticas en Railway).
-4. Cerrar en la semana 1 el arrastre del S2 (evidencia de TS-46/TS-53, calidad S2 y comprobaciones en staging).
+1. S3 cerrado en Jira el 2026-11-03 con TS-20, TS-22, TS-23 y TS-24 en `Listo` (13 SP; acumulado 42/92).
+2. `TS Sprint 4` (2026-11-02 a 2026-11-13) planificado el 2026-11-03 con [`sprints/sprint-04.md`](sprints/sprint-04.md) como baseline: TS-25, TS-27 y TS-26 (13 SP), TS-71, TS-72 y TS-45, más la reserva de TS-35..TS-37. La verificación por ETag queda en TS-25 (decisión del equipo).
+3. Cierre R1 al final del S4 (hito del 2026-11-13): HU-01..HU-16, 55/92 SP.
+4. Cerrar en la semana 1 el arrastre del S3 (evidencia de TS-46, calidad S3 y comprobaciones `.09` en staging).
