@@ -19,21 +19,26 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(AudioStorageContract::class, S3AudioStorage::class);
 
-        $this->app->bind(HashVerifierContract::class, function (): S3HashVerifier {
+        // HeadObject corre dentro de un lockForUpdate (HU-14 §3.4): sin timeout,
+        // un S3 lento retiene la transacción y la conexión a PostgreSQL.
+        $this->app->singleton(S3Client::class, function (): S3Client {
             $config = config('filesystems.disks.s3');
 
-            return new S3HashVerifier(
-                new S3Client([
-                    'version' => 'latest',
-                    'region' => $config['region'],
-                    'credentials' => [
-                        'key' => $config['key'],
-                        'secret' => $config['secret'],
-                    ],
-                ]),
-                $config['bucket'],
-            );
+            return new S3Client([
+                'version' => 'latest',
+                'region' => $config['region'],
+                'credentials' => [
+                    'key' => $config['key'],
+                    'secret' => $config['secret'],
+                ],
+                'http' => ['connect_timeout' => 3, 'timeout' => 5],
+            ]);
         });
+
+        $this->app->bind(HashVerifierContract::class, fn (): S3HashVerifier => new S3HashVerifier(
+            $this->app->make(S3Client::class),
+            config('filesystems.disks.s3.bucket'),
+        ));
     }
 
     public function boot(): void

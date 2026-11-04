@@ -96,6 +96,14 @@ it('enlaza el contrato con la implementación de S3', function () {
     expect(app(HashVerifierContract::class))->toBeInstanceOf(S3HashVerifier::class);
 });
 
+it('comparte un único S3Client con timeout', function () {
+    $client = app(S3Client::class);
+
+    expect(app(S3Client::class))->toBe($client)
+        ->and($client->getCommand('HeadObject', ['Bucket' => 'b', 'Key' => 'k'])['@http'])
+        ->toMatchArray(['connect_timeout' => 3, 'timeout' => 5]);
+});
+
 it('consulta el bucket real', function () {
     $verifier = app(HashVerifierContract::class);
 
