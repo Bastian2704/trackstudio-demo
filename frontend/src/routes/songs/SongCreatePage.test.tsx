@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import SongCreatePage from '@/routes/songs/SongCreatePage'
 import SongEditPage from '@/routes/songs/SongEditPage'
-import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
 
 /*
  * TS-21 (HU-10) — ts-10.06, spec frontend §4 tests 1 a 10.
@@ -74,12 +74,16 @@ async function escribirYEnviar(user: ReturnType<typeof userEvent.setup>, texto =
   await user.click(boton())
 }
 
-/** El alta responde 201; la precarga posterior de la edición, 200. */
+/**
+ * El alta responde 201; la precarga posterior de la edición, 200. El historial
+ * de versiones que monta la edición (HU-14 §3.1), una página vacía.
+ */
 function altaCorrecta(datos = cancion()) {
-  return ({ method }: { method: string }): RespuestaSimulada =>
-    method === 'POST'
-      ? { status: 201, data: { data: datos } }
-      : { status: 200, data: { data: datos } }
+  return ({ method, url }: { method: string; url: string }): RespuestaSimulada => {
+    if (method === 'POST') return { status: 201, data: { data: datos } }
+    if (url.endsWith('/versions')) return pagina([])
+    return { status: 200, data: { data: datos } }
+  }
 }
 
 describe('SongCreatePage', () => {
@@ -98,9 +102,11 @@ describe('SongCreatePage', () => {
     })
     // La edición abierta es la de la canción creada, no otra que también responda.
     await waitFor(() =>
-      expect(peticiones.filter((p) => p.method === 'GET').map((p) => p.url)).toEqual([
-        `/api/v1/songs/${ID}`,
-      ]),
+      expect(
+        peticiones
+          .filter((p) => p.method === 'GET' && !p.url.endsWith('/versions'))
+          .map((p) => p.url),
+      ).toEqual([`/api/v1/songs/${ID}`]),
     )
     await waitFor(() => expect(textoEnRol('status', 'Canción registrada.')).toBe(true))
     await waitFor(() => expect(nombre().value).toBe('Intro'))

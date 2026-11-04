@@ -5,8 +5,9 @@ import { onTestFinished, vi } from 'vitest'
  * S3 simulado para la subida de HU-13 (spec frontend HU-13 §3.5 y §4).
  *
  * Sustituye el XMLHttpRequest global por un doble con la API que fija la spec:
- * open, setRequestHeader, send, abort, status, responseText y los eventos por
- * addEventListener (progress en xhr.upload; load, error y abort en xhr). Cada
+ * open, setRequestHeader, send, abort, status, responseText, getResponseHeader
+ * (HU-14 §3.5) y los eventos por addEventListener (progress en xhr.upload;
+ * load, error y abort en xhr). Cada
  * test decide el desenlace con los controles de la petición. Se restaura solo
  * al terminar el test.
  */
@@ -16,7 +17,7 @@ export interface PeticionS3 {
   body: FormData | null
   headers: Record<string, string>
   progreso: (loaded: number, total: number) => void
-  responder: (status: number, body?: string) => void
+  responder: (status: number, body?: string, headers?: Record<string, string>) => void
   fallarRed: () => void
   abortar: () => void
 }
@@ -32,6 +33,14 @@ export function simularS3(): PeticionS3[] {
     private method = ''
     private url = ''
     private headers: Record<string, string> = {}
+    private responseHeaders: Record<string, string> = {}
+
+    getResponseHeader(nombre: string): string | null {
+      const clave = Object.keys(this.responseHeaders).find(
+        (h) => h.toLowerCase() === nombre.toLowerCase(),
+      )
+      return clave === undefined ? null : this.responseHeaders[clave]
+    }
 
     open(method: string, url: string) {
       this.method = method.toUpperCase()
@@ -63,9 +72,10 @@ export function simularS3(): PeticionS3[] {
             )
           })
         },
-        responder: (status, respuesta = '') => {
+        responder: (status, respuesta = '', cabeceras = {}) => {
           this.status = status
           this.responseText = respuesta
+          this.responseHeaders = cabeceras
           terminar(['load', 'loadend'])
         },
         fallarRed: () => terminar(['error', 'loadend']),
@@ -133,9 +143,13 @@ export function firmaSimulada(intento: number, songId = '9d3d7b63-2a3c-4d4e-9f5a
         id: `9d3e0000-0000-4000-8000-${String(intento).padStart(12, '0')}`,
         song_id: songId,
         version_number: intento,
+        label: null,
+        description: null,
         content_type: 'audio/wav',
         size_bytes: 64,
+        duration_ms: null,
         upload_status: 'pendiente',
+        verified_at: null,
         created_at: '2026-10-20T14:03:11+00:00',
         updated_at: '2026-10-20T14:03:11+00:00',
       },
@@ -151,6 +165,31 @@ export function firmaSimulada(intento: number, songId = '9d3d7b63-2a3c-4d4e-9f5a
           'X-Amz-Signature': `firma-${intento}`,
         },
         expires_at: '2026-10-20T14:18:11+00:00',
+      },
+    },
+  }
+}
+
+/** ETag de una subida en una sola parte, con las comillas con que lo envía S3 (D7.4). */
+export const ETAG_DE_S3 = '"0123456789abcdef0123456789abcdef"'
+
+/** 200 de la confirmación (spec backend HU-14 §3.4 y §3.8): la versión ya `verificada`. */
+export function confirmacionSimulada(
+  intento: number,
+  extra: Record<string, unknown> = {},
+  songId = '9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a',
+) {
+  const { data } = firmaSimulada(intento, songId).data
+  return {
+    status: 200,
+    data: {
+      data: {
+        ...data,
+        duration_ms: 12500,
+        upload_status: 'verificada',
+        verified_at: '2026-10-20T14:05:02+00:00',
+        updated_at: '2026-10-20T14:05:02+00:00',
+        ...extra,
       },
     },
   }
