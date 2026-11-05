@@ -25,8 +25,6 @@ export interface VersionPage {
     from: number | null
     to: number | null
     total: number
-    url: string
-    expires_at: string
   }
 }
 
@@ -40,6 +38,7 @@ export interface SignedUpload {
   fields: Record<string, string>
   expires_at: string
 }
+
 export function versionTitle(version: Version): string {
   return version.label ?? `v${version.version_number}`
 }

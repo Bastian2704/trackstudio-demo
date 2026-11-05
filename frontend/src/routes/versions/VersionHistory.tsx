@@ -11,7 +11,7 @@ import VersionPlayer from './VersionPlayer'
 
 export default function VersionHistory({ songId }: { songId: string }) {
   const [page, setPage] = useState(1)
-  const [selected, setSelected] = useState<Version | null>(null)
+  const [selected, setSelected] = useState<{ version: Version; n: number } | null>(null)
 
   const query = useQuery({
     queryKey: ['versions', 'list', songId, page],
@@ -42,7 +42,10 @@ export default function VersionHistory({ songId }: { songId: string }) {
               )}
 
               {v.description && <p>{v.description}</p>}
-              <Button aria-label={`Reproducir ${versionTitle(v)}`} onClick={() => setSelected(v)}>
+              <Button
+                aria-label={`Reproducir ${versionTitle(v)}`}
+                onClick={() => setSelected((prev) => ({ version: v, n: (prev?.n ?? 0) + 1 }))}
+              >
                 Reproducir
               </Button>
             </li>
@@ -79,7 +82,9 @@ export default function VersionHistory({ songId }: { songId: string }) {
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">Historial de versiones</h2>
-      {selected && <VersionPlayer key={selected.id} version={selected} />}
+      {selected && (
+        <VersionPlayer key={`${selected.version.id}-${selected.n}`} version={selected.version} />
+      )}
       {body}
     </section>
   )

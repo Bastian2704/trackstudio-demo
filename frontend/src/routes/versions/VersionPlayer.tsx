@@ -8,11 +8,14 @@ import type { ApiErrorBody } from '@/lib/api'
 import { fetchPlaybackUrl } from './versionApi'
 import { type Version, versionTitle } from './versionSchema'
 
+let mounts = 0
+
 export default function VersionPlayer({ version }: { version: Version }) {
   const title = versionTitle(version)
+  const [mount] = useState(() => ++mounts)
 
   const query = useQuery({
-    queryKey: ['versions', version.id, 'playback-url'],
+    queryKey: ['versions', version.id, 'playback-url', mount],
     queryFn: () => fetchPlaybackUrl(version.id),
     staleTime: Infinity,
     gcTime: 0,
