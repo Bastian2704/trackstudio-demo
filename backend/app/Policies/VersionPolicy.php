@@ -27,15 +27,15 @@ final class VersionPolicy
         return $this->isProducer($user);
     }
 
-    private function isProducer(StatelessUserContract $user): bool
-    {
-        return $user->getAttribute('role') === Role::Productor;
-    }
-
     public function play(
         StatelessUserContract $user,
         Version $version
     ): bool {
         return $this->isProducer($user);
+    }
+
+    private function isProducer(StatelessUserContract $user): bool
+    {
+        return $user->getAttribute('role') === Role::Productor;
     }
 }
