@@ -5,9 +5,11 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import VersionHistory from '@/routes/versions/VersionHistory'
 import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
 
 /*
  * TS-25 (HU-14) — ts-14.06, spec frontend HU-14 §4 tests 10 a 13.
+ * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 1 a 4 (al final).
  *
  * Contrato de GET /api/v1/songs/{song}/versions: spec backend HU-14 §3.7 y
  * §3.8. El servidor ya devuelve solo `verificada`, de la más reciente a la más
@@ -167,5 +169,109 @@ describe('VersionHistory', () => {
     await screen.findAllByRole('listitem')
     expect(screen.queryByRole('button', { name: 'Siguiente' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Anterior' })).toBeNull()
+  })
+
+  describe('reproducción (HU-15)', () => {
+    const urlDeReproduccion = (n: number) => `/api/v1/versions/${version(n).id}/playback-url`
+
+    /** Historial `paginas` y una URL firmada nueva (1, 2, 3…) por cada petición de reproducción. */
+    function simularHistorialYUrls(responderHistorial: (page: number) => RespuestaSimulada) {
+      let n = 0
+      return simularApi(({ url, params }) =>
+        url.endsWith('/playback-url')
+          ? reproduccionSimulada(++n)
+          : responderHistorial((params as { page: number }).page),
+      )
+    }
+
+    const audios = () => document.querySelectorAll('audio')
+    const reproductor = () => screen.queryByRole('region', { name: 'Reproductor' })
+
+    it('ofrece reproducir cada versión sin pedir la URL', async () => {
+      const peticiones = simularHistorialYUrls(() =>
+        pagina([version(3, { label: 'Master final' }), version(2)]),
+      )
+      renderHistorial()
+
+      const master = await screen.findByRole('button', { name: 'Reproducir Master final' })
+      const v2 = screen.getByRole('button', { name: 'Reproducir v2' })
+
+      expect(normalizar(master.textContent).trim()).toBe('Reproducir')
+      expect(normalizar(v2.textContent).trim()).toBe('Reproducir')
+      expect(peticiones.map((p) => p.url)).toEqual([URL_HISTORIAL])
+      expect(audios()).toHaveLength(0)
+    })
+
+    it('reproduce la versión elegida y solo una a la vez', async () => {
+      simularReproduccion()
+      const peticiones = simularHistorialYUrls(() =>
+        pagina([version(3, { label: 'Master final' }), version(2)]),
+      )
+      const user = renderHistorial()
+
+      await user.click(await screen.findByRole('button', { name: 'Reproducir Master final' }))
+      await waitFor(() => expect(audios()[0]?.getAttribute('src')).toBe(urlFirmada(1)))
+      expect(
+        within(reproductor() as HTMLElement).getByText('Reproduciendo: Master final'),
+      ).toBeTruthy()
+
+      await user.click(screen.getByRole('button', { name: 'Reproducir v2' }))
+      await waitFor(() => expect(audios()[0]?.getAttribute('src')).toBe(urlFirmada(2)))
+      expect(audios()).toHaveLength(1)
+      expect(within(reproductor() as HTMLElement).getByText('Reproduciendo: v2')).toBeTruthy()
+
+      await user.click(screen.getByRole('button', { name: 'Reproducir Master final' }))
+      await waitFor(() => expect(audios()[0]?.getAttribute('src')).toBe(urlFirmada(3)))
+      expect(audios()).toHaveLength(1)
+
+      expect(peticiones.filter((p) => p.url.endsWith('/playback-url')).map((p) => p.url)).toEqual([
+        urlDeReproduccion(3),
+        urlDeReproduccion(2),
+        urlDeReproduccion(3),
+      ])
+    })
+
+    it('se maneja con el teclado', async () => {
+      simularReproduccion()
+      const peticiones = simularHistorialYUrls(() =>
+        pagina([version(3, { label: 'Master final' }), version(2)]),
+      )
+      const user = renderHistorial()
+
+      const v2 = await screen.findByRole('button', { name: 'Reproducir v2' })
+      // Los dos botones «Reproducir» son lo único enfocable de la pantalla.
+      await user.tab()
+      await user.tab()
+      expect(document.activeElement).toBe(v2)
+
+      await user.keyboard('{Enter}')
+
+      expect(await screen.findByLabelText('Audio de v2')).toBeTruthy()
+      expect(peticiones.filter((p) => p.url.endsWith('/playback-url')).map((p) => p.url)).toEqual([
+        urlDeReproduccion(2),
+      ])
+    })
+
+    it('mantiene el reproductor al cambiar de página', async () => {
+      simularReproduccion()
+      const primera = Array.from({ length: 15 }, (_, i) => version(16 - i))
+      const peticiones = simularHistorialYUrls((page) =>
+        page === 2
+          ? pagina([version(1)], { current_page: 2, last_page: 2, from: 16, to: 16, total: 16 })
+          : pagina(primera, { last_page: 2, from: 1, to: 15, total: 16 }),
+      )
+      const user = renderHistorial()
+
+      await user.click(await screen.findByRole('button', { name: 'Reproducir v16' }))
+      await waitFor(() => expect(audios()[0]?.getAttribute('src')).toBe(urlFirmada(1)))
+
+      await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+
+      expect(await screen.findByText('Mostrando 16–16 de 16 versiones')).toBeTruthy()
+      expect(audios()).toHaveLength(1)
+      expect(audios()[0].getAttribute('src')).toBe(urlFirmada(1))
+      expect(within(reproductor() as HTMLElement).getByText('Reproduciendo: v16')).toBeTruthy()
+      expect(peticiones.filter((p) => p.url.endsWith('/playback-url'))).toHaveLength(1)
+    })
   })
 })
