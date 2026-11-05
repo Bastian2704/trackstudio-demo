@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 
@@ -9,7 +9,7 @@ import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/au
 
 /*
  * TS-25 (HU-14) — ts-14.06, spec frontend HU-14 §4 tests 10 a 13.
- * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 1 a 4 (al final).
+ * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 1 a 4 y 13 (al final).
  *
  * Contrato de GET /api/v1/songs/{song}/versions: spec backend HU-14 §3.7 y
  * §3.8. El servidor ya devuelve solo `verificada`, de la más reciente a la más
@@ -272,6 +272,37 @@ describe('VersionHistory', () => {
       expect(audios()[0].getAttribute('src')).toBe(urlFirmada(1))
       expect(within(reproductor() as HTMLElement).getByText('Reproduciendo: v16')).toBeTruthy()
       expect(peticiones.filter((p) => p.url.endsWith('/playback-url'))).toHaveLength(1)
+    })
+
+    it('cada clic en reproducir empieza desde cero', async () => {
+      const { play } = simularReproduccion()
+      const peticiones = simularHistorialYUrls(() =>
+        pagina([version(3, { label: 'Master final' }), version(2)]),
+      )
+      const user = renderHistorial()
+      const audio = () => audios()[0]
+
+      await user.click(await screen.findByRole('button', { name: 'Reproducir Master final' }))
+      await waitFor(() => expect(audio()?.getAttribute('src')).toBe(urlFirmada(1)))
+      fireEvent.pause(audio())
+
+      // Otra versión: el reproductor nuevo no hereda la pausa del anterior.
+      const v2 = screen.getByRole('button', { name: 'Reproducir v2' })
+      await user.click(v2)
+      await waitFor(() => expect(audio()?.getAttribute('src')).toBe(urlFirmada(2)))
+      fireEvent.loadedMetadata(audio())
+      expect(play).toHaveBeenCalledTimes(1)
+
+      // Error definitivo y la misma versión de nuevo: reproductor nuevo, sin el error.
+      fireEvent.error(audio())
+      await waitFor(() => expect(audio()?.getAttribute('src')).toBe(urlFirmada(3)))
+      fireEvent.error(audio())
+      expect(await screen.findByRole('alert')).toBeTruthy()
+
+      await user.click(v2)
+      await waitFor(() => expect(audio()?.getAttribute('src')).toBe(urlFirmada(4)))
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(peticiones.filter((p) => p.url.endsWith('/playback-url'))).toHaveLength(4)
     })
   })
 })

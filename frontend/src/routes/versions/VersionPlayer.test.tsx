@@ -8,7 +8,7 @@ import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/te
 import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
 
 /*
- * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12.
+ * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12, y 14 (review C3).
  *
  * Contrato de GET /api/v1/versions/{version}/playback-url: spec backend HU-16
  * §3.5 y §3.6. jsdom no carga audio: los eventos del <audio> se disparan a mano
@@ -103,6 +103,8 @@ describe('VersionPlayer', () => {
 
   it.each([
     ['404', problema(404, 'RESOURCE_NOT_FOUND'), 'Esta versión ya no está disponible.'],
+    // Sintético: fija que se ramifica por `code` y no por el estado ni el mensaje (D3.1).
+    ['404 con otro code', problema(404, 'OTRO_CODIGO'), 'No se pudo reproducir la versión.'],
     ['500', problema(500, 'INTERNAL_ERROR'), 'No se pudo reproducir la versión.'],
     ['error de red', 'error de red' as const, 'No se pudo reproducir la versión.'],
   ])('muestra los errores al pedir la URL (%s)', async (_caso, respuesta, texto) => {
@@ -172,6 +174,24 @@ describe('VersionPlayer', () => {
       expect(screen.getByRole('alert').textContent).toContain('No se pudo reproducir la versión.'),
     )
     expect(peticiones).toHaveLength(2)
+    expect(audio()).toBeNull()
+  })
+
+  it('muestra el error si falla la renovación', async () => {
+    simularReproduccion()
+    let n = 0
+    simularApi(() => (++n === 1 ? reproduccionSimulada(1) : problema(404, 'RESOURCE_NOT_FOUND')))
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+    fireEvent.error(elemento)
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain(
+        'Esta versión ya no está disponible.',
+      ),
+    )
     expect(audio()).toBeNull()
   })
 
