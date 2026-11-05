@@ -5,14 +5,18 @@ declare(strict_types=1);
 use App\Contracts\AudioStorageContract;
 use App\Enums\AudioContentType;
 use App\Storage\S3AudioStorage;
+use Aws\CommandInterface;
+use Aws\S3\S3Client;
 use Carbon\CarbonImmutable;
 
 /*
 |--------------------------------------------------------------------------
 | TS-24 — Frontera con S3: firma de la presigned POST (C4)
+| TS-27 — Firma de la URL de lectura (GetObject)
 |--------------------------------------------------------------------------
 |
-| Spec: docs/specs/backend/HU-13.md §3.6 y §4 (#19–#20). Usa el SDK real
+| Spec: docs/specs/backend/HU-13.md §3.6 y §4 (#19–#20); HU-16.md §3.4 y §4
+| (#8–#9). La lectura contra el bucket real vive en S3AudioStorageBucketTest. Usa el SDK real
 | con credenciales ficticias: firmar es local, así que no hay red. Lo que se
 | prueba es la política que S3 impondrá (D7.6, D7.7), no un mock.
 |
@@ -55,4 +59,80 @@ it('firma una política POST de 15 minutos con las condiciones de D7.7', functio
 
 it('enlaza el contrato con la implementación de S3', function () {
     expect(app(AudioStorageContract::class))->toBeInstanceOf(S3AudioStorage::class);
+});
+
+/**
+ * S3Client real (firma local, sin red) que anota cada comando que firma.
+ *
+ * @return S3Client&object{firmados: list<CommandInterface>}
+ */
+function clienteS3QueAnotaFirmas(): S3Client
+{
+    $config = [
+        // Una clase anónima no tiene el nombre del que el SDK deduce el servicio.
+        'service' => 's3',
+        'version' => 'latest',
+        'region' => 'us-east-1',
+        'credentials' => ['key' => 'AKIAPRUEBA0000000000', 'secret' => SECRETO_DE_PRUEBA],
+    ];
+
+    return new class($config) extends S3Client
+    {
+        /** @var list<CommandInterface> */
+        public array $firmados = [];
+
+        public function createPresignedRequest(CommandInterface $command, $expires, array $options = [])
+        {
+            $this->firmados[] = $command;
+
+            return parent::createPresignedRequest($command, $expires, $options);
+        }
+    };
+}
+
+/** @return array<string, string> */
+function consultaDeUrl(string $url): array
+{
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $consulta);
+
+    /** @var array<string, string> $consulta */
+    return $consulta;
+}
+
+it('firma un GetObject de 15 minutos para la key', function () {
+    CarbonImmutable::setTestNow('2026-11-04 15:05:00');
+    $key = '9d3a-artista/9d3c-produccion/9d3d-cancion/v3.wav';
+    $cliente = clienteS3QueAnotaFirmas();
+
+    $descarga = (new S3AudioStorage($cliente))->presignDownload($key);
+
+    $consulta = consultaDeUrl($descarga['url']);
+
+    expect($cliente->firmados)->toHaveCount(1)
+        ->and($cliente->firmados[0]->getName())->toBe('GetObject')
+        ->and($cliente->firmados[0]['Bucket'])->toBe(BUCKET_DE_PRUEBA)
+        ->and($cliente->firmados[0]['Key'])->toBe($key)
+        ->and(parse_url($descarga['url'], PHP_URL_SCHEME))->toBe('https')
+        ->and((string) parse_url($descarga['url'], PHP_URL_HOST))->toStartWith(BUCKET_DE_PRUEBA.'.')
+        ->and(parse_url($descarga['url'], PHP_URL_PATH))->toBe('/'.$key)
+        ->and($consulta['X-Amz-Expires'] ?? null)->toBe('900')
+        ->and($consulta['X-Amz-Date'] ?? null)->toBe('20261104T150500Z')
+        ->and($consulta)->toHaveKey('X-Amz-Signature')
+        ->and($descarga['expires_at'])->toBeInstanceOf(CarbonImmutable::class)
+        ->and($descarga['expires_at']->toIso8601String())->toBe('2026-11-04T15:20:00+00:00')
+        ->and($descarga['url'])->not->toContain(SECRETO_DE_PRUEBA);
+});
+
+it('dos firmas en momentos distintos dan URLs distintas', function () {
+    CarbonImmutable::setTestNow('2026-11-04 15:05:00');
+    $storage = new S3AudioStorage(clienteS3QueAnotaFirmas());
+    $key = '9d3a-artista/9d3c-produccion/9d3d-cancion/v3.wav';
+
+    $primera = $storage->presignDownload($key)['url'];
+    CarbonImmutable::setTestNow('2026-11-04 15:05:01');
+    $segunda = $storage->presignDownload($key)['url'];
+
+    expect($segunda)->not->toBe($primera)
+        ->and(consultaDeUrl($primera)['X-Amz-Expires'] ?? null)->toBe('900')
+        ->and(consultaDeUrl($segunda)['X-Amz-Expires'] ?? null)->toBe('900');
 });
