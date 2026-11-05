@@ -468,7 +468,7 @@ Cierra el drift de los handoffs v31–v33 (CORS con `PUT`, sin `POST` y sin `Exp
 **⚠️ Revisar esta decisión en estos momentos concretos, no antes:**
 1. **El día del primer despliegue a staging en Vercel** (ya está en el checklist de `sprint-01-guia-arranque.md` §6, "CORS resuelto el mismo día del primer despliegue") — recién ahí se conoce el dominio real de Vercel a agregar a la lista de orígenes.
 2. **Cuando se configure el dominio de producción** (`trackstudio.site` o un subdominio) sobre Vercel — agregar ese origen a la lista.
-3. **Cuando se decida cómo se reproduce el audio** (HU de reproducción, todavía no diseñada): si se opta por servir el audio directo desde S3 con presigned GET, `GET` ya está habilitado; si se opta por proxy vía backend, `GET` en el bucket deja de ser necesario y se puede retirar.
+3. **Cuando se decida cómo se reproduce el audio** (HU de reproducción, todavía no diseñada): si se opta por servir el audio directo desde S3 con presigned GET, `GET` ya está habilitado; si se opta por proxy vía backend, `GET` en el bucket deja de ser necesario y se puede retirar. **Resuelta el 2026-11-04 (HU-16, `TS-27`), decisión del equipo:** el audio se sirve directo desde S3 con una URL firmada de `GetObject` (15 min, D7.6), sin proxy por el backend (contrato en `docs/specs/backend/HU-16.md`). `GET` se mantiene en el CORS del bucket.
 
 → *ISO 25010: seguridad (control de acceso). Cubre: RNF-01, RNF-02.*
 

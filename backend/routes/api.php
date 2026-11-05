@@ -140,3 +140,10 @@ Route::post('/versions/{version}/confirm', [VersionController::class, 'confirm']
         'auth:auth0-api',
         'can:confirm,version',
     ]);
+
+Route::get('/versions/{version}/playback-url', [VersionController::class, 'playbackUrl'])
+    ->whereUuid('version')
+    ->middleware([
+        'auth:auth0-api',
+        'can:play,version',
+    ]);

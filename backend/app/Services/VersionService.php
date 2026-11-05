@@ -192,6 +192,18 @@ final class VersionService
             ->paginate();
     }
 
+    /**
+     * URL firmada de lectura de una versión verificada (HU-16 §3.3).
+     *
+     * @return array{url: string, expires_at: CarbonImmutable}
+     */
+    public function presignPlayback(Version $version): array
+    {
+        abort_unless($version->upload_status === UploadStatus::Verificada, 404);
+
+        return $this->storage->presignDownload($version->s3_key);
+    }
+
     private function abandonCutoff(): CarbonImmutable
     {
         return CarbonImmutable::now()->subMinutes(Version::ABANDON_AFTER_MINUTES);

@@ -455,6 +455,12 @@ function falsearAlmacenamientoDeAudio(?Throwable $falla = null): ArrayObject
                 'expires_at' => CarbonImmutable::now()->addMinutes(15),
             ];
         }
+
+        /** HU-13 y HU-14 nunca firman una lectura (HU-16 §4). */
+        public function presignDownload(string $key): array
+        {
+            throw new LogicException('La subida no debe firmar una lectura.');
+        }
     });
 
     return $llamadas;
@@ -562,4 +568,46 @@ function falsearVerificadorDeHash(?array $objeto, ?Throwable $falla = null): Arr
     });
 
     return $consultas;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-16 (docs/specs/backend/HU-16.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Sustituye `AudioStorageContract` por un doble de lectura y devuelve las keys
+ * firmadas. Firma una URL de mentira con la key y caduca a los 15 min; firmar
+ * una subida lanza, porque la reproducción nunca sube nada.
+ *
+ * @return ArrayObject<int, string>
+ */
+function falsearLecturaDeAudio(): ArrayObject
+{
+    /** @var ArrayObject<int, string> $firmadas */
+    $firmadas = new ArrayObject;
+
+    app()->instance(AudioStorageContract::class, new class($firmadas) implements AudioStorageContract
+    {
+        /** @param ArrayObject<int, string> $firmadas */
+        public function __construct(private ArrayObject $firmadas) {}
+
+        public function presignUpload(string $key, AudioContentType $contentType, int $sizeBytes): array
+        {
+            throw new LogicException('La reproducción no debe firmar una subida.');
+        }
+
+        public function presignDownload(string $key): array
+        {
+            $this->firmadas->append($key);
+
+            return [
+                'url' => "https://bucket-de-prueba.s3.amazonaws.com/{$key}?X-Amz-Signature=firma-de-prueba",
+                'expires_at' => CarbonImmutable::now()->addMinutes(15),
+            ];
+        }
+    });
+
+    return $firmadas;
 }

@@ -115,3 +115,34 @@ dataset('etiquetas y descripciones invalidas', [
     'descripción de 1001 caracteres' => [['description' => str_repeat('a', 1001)], 'description'],
     'descripción que no es texto' => [['description' => 123], 'description'],
 ]);
+
+/*
+ * HU-16 §4 (#5). Las versiones están verificadas: así el 404 sale del binding
+ * y de la cascada, no de la comprobación de estado (que cubre el #4).
+ */
+dataset('versiones no disponibles para reproducir', [
+    'UUID inexistente' => [fn (): string => (string) Str::uuid()],
+    'versión borrada' => [function (): string {
+        $version = Version::factory()->verificada()->create();
+        $version->delete();
+
+        return $version->id;
+    }],
+    'id que no es UUID' => ['no-es-un-uuid'],
+    'versión de una canción borrada por la cascada' => [function (): string {
+        $version = Version::factory()->verificada()->create();
+        $version->song->versions()->delete();
+        $version->song->delete();
+
+        return $version->id;
+    }],
+    'versión de una producción borrada por la cascada' => [function (): string {
+        $version = Version::factory()->verificada()->create();
+        $production = $version->song->production;
+        Version::query()->whereIn('song_id', $production->songs()->select('id'))->delete();
+        $production->songs()->delete();
+        $production->delete();
+
+        return $version->id;
+    }],
+]);
