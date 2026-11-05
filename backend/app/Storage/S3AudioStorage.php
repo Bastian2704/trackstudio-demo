@@ -54,4 +54,30 @@ final class S3AudioStorage implements AudioStorageContract
             'expires_at' => $expiresAt,
         ];
     }
+
+    /**
+     * @return array{url: string, expires_at: CarbonImmutable}
+     */
+    public function presignDownload(string $key): array
+    {
+        $now = CarbonImmutable::now();
+
+        $expiresAt = $now->addMinutes(self::EXPIRATION_MINUTES);
+
+        $command = $this->client->getCommand('GetObject', [
+            'Bucket' => config('filesystems.disks.s3.bucket'),
+            'Key' => $key,
+        ]);
+
+        $request = $this->client->createPresignedRequest(
+            $command,
+            $expiresAt,
+            ['start_time' => $now->getTimestamp()],
+        );
+
+        return [
+            'url' => (string) $request->getUri(),
+            'expires_at' => $expiresAt,
+        ];
+    }
 }

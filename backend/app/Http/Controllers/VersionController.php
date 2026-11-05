@@ -32,6 +32,18 @@ final class VersionController extends Controller
         );
     }
 
+    public function playbackUrl(Version $version): JsonResponse
+    {
+        $playback = $this->versions->presignPlayback($version);
+
+        return response()->json([
+            'data' => [
+                'url' => $playback['url'],
+                'expires_at' => $playback['expires_at']->toIso8601String(),
+            ],
+        ])->header('Cache-Control', 'no-store, private');
+    }
+
     public function store(
         StoreVersionRequest $request,
         Song $song

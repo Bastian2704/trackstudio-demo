@@ -13,4 +13,9 @@ interface AudioStorageContract
      * @return array{url: string, fields: array<string, string>, expires_at: CarbonImmutable}
      */
     public function presignUpload(string $key, AudioContentType $contentType, int $sizeBytes): array;
+
+    /**
+     * @return array{url: string, expires_at: CarbonImmutable}
+     */
+    public function presignDownload(string $key): array;
 }
