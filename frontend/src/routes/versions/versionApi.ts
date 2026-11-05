@@ -1,5 +1,11 @@
 import { api } from '@/lib/api'
-import type { AudioContentType, SignedUpload, Version, VersionPage } from './versionSchema'
+import type {
+  AudioContentType,
+  SignedUpload,
+  Version,
+  VersionPage,
+  PlaybackUrl,
+} from './versionSchema'
 
 export async function createVersion(
   songId: string,
@@ -78,4 +84,10 @@ export async function fetchVersions(songId: string, page: number): Promise<Versi
   })
 
   return res.data
+}
+
+export async function fetchPlaybackUrl(versionId: string): Promise<PlaybackUrl> {
+  const res = await api.get<{ data: PlaybackUrl }>(`/api/v1/versions/${versionId}/playback-url`)
+
+  return res.data.data
 }
