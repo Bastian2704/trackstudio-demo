@@ -532,6 +532,15 @@ describe('ProductionEditPage', () => {
     await new Promise((resolver) => setTimeout(resolver, 50))
     expect(screen.queryByText(/^(Sencillo|EP|Álbum)$/, { selector: 'span' })).toBeNull()
   })
+
+  it('«Nueva canción» no aparece mientras carga la producción', async () => {
+    simularApi(() => new Promise<RespuestaSimulada>(() => {}))
+    renderEdicion()
+
+    await screen.findByRole('heading', { name: 'Editar producción' })
+    await new Promise((resolver) => setTimeout(resolver, 50))
+    expect(screen.queryByRole('link', { name: 'Nueva canción' })).toBeNull()
+  })
 })
 
 describe('ProductionEditPage — borrado desde el listado', () => {
