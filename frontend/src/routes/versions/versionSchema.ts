@@ -28,10 +28,19 @@ export interface VersionPage {
   }
 }
 
+export interface PlaybackUrl {
+  url: string
+  expires_at: string
+}
+
 export interface SignedUpload {
   url: string
   fields: Record<string, string>
   expires_at: string
+}
+
+export function versionTitle(version: Version): string {
+  return version.label ?? `v${version.version_number}`
 }
 
 const TYPE_VARIANTS: Partial<Record<string, AudioContentType>> = {
