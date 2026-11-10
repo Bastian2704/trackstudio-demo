@@ -1,4 +1,6 @@
 import { FORMAT_RULES, type Production } from './productionSchema'
+import { cn } from '@/lib/utils'
+import { PANEL_CLASS } from '@/routes/artists/artistStyles'
 
 type Format = Production['format']
 
@@ -31,14 +33,17 @@ export default function ProductionFormatNotice({
   const status = statusText(format, songCount)
 
   return (
-    <section aria-label="Formato de la producción" className="space-y-1 text-sm">
+    <section
+      aria-label="Formato de la producción"
+      className={cn(PANEL_CLASS, 'max-w-lg space-y-1 p-6 text-sm')}
+    >
       <p>{ruleText(format)}</p>
-      <p>
+      <p className="text-muted-foreground">
         {songCount === 1
           ? 'Esta producción tiene 1 canción.'
           : `Esta producción tiene ${songCount} canciones.`}
       </p>
-      {status && <p>{status}</p>}
+      {status && <p className="text-muted-foreground">{status}</p>}
     </section>
   )
 }

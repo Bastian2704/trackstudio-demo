@@ -37,6 +37,10 @@ import {
  *
  * TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 tests 2 y 9: texto de la
  * cascada y borrado desde el listado, que actualiza el límite del formato.
+ *
+ * TS-71 (épica TS-67) — ts-42.03, spec frontend TS-71 §4 tests 2 y 3: etiqueta
+ * del formato guardado sobre el título. Se consulta por `span` para no confundirla
+ * con las `option` del selector.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
@@ -491,6 +495,51 @@ describe('ProductionEditPage', () => {
     expect(formato().getAttribute('aria-invalid')).toBe('true')
     expect(textoEnRol('alert', mensaje)).toBe(false)
     expect(await textoDelAviso()).toContain('Un EP tiene de 2 a 6 canciones.')
+  })
+
+  it('muestra el formato guardado en una etiqueta', async () => {
+    simularApi(
+      conPrecarga(
+        () => ({ status: 200, data: { data: produccion({ format: 'ep' }) } }),
+        pagina([cancion()], { total: 3 }),
+        produccion({ format: 'album' }),
+      ),
+    )
+    const user = renderEdicion()
+    await esperarPrecarga()
+
+    expect(await screen.findByText('Álbum', { selector: 'span' })).toBeTruthy()
+
+    // Elegir otra opción sin guardar no cambia la etiqueta.
+    await user.selectOptions(formato(), 'EP')
+    expect(screen.queryByText('EP', { selector: 'span' })).toBeNull()
+    expect(screen.getByText('Álbum', { selector: 'span' })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText('EP', { selector: 'span' })).toBeTruthy()
+    expect(screen.queryByText('Álbum', { selector: 'span' })).toBeNull()
+  })
+
+  it.each([
+    { caso: 'mientras carga', respuesta: () => new Promise<RespuestaSimulada>(() => {}) },
+    { caso: 'si la carga falla', respuesta: () => ({ status: 500 }) },
+  ])('la etiqueta no aparece $caso', async ({ respuesta }) => {
+    simularApi(respuesta)
+    renderEdicion()
+
+    await screen.findByRole('heading', { name: 'Editar producción' })
+    await new Promise((resolver) => setTimeout(resolver, 50))
+    expect(screen.queryByText(/^(Sencillo|EP|Álbum)$/, { selector: 'span' })).toBeNull()
+  })
+
+  it('«Nueva canción» no aparece mientras carga la producción', async () => {
+    simularApi(() => new Promise<RespuestaSimulada>(() => {}))
+    renderEdicion()
+
+    await screen.findByRole('heading', { name: 'Editar producción' })
+    await new Promise((resolver) => setTimeout(resolver, 50))
+    expect(screen.queryByRole('link', { name: 'Nueva canción' })).toBeNull()
   })
 })
 

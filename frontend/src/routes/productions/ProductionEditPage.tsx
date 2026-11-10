@@ -14,7 +14,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+
+import { Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { PANEL_CLASS, TITLE_CLASS } from '@/routes/artists/artistStyles'
+import ProductionFormatBadge from './ProductionFormatBadge'
 
 import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
@@ -70,8 +75,8 @@ export default function ProductionEditPage() {
   if (query.isError) {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
-      <main className="mx-auto max-w-lg space-y-6 p-8">
-        <h1 className="text-xl font-semibold">
+      <main className="space-y-8">
+        <h1 className={TITLE_CLASS}>
           {notFound ? 'Producción no encontrada' : 'Editar producción'}
         </h1>
         {!notFound && <ErrorAlert>No se pudo cargar la producción.</ErrorAlert>}
@@ -80,10 +85,28 @@ export default function ProductionEditPage() {
   }
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-8">
-      <h1 className="text-xl font-semibold">Editar producción</h1>
+    <main className="space-y-8">
+      <div className="flex items-end justify-between gap-4 max-md:flex-col max-md:items-stretch">
+        <div>
+          {query.isSuccess && (
+            <div className="mb-3">
+              <ProductionFormatBadge format={query.data.format} />
+            </div>
+          )}
+          <h1 className={TITLE_CLASS}>Editar producción</h1>
+        </div>
+        {query.isSuccess && !isFull && (
+          <Link
+            to={`/producciones/${id}/canciones/nueva`}
+            className={cn(buttonVariants(), 'gap-2 px-6 text-xs font-bold tracking-[0.6px]')}
+          >
+            <Plus aria-hidden="true" />
+            Nueva canción
+          </Link>
+        )}
+      </div>
       {notice && (
-        <p role="status" className="text-sm">
+        <p role="status" className="text-sm text-muted-foreground">
           {notice}
         </p>
       )}
@@ -94,15 +117,16 @@ export default function ProductionEditPage() {
         <p>Cargando…</p>
       ) : (
         <>
-          <ProductionForm
-            values={{ name: query.data.name, format: query.data.format }}
-            submitLabel="Guardar cambios"
-            onSubmit={(input) => updateMutation.mutateAsync(input)}
-          />
+          <section className={cn(PANEL_CLASS, 'max-w-lg p-6')}>
+            <ProductionForm
+              values={{ name: query.data.name, format: query.data.format }}
+              submitLabel="Guardar cambios"
+              onSubmit={(input) => updateMutation.mutateAsync(input)}
+            />
+          </section>
           {songCount !== undefined && (
             <ProductionFormatNotice format={query.data.format} songCount={songCount} />
           )}
-          {!isFull && <Link to={`/producciones/${id}/canciones/nueva`}>Nueva canción</Link>}
           <SongList productionId={id} />
           <AlertDialog
             open={confirmOpen}
