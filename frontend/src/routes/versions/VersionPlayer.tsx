@@ -19,6 +19,7 @@ export default function VersionPlayer({ version }: { version: Version }) {
     queryFn: () => fetchPlaybackUrl(version.id),
     staleTime: Infinity,
     gcTime: 0,
+    retry: false,
   })
 
   const wantsToPlay = useRef(true)
@@ -45,6 +46,9 @@ export default function VersionPlayer({ version }: { version: Version }) {
   } else {
     body = (
       <audio
+        // Una URL renovada puede ser idéntica (S3 firma por segundos): la key
+        // monta otro <audio> para que el navegador vuelva a cargar (§3.5).
+        key={query.dataUpdatedAt}
         controls
         src={query.data.url}
         controlsList="nodownload"
