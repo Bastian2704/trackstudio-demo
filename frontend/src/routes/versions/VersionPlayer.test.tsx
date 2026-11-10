@@ -8,7 +8,8 @@ import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/te
 import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
 
 /*
- * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12, y 14 (review C3).
+ * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12, 14 (review C3)
+ * y 15-16 (review del merge).
  *
  * Contrato de GET /api/v1/versions/{version}/playback-url: spec backend HU-16
  * §3.5 y §3.6. jsdom no carga audio: los eventos del <audio> se disparan a mano
@@ -42,9 +43,10 @@ function simularUrls() {
   return simularApi(() => reproduccionSimulada(++n))
 }
 
-function renderReproductor() {
+/** `retry` imita el del queryClient global (1) cuando un test lo necesita. */
+function renderReproductor(retry: number | false = false) {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    defaultOptions: { queries: { retry }, mutations: { retry: false } },
   })
 
   const vista = render(
@@ -193,6 +195,41 @@ describe('VersionPlayer', () => {
       ),
     )
     expect(audio()).toBeNull()
+  })
+
+  it('monta otro audio si la renovación trae la misma URL', async () => {
+    simularReproduccion()
+    // S3 firma por segundos: dos peticiones en el mismo segundo dan la misma URL.
+    const peticiones = simularApi(() => reproduccionSimulada(1))
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.error(elemento)
+
+    await waitFor(() => expect(peticiones).toHaveLength(2))
+    await waitFor(() => expect(audio()).not.toBe(elemento))
+    const renovado = await audioConUrl(1)
+    expect(screen.queryByRole('alert')).toBeNull()
+
+    fireEvent.error(renovado)
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain('No se pudo reproducir la versión.'),
+    )
+    expect(peticiones).toHaveLength(2)
+  })
+
+  it('no reintenta la URL aunque el cliente global reintente', async () => {
+    simularReproduccion()
+    const peticiones = simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
+    renderReproductor(1)
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain(
+        'Esta versión ya no está disponible.',
+      ),
+    )
+    expect(peticiones).toHaveLength(1)
   })
 
   it('vuelve a renovar tras una carga correcta', async () => {
