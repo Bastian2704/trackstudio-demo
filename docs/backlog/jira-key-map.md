@@ -44,6 +44,7 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-81` | Story de `TS-4` (candidata)  | Reorganizar artistas y producciones: listado de producciones con filtros por artista y tipo | Por hacer; sin sprint, no Ready, post-S6 (2026-11-02) |
 | `TS-82` | Story de `TS-7` (candidata)  | Notificaciones en la aplicación de comentarios y solicitudes de sesión | Por hacer; sin sprint, no Ready, post-S6 (2026-11-02) |
 | `TS-84` | Task de `TS-1`               | Sprint Planning S4                                                               | En curso; `TS Sprint 4` (2026-11-03) |
+| `TS-85` | Story de `TS-4` (alcance nuevo) | Dashboard parcial del productor con los datos existentes (`/dashboard`)       | Por hacer; `TS Sprint 4`, 3 SP (2026-11-12) |
 
 ## Claves históricas
 
