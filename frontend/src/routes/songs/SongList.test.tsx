@@ -156,6 +156,23 @@ describe('SongList', () => {
     expect(await screen.findByText('Edición de canción simulada')).toBeTruthy()
   })
 
+  // TS-72 (épica TS-67) — ts-43.03, spec frontend TS-72 §4 test 1: lápiz por fila.
+  it('cada fila ofrece editar la canción', async () => {
+    const canciones = [cancion({ name: 'Alba' }), cancion({ name: 'Marea' })]
+    simularApi(() => pagina(canciones))
+    const user = renderListado()
+    await screen.findByRole('table')
+
+    canciones.forEach((c, i) => {
+      const enlace = within(filas()[i]).getByRole('link', { name: `Editar ${c.name}` })
+      expect(enlace.getAttribute('href')).toBe(`/canciones/${c.id}/editar`)
+    })
+
+    await user.click(screen.getByRole('link', { name: 'Editar Marea' }))
+
+    expect(await screen.findByText('Edición de canción simulada')).toBeTruthy()
+  })
+
   it.each([
     { status: 'por_hacer', etiqueta: 'Por hacer' },
     { status: 'en_progreso', etiqueta: 'En progreso' },
