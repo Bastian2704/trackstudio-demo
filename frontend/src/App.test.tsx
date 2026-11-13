@@ -116,6 +116,22 @@ describe('App', () => {
     },
   )
 
+  /*
+   * TS-85 — ts-85.06, spec frontend TS-85 §4 test 7.
+   */
+  it('/dashboard es solo del productor: artista', async () => {
+    renderApp(contextoConRol('artista'), '/dashboard')
+
+    expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+  })
+
+  it('/dashboard es solo del productor: productor', async () => {
+    simularApi(() => ({ status: 500, data: {} }))
+    renderApp(contextoConRol('productor'), '/dashboard')
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeTruthy()
+  })
+
   it('las rutas de artistas son solo del productor: productor en /artistas/nuevo', async () => {
     renderApp(contextoConRol('productor'), '/artistas/nuevo')
 

@@ -12,6 +12,7 @@ import Forbidden from './routes/Forbidden'
 import MePage from './routes/Me.tsx'
 import ProducerOnly from './routes/ProducerOnly.tsx'
 import ArtistCreatePage from './routes/artists/ArtistCreatePage.tsx'
+import DashboardPage from './routes/dashboard/DashboardPage.tsx'
 import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
 import ArtistListPage from './routes/artists/ArtistListPage.tsx'
 import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
@@ -68,6 +69,7 @@ function App() {
           </Route>
           <Route element={<RequireRole allowed={['productor']} />}>
             <Route path="/productor" element={<ProducerOnly />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/artistas" element={<ArtistListPage />}>
               <Route path="nuevo" element={<ArtistCreatePage />} />
             </Route>
