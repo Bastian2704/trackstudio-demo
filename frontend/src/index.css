@@ -42,6 +42,7 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-placeholder: var(--placeholder);
+  --color-success: var(--success);
 }
 
 :root {
@@ -74,6 +75,7 @@
   --sidebar-border: #484555;
   --sidebar-ring: #cabeff;
   --placeholder: #938ea1;
+  --success: #34d399;
 }
 
 @layer base {
