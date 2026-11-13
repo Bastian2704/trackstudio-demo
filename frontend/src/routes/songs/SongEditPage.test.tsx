@@ -158,6 +158,17 @@ describe('SongEditPage', () => {
     expect(peticiones[0]).toMatchObject({ method: 'GET', url: URL_CANCION })
   })
 
+  // TS-72 (épica TS-67) — ts-43.05, spec frontend TS-72 §4 test 3: hueco que
+  // destapó la mutación M16 del review. Sin la canción no hay `production_id`.
+  it('«Volver a la producción» no aparece mientras carga la canción', async () => {
+    simularApi(() => new Promise<RespuestaSimulada>(() => {}))
+    renderEdicion()
+
+    await screen.findByRole('heading', { name: 'Editar canción' })
+    await new Promise((resolver) => setTimeout(resolver, 50))
+    expect(screen.queryByRole('link', { name: 'Volver a la producción' })).toBeNull()
+  })
+
   it('guarda los cambios con PUT', async () => {
     const peticiones = simularApi(
       conPrecarga(() => ({
