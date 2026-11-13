@@ -30,7 +30,7 @@ uses(RefreshDatabase::class);
 const RUTA_DEL_DASHBOARD = '/api/v1/dashboard';
 
 /** Claves exactas de cada elemento de `recent_versions` (spec §3.3). */
-const CAMPOS_DE_VERSION_RECIENTE = ['id', 'version_number', 'label', 'verified_at', 'song', 'production'];
+const CAMPOS_DE_VERSION_RECIENTE = ['id', 'version_number', 'label', 'verified_at', 'song', 'production', 'artist'];
 
 function artistaDelDashboard(ArtistStatus $estado): Artist
 {
@@ -205,7 +205,8 @@ it('cuenta las canciones sin versión verificada', function () {
 });
 
 it('lista las 5 versiones verificadas más recientes con su canción y producción', function () {
-    $produccion = produccionDelDashboard(artistaDelDashboard(ArtistStatus::Activo), ProductionFormat::Album);
+    $artista = artistaDelDashboard(ArtistStatus::Activo);
+    $produccion = produccionDelDashboard($artista, ProductionFormat::Album);
     $primera = cancionDelDashboard($produccion, SongStatus::EnProgreso, 1);
     $segunda = cancionDelDashboard($produccion, SongStatus::EnProgreso, 2);
 
@@ -240,7 +241,8 @@ it('lista las 5 versiones verificadas más recientes con su canción y producci�
         ->and($recientes[0]['verified_at'])->toMatch(FORMATO_ISO_8601_CON_OFFSET)
         ->and($recientes[0]['song'])->toBe(['id' => $primera->id, 'name' => $primera->name])
         ->and($recientes[1]['song'])->toBe(['id' => $segunda->id, 'name' => $segunda->name])
-        ->and($recientes[0]['production'])->toBe(['id' => $produccion->id, 'name' => $produccion->name]);
+        ->and($recientes[0]['production'])->toBe(['id' => $produccion->id, 'name' => $produccion->name])
+        ->and($recientes[0]['artist'])->toBe(['id' => $artista->id, 'name' => $artista->name]);
 });
 
 it('rechaza sin token con 401 UNAUTHENTICATED', function () {
