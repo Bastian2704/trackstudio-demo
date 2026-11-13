@@ -9,17 +9,16 @@ import { FORMAT_LABELS } from '../productions/productionSchema'
 import ArtistStatusBadge from './ArtistStatusBadge'
 import { fetchArtists } from './artistApi'
 import type { ArtistPage } from './artistSchema'
-import { PANEL_CLASS, TITLE_CLASS } from './artistStyles'
+import {
+  PANEL_CLASS,
+  TITLE_CLASS,
+  CELL,
+  COLUMN_LABEL,
+  HEADER_CELL,
+  PAGE_BUTTON,
+  ROW_ACTION,
+} from './artistStyles'
 import ErrorAlert from '@/components/ErrorAlert'
-
-const HEADER_CELL =
-  'px-4 py-4 text-xs font-semibold tracking-[0.6px] whitespace-nowrap text-muted-foreground uppercase xl:px-6'
-const CELL = 'min-w-0 align-middle break-words lg:px-4 lg:py-4 xl:px-6'
-const COLUMN_LABEL =
-  'max-lg:border-t max-lg:border-border/50 max-lg:pt-4 max-lg:before:block max-lg:before:text-[11px]/4 max-lg:before:font-semibold max-lg:before:tracking-[0.55px] max-lg:before:text-muted-foreground max-lg:before:uppercase max-lg:before:content-[attr(data-label)]'
-const ROW_ACTION =
-  'max-lg:h-9 max-lg:w-full max-lg:gap-1 max-lg:rounded-[4px] max-lg:border max-lg:border-border max-lg:bg-muted max-lg:text-[11px] max-lg:font-semibold max-lg:tracking-[0.55px]'
-const PAGE_BUTTON = 'rounded-[2px] bg-transparent'
 
 function pageFrom(raw: string | null): number {
   const n = Number(raw)

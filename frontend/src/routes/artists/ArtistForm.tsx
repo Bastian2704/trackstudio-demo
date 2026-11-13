@@ -9,10 +9,9 @@ import { Label } from '@/components/ui/label'
 import type { ApiErrorBody } from '@/lib/api'
 import { artistInputSchema, type ArtistInput } from './artistSchema'
 import ErrorAlert from '@/components/ErrorAlert'
+import { INPUT_CLASS, LABEL_CLASS } from './artistStyles'
 
 const FIELDS = ['name', 'email'] as const
-const LABEL_CLASS = 'text-xs font-semibold tracking-[0.6px] text-muted-foreground'
-const INPUT_CLASS = 'h-10 bg-muted'
 
 interface ArtistFormProps {
   values?: ArtistInput

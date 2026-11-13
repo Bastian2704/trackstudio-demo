@@ -25,6 +25,10 @@ import { deleteSong, fetchSong, updateSong } from './songApi'
 import { SONG_DELETE_DESCRIPTION, type Song, type SongInput } from './songSchema'
 import ErrorAlert from '@/components/ErrorAlert'
 
+import { ChevronLeft } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { BACK_LINK_CLASS, PANEL_CLASS, TITLE_CLASS } from '../artists/artistStyles'
+
 export default function SongEditPage() {
   const { id = '' } = useParams()
   const location = useLocation()
@@ -60,20 +64,24 @@ export default function SongEditPage() {
   if (query.isError) {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
-      <main className="mx-auto max-w-lg space-y-6 p-8">
-        <h1 className="text-xl font-semibold">
-          {notFound ? 'Canción no encontrada' : 'Editar canción'}
-        </h1>
+      <main className="mx-auto max-w-lg space-y-6">
+        <h1 className={TITLE_CLASS}>{notFound ? 'Canción no encontrada' : 'Editar canción'}</h1>
         {!notFound && <ErrorAlert>No se pudo cargar la canción.</ErrorAlert>}
       </main>
     )
   }
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-8">
-      <h1 className="text-xl font-semibold">Editar canción</h1>
+    <main className="mx-auto max-w-lg space-y-6">
+      {query.isSuccess && (
+        <Link to={`/producciones/${query.data.production_id}/editar`} className={BACK_LINK_CLASS}>
+          <ChevronLeft aria-hidden="true" className="size-4" />
+          Volver a la producción
+        </Link>
+      )}
+      <h1 className={TITLE_CLASS}>Editar canción</h1>
       {notice && (
-        <p role="status" className="text-sm">
+        <p role="status" className="text-sm text-muted-foreground">
           {notice}
         </p>
       )}
@@ -81,18 +89,17 @@ export default function SongEditPage() {
         <ErrorAlert>No se pudo eliminar la canción. Inténtalo de nuevo.</ErrorAlert>
       )}
       {query.isPending ? (
-        <p>Cargando…</p>
+        <p className="text-sm text-muted-foreground">Cargando…</p>
       ) : (
         <>
-          <SongForm
-            withStatus
-            values={{ name: query.data.name, status: query.data.status }}
-            submitLabel="Guardar cambios"
-            onSubmit={(input) => updateMutation.mutateAsync(input)}
-          />
-          <Link to={`/producciones/${query.data.production_id}/editar`}>
-            Volver a la producción
-          </Link>
+          <section className={cn(PANEL_CLASS, 'p-6')}>
+            <SongForm
+              withStatus
+              values={{ name: query.data.name, status: query.data.status }}
+              submitLabel="Guardar cambios"
+              onSubmit={(input) => updateMutation.mutateAsync(input)}
+            />
+          </section>
           <VersionUpload songId={id} />
           <VersionHistory songId={id} />
           <AlertDialog

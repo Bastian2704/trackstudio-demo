@@ -24,7 +24,7 @@ import ArtistForm from './ArtistForm'
 import { fetchArtist, updateArtist, changeArtistStatus } from './artistApi'
 import ArtistStatusBadge from './ArtistStatusBadge'
 import type { Artist, ArtistInput } from './artistSchema'
-import { PANEL_CLASS, TITLE_CLASS } from './artistStyles'
+import { PANEL_CLASS, TITLE_CLASS, BACK_LINK_CLASS } from './artistStyles'
 import ErrorAlert from '@/components/ErrorAlert'
 
 export default function ArtistEditPage() {
@@ -62,10 +62,7 @@ export default function ArtistEditPage() {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
       <main className="mx-auto max-w-lg space-y-6">
-        <Link
-          to="/artistas"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
+        <Link to="/artistas" className={BACK_LINK_CLASS}>
           <ChevronLeft aria-hidden="true" className="size-4" />
           Volver al listado
         </Link>
@@ -77,10 +74,7 @@ export default function ArtistEditPage() {
 
   return (
     <main className="mx-auto max-w-lg space-y-6">
-      <Link
-        to="/artistas"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
+      <Link to="/artistas" className={BACK_LINK_CLASS}>
         <ChevronLeft aria-hidden="true" className="size-4" />
         Volver al listado
       </Link>

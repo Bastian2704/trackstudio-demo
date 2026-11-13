@@ -15,12 +15,9 @@ import {
   type ProductionInput,
 } from './productionSchema'
 import ErrorAlert from '@/components/ErrorAlert'
+import { INPUT_CLASS, LABEL_CLASS, SELECT_CLASS } from '../artists/artistStyles'
 
 const FIELDS = ['name', 'format'] as const
-const LABEL_CLASS = 'text-xs font-semibold tracking-[0.6px] text-muted-foreground'
-const INPUT_CLASS = 'h-10 bg-muted'
-const SELECT_CLASS =
-  'h-10 w-full rounded-lg border border-input bg-muted px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm'
 
 interface ProductionFormProps {
   values?: ProductionFormValues

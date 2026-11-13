@@ -15,6 +15,7 @@ import {
   type SongInput,
 } from './songSchema'
 import ErrorAlert from '@/components/ErrorAlert'
+import { INPUT_CLASS, LABEL_CLASS, SELECT_CLASS } from '../artists/artistStyles'
 
 const FIELDS = ['name', 'status'] as const
 
@@ -75,18 +76,27 @@ export default function SongForm({
     <form noValidate onSubmit={(event) => void submit(event)} className="space-y-4">
       {generalError && <ErrorAlert>{generalError}</ErrorAlert>}
       <div className="space-y-2">
-        <Label htmlFor="song-name">Nombre</Label>
-        <Input id="song-name" aria-invalid={errors.name ? true : undefined} {...register('name')} />
+        <Label htmlFor="song-name" className={LABEL_CLASS}>
+          Nombre
+        </Label>
+        <Input
+          id="song-name"
+          className={INPUT_CLASS}
+          aria-invalid={errors.name ? true : undefined}
+          {...register('name')}
+        />
         {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
       </div>
 
       {withStatus && (
         <div className="space-y-2">
-          <Label htmlFor="song-status">Estado</Label>
+          <Label htmlFor="song-status" className={LABEL_CLASS}>
+            Estado
+          </Label>
           <select
             id="song-status"
+            className={SELECT_CLASS}
             aria-invalid={errors.status ? true : undefined}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive md:text-sm"
             {...register('status')}
           >
             {SONG_STATUSES.map((status) => (
@@ -99,7 +109,7 @@ export default function SongForm({
         </div>
       )}
 
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" className="h-10 px-6" disabled={isSubmitting}>
         {submitLabel}
       </Button>
     </form>
