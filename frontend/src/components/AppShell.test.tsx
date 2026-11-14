@@ -57,6 +57,18 @@ describe('AppShell', () => {
     )
   })
 
+  /*
+   * TS-85 — ts-85.06, spec frontend TS-85 §4 test 6.
+   */
+  it('el productor ve el enlace a Dashboard antes de Artistas', () => {
+    renderShell(productor)
+
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    const enlaces = within(nav).getAllByRole('link')
+    expect(enlaces.map((enlace) => enlace.textContent)).toEqual(['Dashboard', 'Artistas'])
+    expect(enlaces[0].getAttribute('href')).toBe('/dashboard')
+  })
+
   it('el artista no ve navegación', () => {
     renderShell(artista, '/me')
 

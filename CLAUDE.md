@@ -88,6 +88,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ## 5. Qué NO hacer todavía (alcance vigente de Sprint 4)
 
+> **Actualizado el 2026-11-12 (`TS-85`, dashboard parcial):** se levanta el veto de las «métricas del dashboard» **solo para `TS-85`**: `GET /api/v1/dashboard` y la ruta `/dashboard`, del productor, con datos de las tablas existentes y sin migraciones. El resto del marco `1:76`, las estadísticas del artista y `TS-80` siguen fuera. Decisión en `docs/backlog/roadmap.md` («Reglas de alcance»).
+
 > **Actualizado el 2026-11-03 (Sprint 4, `docs/backlog/sprints/sprint-04.md`):** se levantan la verificación con `HeadObject`/ETag, el paso a `verificada`/`fallida` y el abandono de pendientes **solo para `TS-25`** (HU-14), y las URLs firmadas de lectura **solo para `TS-27`** (HU-16) y su consumo en `TS-26` (HU-15), según `docs/erd/modelo-completo.md` §3.5 y D7.4/D7.6. El reproductor y la lectura son solo del productor: el artista espera a HU-21 (S6). Fidelidad visual en S4: `TS-71` (producciones) y `TS-72` (canciones). Las notas y viñetas siguientes se leen con esta: donde dicen «S4» o vetan la verificación y las URLs de lectura, manda esta nota.
 
 > **Actualizado el 2026-10-15 (Sprint 3, `docs/backlog/sprints/sprint-03.md`):** se levanta el veto de `versions`, de la subida a S3 de aplicación y de la presigned **POST** (antes PUT, enmienda de D7.1 del 2026-10-20) **solo para `TS-24`** (HU-13), según `docs/erd/modelo-completo.md` §3.5 y D7.1-D7.7. Siguen vetados la verificación con `HeadObject`/ETag y el paso a `verificada` (S4, `TS-25`/`TS-27`) y las URLs firmadas de lectura (HU-16). HU-09 (`TS-20`), HU-11 (`TS-22`) y HU-12 (`TS-23`) entran en S3. Las viñetas siguientes se leen con esta nota.

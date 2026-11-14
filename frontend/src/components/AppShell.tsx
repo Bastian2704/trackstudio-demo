@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { AudioWaveform, Menu, Users } from 'lucide-react'
+import { AudioWaveform, LayoutDashboard, Menu, Users } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
@@ -9,6 +9,10 @@ import { cn } from '@/lib/utils'
 
 const NAV_ID = 'nav-principal'
 const foco = 'focus-visible:outline-2 focus-visible:outline-ring'
+const ENLACES = [
+  { to: '/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { to: '/artistas', label: 'Artistas', Icon: Users },
+]
 
 export default function AppShell() {
   const { user } = useAuth0()
@@ -37,21 +41,24 @@ export default function AppShell() {
 
         {esProductor && (
           <nav id={NAV_ID} aria-label="Principal" className="flex flex-col gap-1">
-            <NavLink
-              to="/artistas"
-              onClick={() => setAbierto(false)}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-4 rounded px-4 py-2 text-xs font-semibold tracking-[0.6px] text-sidebar-foreground hover:bg-sidebar-accent',
-                  foco,
-                  isActive &&
-                    'border-r-2 border-sidebar-primary bg-sidebar-accent text-sidebar-primary',
-                )
-              }
-            >
-              <Users className="size-5" />
-              Artistas
-            </NavLink>
+            {ENLACES.map(({ to, label, Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => setAbierto(false)}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-4 rounded px-4 py-2 text-xs font-semibold tracking-[0.6px] text-sidebar-foreground hover:bg-sidebar-accent',
+                    foco,
+                    isActive &&
+                      'border-r-2 border-sidebar-primary bg-sidebar-accent text-sidebar-primary',
+                  )
+                }
+              >
+                <Icon className="size-5" />
+                {label}
+              </NavLink>
+            ))}
           </nav>
         )}
       </aside>

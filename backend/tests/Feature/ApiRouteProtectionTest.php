@@ -39,6 +39,7 @@ it('clasifica y protege todas las rutas de la API', function () {
         'DELETE api/v1/songs/{song}' => ['auth:auth0-api', 'can:delete,song'],
         'GET api/v1/artists' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Artist'],
         'GET api/v1/artists/{artist}' => ['auth:auth0-api', 'can:view,artist'],
+        'GET api/v1/dashboard' => ['auth:auth0-api', 'can:perform-producer-action'],
         'GET api/v1/health' => [],
         'GET api/v1/me' => ['auth:auth0-api'],
         'GET api/v1/productions/{production}' => ['auth:auth0-api', 'can:view,production'],

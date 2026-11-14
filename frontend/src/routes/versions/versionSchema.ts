@@ -39,7 +39,7 @@ export interface SignedUpload {
   expires_at: string
 }
 
-export function versionTitle(version: Version): string {
+export function versionTitle(version: Pick<Version, 'label' | 'version_number'>): string {
   return version.label ?? `v${version.version_number}`
 }
 

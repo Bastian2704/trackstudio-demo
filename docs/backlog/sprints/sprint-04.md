@@ -33,6 +33,7 @@ TS-35..TS-37 figuran en el sprint de Jira con sus 8 SP completos porque cierran 
 | TS-45 | ts-34    | Task  |   — | Tesis: diseño de la solución (C4 2-4, ERD, persistencia) | ERD de TS-49 (Listo)                            |
 | TS-46 | ts-35    | Task  |   — | Tesis: evidencia de desarrollo por sprint                | Evidencia de las entregas                       |
 | TS-84 | —        | Task  |   — | Sprint Planning S4                                       | — (añadida el 2026-11-03)                       |
+| TS-85 | —        | Story |   3 | Dashboard parcial del productor (alcance nuevo)          | TS-25 (Listo); añadida el 2026-11-12, roadmap «Reglas de alcance» |
 
 ## Secuencia de ejecución
 
