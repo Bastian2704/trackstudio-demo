@@ -55,6 +55,26 @@ Todas salen de reglas ya vigentes; ninguna abre alcance:
 2. Inventario de Figma de TS-73 (`ts-44.01`).
 3. Specs backend de HU-18 y HU-19.
 
+## 7b. Replanificación del S5 con la ampliación del comité (misma sesión)
+
+- **Origen:** en la revisión de avance, el comité vio el alcance simple («calza en Programación 4») y pidió proceso, motivo de cada versión, dashboard de indicadores, análisis o servicios externos, comunicación y varios productores.
+- **Decisiones del equipo:**
+  - Se aprueba [`ampliacion-comite-2026-11.md`](../../backlog/ampliacion-comite-2026-11.md): flujo de revisión y aprobación, motivo de la versión, análisis técnico en el navegador (LUFS, pico real, saturación, silencios; $0 de AWS), A/B con curvas y decisión, correos, dashboard del proceso y autoría con varios productores. Total: 27 SP.
+  - Queda fuera el resumen con IA, por costo.
+  - Capacidad de **20–22 SP por semana**.
+  - El alcance principal y todas las Tasks de Figma quedan listos el 2026-12-11.
+  - Las pantallas nuevas se diseñan antes en Figma, juntos, con el MCP (`TS-88`).
+  - Si hay que recortar, caen primero los correos y luego el dashboard.
+- **Jira:**
+  - Creadas `TS-87`..`TS-96`.
+  - HU-20/HU-21 (`TS-31`, `TS-32`) y `TS-74` pasan al S5.
+  - El S5 queda en 40 SP; `TS-95` (dashboard) va en S6.
+- **Docs:** `sprint-05.md` reescrito; `CLAUDE.md` §5, roadmap («Reglas de alcance» y «Siguiente paso») y `jira-key-map.md` actualizados.
+- **Siguiente paso:**
+  - `TS-87`, el slice del ERD y el ADR. Es el gate de TS-90..TS-92.
+  - `TS-88`, empezando por la comparación A/B en una página nueva del archivo de Figma. Escribir en Figma necesita la confirmación del equipo.
+  - En paralelo, la spec backend de HU-17.
+
 ## 8. Cómo retomar el entorno
 
 - **Jira:** usar el servidor MCP `atlassian-ts`. Si `getAccessibleAtlassianResources` no devuelve el sitio de `TS`, volver a autenticarlo con `/mcp`.

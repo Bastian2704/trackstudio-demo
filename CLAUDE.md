@@ -88,7 +88,15 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ## 5. Qué NO hacer todavía (alcance vigente de Sprint 5)
 
-> **Actualizado el 2026-11-16 (Sprint 5, `docs/backlog/sprints/sprint-05.md`):** se levanta el veto de `comments` (migración `create_comments_table`, creación, listado, salto y borrado) **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6. En S5 solo comenta el productor: `production_access` y el acceso del artista siguen vetados hasta HU-20/HU-21 (S6). Fidelidad visual en S5: solo `TS-73` (versiones, subida y reproductor); el estilo de los comentarios es de `TS-74` (S6). `studio_sessions` sigue vetada. Las notas y viñetas siguientes se leen con esta.
+> **Actualizado el 2026-11-16 (Sprint 5 replanificado, `docs/backlog/sprints/sprint-05.md` y `docs/backlog/ampliacion-comite-2026-11.md`):**
+>
+> - Se levanta el veto de `comments` **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6.
+> - Se levanta el veto de `production_access` y del acceso del artista **solo para `TS-31` y `TS-32`** (HU-20, HU-21), que pasan de S6 a S5, semana 2. Hasta que HU-21 esté Done, solo actúa el productor.
+> - Se aprueba la **ampliación del comité** (`TS-90`..`TS-96`): motivo de la versión, análisis técnico en el cliente, flujo de revisión, comparación A/B, correos del flujo, dashboard del proceso (S6) y autoría con varios productores. Sus migraciones y contratos esperan al slice del ERD y al ADR de `TS-87`. Ninguna pantalla nueva se especifica sin su marco aprobado en `TS-88` (Figma).
+> - Fidelidad visual en S5: `TS-73` (sobre los marcos rediseñados de `TS-88`) y `TS-74` (comentarios).
+> - Siguen fuera: `studio_sessions` hasta HU-22/HU-23 (S6), resumen con IA, aislamiento por productor, notificaciones dentro de la aplicación (`TS-82`) y `TS-81`.
+>
+> Las notas y viñetas siguientes se leen con esta.
 
 > **Actualizado el 2026-11-12 (`TS-85`, dashboard parcial):** se levanta el veto de las «métricas del dashboard» **solo para `TS-85`**: `GET /api/v1/dashboard` y la ruta `/dashboard`, del productor, con datos de las tablas existentes y sin migraciones. El resto del marco `1:76`, las estadísticas del artista y `TS-80` siguen fuera. Decisión en `docs/backlog/roadmap.md` («Reglas de alcance»).
 

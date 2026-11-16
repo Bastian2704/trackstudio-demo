@@ -46,6 +46,16 @@ La correspondencia dentro de cada rango es consecutiva: HU-01 = `TS-12`, HU-02 =
 | `TS-84` | Task de `TS-1`               | Sprint Planning S4                                                               | Listo; `TS Sprint 4` (2026-11-03) |
 | `TS-85` | Story de `TS-4` (alcance nuevo) | Dashboard parcial del productor con los datos existentes (`/dashboard`)       | Listo; `TS Sprint 4`, 3 SP (2026-11-12) |
 | `TS-86` | Task de `TS-1`               | Sprint Planning S5                                                               | Por hacer; `TS Sprint 5` (2026-11-16) |
+| `TS-87` | Task de `TS-1` (ampliación)  | ERD y ADR de la ampliación del comité                                            | Por hacer; `TS Sprint 5` (2026-11-16) |
+| `TS-88` | Task de `TS-67` (ampliación) | Diseño en Figma de la ampliación: revisión, A/B, chequeo y dashboard             | Por hacer; `TS Sprint 5` (2026-11-16) |
+| `TS-89` | Task de `TS-1` (ampliación)  | Segunda cuenta de productor en Auth0 (staging)                                   | Por hacer; `TS Sprint 5` (2026-11-16) |
+| `TS-90` | Story de `TS-6` (ampliación) | Motivo de la versión: qué cambió y por qué                                      | Por hacer; `TS Sprint 5`, 2 SP (2026-11-16) |
+| `TS-91` | Story de `TS-6` (ampliación) | Análisis técnico de la versión al subir                                          | Por hacer; `TS Sprint 5`, 5 SP (2026-11-16) |
+| `TS-92` | Story de `TS-6` (ampliación) | Flujo de revisión y aprobación de versiones                                      | Por hacer; `TS Sprint 5`, 3 SP (2026-11-16) |
+| `TS-93` | Story de `TS-6` (ampliación) | Comparación A/B de versiones con curvas y decisión                               | Por hacer; `TS Sprint 5`, 8 SP (2026-11-16) |
+| `TS-94` | Story de `TS-6` (ampliación) | Correos del flujo de revisión                                                    | Por hacer; `TS Sprint 5`, 3 SP (2026-11-16) |
+| `TS-95` | Story de `TS-4` (ampliación) | Dashboard del proceso: entregas, atrasos y rondas de revisión                    | Por hacer; S6, 5 SP (2026-11-16) |
+| `TS-96` | Story de `TS-2` (ampliación) | Varios productores: autoría visible en artistas y versiones                      | Por hacer; `TS Sprint 5`, 1 SP (2026-11-16) |
 
 ## Claves históricas
 

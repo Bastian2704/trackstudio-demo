@@ -1,9 +1,9 @@
-# Sprint 5 - Comentarios con marca de tiempo
+# Sprint 5 - Ciclo de revisión de versiones
 
-**Estado:** planificado el 2026-11-16, al cerrar `TS Sprint 4` en Jira. `TS Sprint 5` (id 73) ya existía como sprint futuro. Jira manda sobre estado, checklist y criterios de aceptación.
-**Ventana:** 2026-11-16 a 2026-11-27 (Jira cierra el 2026-11-30). **Release:** R2 - Beta con artista (primera mitad; el gate R2 está en S6).
-**Selección funcional:** `TS-28`, `TS-29` y `TS-30` (13 SP). **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37` (HU-24..HU-26), sin contar los SP dos veces.
-**Tasks:** `TS-73` (UI Figma: versiones, subida y reproductor), `TS-44` (producción, equipo), `TS-86` (Sprint Planning S5) y el arrastre del S4.
+**Estado:** planificado el 2026-11-16 al cerrar `TS Sprint 4` y **replanificado el mismo día** con la ampliación del comité ([`ampliacion-comite-2026-11.md`](../ampliacion-comite-2026-11.md), aprobada por el equipo). `TS Sprint 5` es el id 73. Jira manda sobre estado, checklist y criterios de aceptación.
+**Ventana:** 2026-11-16 a 2026-11-29 (Jira cierra el 2026-11-30). **Release:** R2 - Beta con artista (el gate R2 sigue en S6).
+**Selección funcional:** HU-17..HU-21 (`TS-28`..`TS-32`, 18 SP) y la ampliación `TS-90`..`TS-94` y `TS-96` (22 SP): **40 SP**. **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37`, sin contar los SP dos veces.
+**Tasks:** `TS-87` (ERD y ADR), `TS-88` (diseño en Figma), `TS-89` (Auth0, equipo), `TS-73` y `TS-74` (UI Figma), `TS-44` (producción, equipo), `TS-86` (Sprint Planning S5) y el arrastre del S4.
 **Formato:** [campos y reglas de expansión](../backlog-format.md) · catálogo en [jira-backlog.md](../jira-backlog.md) · secuencia en [roadmap.md](../roadmap.md).
 
 ## Cierre del S4
@@ -12,94 +12,121 @@
 
 ## Objetivo
 
-Entregar en staging los comentarios con marca de tiempo del productor: crear un comentario en el segundo exacto de una versión verificada, verlos como marcadores sobre la línea de tiempo y en una lista ordenada, saltar desde un comentario a su punto del audio y borrar los propios. El estilo del historial y del reproductor se iguala con Figma, y la infraestructura de producción queda preparada para S6.
+Entregar en staging el ciclo de revisión de versiones: comentarios con marca de tiempo, acceso del artista, motivo y análisis técnico de cada versión, comparación A/B con curvas desde la que el artista aprueba o pide cambios, y correos en cada paso. Las pantallas nuevas se diseñan antes en Figma, y la infraestructura de producción queda preparada para S6.
 
 ## Capacidad y compromiso
 
 | Tipo                  | Alcance                                                   |                              Capacidad |
 | --------------------- | --------------------------------------------------------- | -------------------------------------: |
-| Historias funcionales | HU-17..HU-19                                              |                                  13 SP |
+| Historias funcionales | HU-17..HU-21                                              |                                  18 SP |
+| Ampliación del comité | TS-90..TS-94, TS-96                                       |                                  22 SP |
 | Calidad transversal   | Avance verificable de HU-24..HU-26 sobre la superficie S5 |                      2 SP equivalentes |
-| Tasks sin SP          | TS-73, TS-44, TS-86 y arrastre del S4                     | Consumen la misma capacidad del sprint |
-| **Objetivo total**    | Funcional + transversal                                   |                 **15 SP equivalentes** |
+| Tasks sin SP          | TS-73, TS-74, TS-87, TS-88, TS-89, TS-44, TS-86 y arrastre | Consumen la misma capacidad del sprint |
+| **Objetivo total**    | Funcional + ampliación + transversal                      |                 **42 SP equivalentes** |
 
-Para la velocidad del S5 solo cuentan los 13 SP de TS-28..TS-30. Hito de la semana 10 (2026-11-27): HU-01..HU-19 en `Listo`, 68/92 SP.
+Capacidad comprometida por el equipo: **20–22 SP por semana** (decisión del 2026-11-16), frente a 16 SP en dos semanas del S4. Para la velocidad del S5 cuentan los 40 SP de las Stories.
 
 ## Registros del sprint
 
-| Jira  | ID local | Tipo  |  SP | Título                                                   | Dependencias de entrega                              |
-| ----- | -------- | ----- | --: | -------------------------------------------------------- | ---------------------------------------------------- |
-| TS-28 | ts-17    | Story |   5 | HU-17 Comentar sobre una marca de tiempo                 | TS-26 (Listo); ERD §3.6 (TS-49, Listo)               |
-| TS-29 | ts-18    | Story |   5 | HU-18 Ver comentarios en la línea de tiempo              | TS-28; inventario de TS-73 (`ts-44.01`)              |
-| TS-30 | ts-19    | Story |   3 | HU-19 Navegar al comentario y eliminar los propios       | TS-29                                                |
-| TS-73 | ts-44    | Task  |   — | UI Figma: versiones, subida y reproductor (HU-13..HU-16) | TS-68 y TS-24..TS-27 (Listo)                         |
-| TS-44 | ts-33    | Task  |   — | Configurar producción (Railway, Vercel, Auth0) y uptime  | Accesos de producción (equipo)                       |
-| TS-86 | —        | Task  |   — | Sprint Planning S5                                       | — (creada el 2026-11-16)                             |
-| TS-35..TS-37 | ts-24..ts-26 | Story | (8) | HU-24..HU-26 calidad transversal (cierre en S6)  | Superficie entregada en S5                           |
+| Jira  | Tipo  |  SP | Título                                                       | Semana | Dependencias de entrega                     |
+| ----- | ----- | --: | ------------------------------------------------------------ | :----: | ------------------------------------------- |
+| TS-87 | Task  |   — | ERD y ADR de la ampliación del comité                        |   1    | — (gate de datos de la ampliación)          |
+| TS-88 | Task  |   — | Diseño en Figma: revisión, A/B, chequeo y dashboard          |  1–2   | Aprobación del equipo para escribir en Figma |
+| TS-28 | Story |   5 | HU-17 Comentar sobre una marca de tiempo                     |   1    | TS-26 (Listo); ERD §3.6                     |
+| TS-29 | Story |   5 | HU-18 Ver comentarios en la línea de tiempo                  |   1    | TS-28; marcos de TS-88                      |
+| TS-30 | Story |   3 | HU-19 Navegar al comentario y eliminar los propios           |   1    | TS-29                                       |
+| TS-90 | Story |   2 | Motivo de la versión                                         |   1    | TS-87; marco de TS-88                       |
+| TS-91 | Story |   5 | Análisis técnico de la versión al subir                      |   1    | TS-87; marco de TS-88                       |
+| TS-96 | Story |   1 | Varios productores: autoría visible                          |   1    | TS-89 para staging                          |
+| TS-73 | Task  |   — | UI Figma: versiones, subida y reproductor                    |   1    | Marcos rediseñados de TS-88                 |
+| TS-31 | Story |   3 | HU-20 Otorgar y revocar acceso del artista                   |   2    | Resend (TS-43, Listo)                       |
+| TS-32 | Story |   2 | HU-21 Vista restringida a producciones asignadas             |   2    | TS-31                                       |
+| TS-92 | Story |   3 | Flujo de revisión y aprobación de versiones                  |   2    | TS-87, TS-32; marco de TS-88                |
+| TS-93 | Story |   8 | Comparación A/B con curvas y decisión                        |   2    | TS-90, TS-91, TS-92; marco de TS-88         |
+| TS-94 | Story |   3 | Correos del flujo de revisión                                |   2    | TS-92; envío de TS-31                       |
+| TS-74 | Task  |   — | UI Figma: comentarios (HU-17..HU-19)                         |   2    | TS-28..TS-30                                |
+| TS-89 | Task  |   — | Segunda cuenta de productor en Auth0 (equipo)                |   —    | Acceso a Auth0                              |
+| TS-44 | Task  |   — | Configurar producción (Railway, Vercel, Auth0) y uptime      |   —    | Accesos de producción (equipo)              |
+| TS-86 | Task  |   — | Sprint Planning S5                                           |   1    | —                                           |
+| TS-35..TS-37 | Story | (8) | HU-24..HU-26 calidad transversal (cierre en S6)      |  1–2   | Superficie entregada en S5                  |
+
+`TS-95` (dashboard del proceso, 5 SP) va en S6, semana 3.
 
 ## Secuencia de ejecución
 
 ```mermaid
 flowchart TD
-    P["TS-26 · HU-15 reproductor (Listo)"] --> A["TS-28 · HU-17"]
-    E["ERD §3.6 (Listo)"] --> A
-    A --> B["TS-29 · HU-18"]
-    B --> C["TS-30 · HU-19"]
-    F["TS-73 · ts-44.01 inventario Figma"] -. alimenta la spec frontend .-> B
-    F --> G["TS-73 · resto de la Task"]
-    Q["TS-35..TS-37 · calidad S5"] -. acompaña .-> A
-    Q -. acompaña .-> B
-    Q -. acompaña .-> C
+    ERD["TS-87 · ERD y ADR"] --> MOT["TS-90 · motivo"]
+    ERD --> ANA["TS-91 · análisis"]
+    ERD --> REV["TS-92 · revisión"]
+    FIG["TS-88 · diseño Figma"] --> MOT
+    FIG --> ANA
+    FIG --> AB["TS-93 · A/B"]
+    FIG --> UIV["TS-73 · UI versiones"]
+    C17["TS-28 · HU-17"] --> C18["TS-29 · HU-18"] --> C19["TS-30 · HU-19"]
+    C19 --> UIC["TS-74 · UI comentarios"]
+    H20["TS-31 · HU-20"] --> H21["TS-32 · HU-21"] --> REV
+    MOT --> AB
+    ANA --> AB
+    REV --> AB
+    REV --> MAIL["TS-94 · correos"]
+    H20 --> MAIL
 ```
 
-Orden recomendado:
+**Semana 1 (16–22 nov)**
 
-1. **Semana 1:** spec backend de TS-28 (migración `create_comments_table`, creación y fila RBAC de `comments`) y, en paralelo, el inventario de marcos de TS-73 (`ts-44.01`). Red/Green de TS-28 backend.
-2. Spec backend de TS-29 (listado) y de TS-30 (borrado) en cuanto exista el modelo de TS-28; son endpoints pequeños y pueden ir en la misma semana.
-3. Spec frontend de TS-29 con el marco de Figma del reproductor ya inventariado, para no dibujar la línea de tiempo dos veces.
-4. **Semana 2:** frontends de TS-29 y TS-30, el resto de TS-73 y la evidencia transversal.
-5. TS-44 corre en paralelo a cargo del equipo; el agente no toca Railway, Vercel ni Auth0 (`CLAUDE.md` §0.6).
+1. Primer día: `TS-87` (slice del ERD y ADR) y arranque de `TS-88` con la comparación A/B, el historial y el reproductor rediseñados, el motivo y el chequeo. Sin ellos no se especifican TS-90, TS-91 ni TS-92.
+2. Spec backend de HU-17 en paralelo: su tabla ya está en el ERD §3.6 y no depende de `TS-87`.
+3. Red/Green de HU-17..HU-19, TS-90, TS-91 y TS-96. `TS-73` sobre los marcos nuevos.
+
+**Semana 2 (23–29 nov)**
+
+4. HU-20 y HU-21: el artista entra, ve y comenta.
+5. TS-92 y TS-94 (backend), luego TS-93 con las curvas de TS-91 y la decisión de TS-92. `TS-74` en cuanto HU-19 esté Done. `TS-88` termina con el marco del dashboard (para TS-95 en S6).
+
+`TS-44` y `TS-89` corren en paralelo a cargo del equipo; el agente no toca Railway, Vercel ni Auth0 (`CLAUDE.md` §0.6).
 
 ## Fronteras de alcance
 
-Vienen del ERD §3.6, de D4.5, de D8.1 y de `CLAUDE.md` §5; no se reabren en las specs.
+Vienen del ERD §3.6, de D4.5, de D8.1, de `CLAUDE.md` §5 y de la propuesta aprobada; no se reabren en las specs.
 
-- **HU-17 (TS-28):** migración `create_comments_table` según el ERD §3.6. Solo se comenta sobre versiones `verificada` de canciones vigentes. `timestamp_ms` entre 0 y `versions.duration_ms`, validado en el Service (422, D3.1), porque PostgreSQL no admite el `CHECK` entre tablas. Texto obligatorio (`btrim`), autor (`author_id`) y `created_at`. Sin `updated_at` ni `deleted_at`. Fuera: estado resuelto/pendiente, prioridad, respuestas (sin RF) y avisos (`TS-82`, post-S6). En el frontend, la marca se toma de la posición actual del reproductor.
-- **HU-18 (TS-29):** listado por versión en orden de `timestamp_ms` (lo sirve el índice `comments_version_id_timestamp_ms_index`), con autor y fecha, y marcadores sobre la línea de tiempo. El reproductor de HU-15 usa los controles nativos de `<audio>`, que no admiten marcadores: la spec frontend decide cómo dibujarlos (una barra propia alineada a `duration_ms` o controles propios) sin forma de onda ni librerías de audio. Los comentarios de una versión borrada no se muestran.
-- **HU-19 (TS-30):** al elegir un comentario, el reproductor salta a su marca. `VersionPlayer` vuelve a montar `<audio>` cuando renueva la URL caducada y conserva la posición con `resumeAt`: el salto debe pasar por ese mismo mecanismo. Borrado físico (D4.5 no incluye los comentarios), solo del autor. Sin edición: ni endpoint ni interfaz.
-- **Artista:** HU-17 nombra al productor y al artista, pero `production_access` sigue vetada hasta HU-20/S6. En S5 solo comenta el productor; el artista con acceso vigente se habilita en HU-21, sin reabrir estas specs. La prueba de «solo borra los suyos» usa dos usuarios productores.
-- **ADR 8.1:** la fila RBAC de `comments` (crear, ver, borrar) se cierra en la spec backend de HU-17, con «❌ hoy; ✅ con acceso vigente desde HU-21» para el artista, como en `songs` y `versions`.
-- **TS-73:** solo el estilo de la subida, el historial y el reproductor ya Done, con la checklist `.01`..`.05`. Los marcadores y la lista de comentarios son de TS-29; su estilo de Figma es de TS-74 (S6). Elementos sin RF (notas técnicas, forma de onda) siguen fuera.
-- **TS-44:** configuración de producción, a cargo del equipo. El agente la señala como dependencia y se detiene. Es el gate «Fin de S5» del roadmap.
-- **ADR 8.5** (rate limiting) y **11.5** (plan de medición de RNF) siguen ABIERTOS y diferidos de forma explícita; no bloquean. El endpoint de creación de comentarios queda sin límite de peticiones mientras 8.5 siga abierto (ver riesgos).
+- **HU-17 (TS-28):** migración `create_comments_table` según el ERD §3.6. Solo se comenta sobre versiones `verificada` de canciones vigentes. `timestamp_ms` entre 0 y `versions.duration_ms`, validado en el Service (422, D3.1). Texto obligatorio (`btrim`), autor y `created_at`. Sin estado, prioridad ni respuestas (sin RF), ni avisos dentro de la aplicación (`TS-82`). La marca se toma de la posición actual del reproductor.
+- **HU-18 (TS-29):** listado por versión en orden de `timestamp_ms`, con autor y fecha, y marcadores sobre la línea de tiempo. Los controles nativos de `<audio>` no admiten marcadores: el diseño de `TS-88` y la spec frontend fijan la barra propia. Sin forma de onda ni librerías de audio.
+- **HU-19 (TS-30):** el salto pasa por el mismo `resumeAt` con el que `VersionPlayer` conserva la posición al renovar la URL. Borrado físico, solo del autor. Sin edición.
+- **Artista:** HU-17..HU-19 nacen solo para el productor en la semana 1. HU-20/HU-21 habilitan al artista con acceso vigente en la semana 2, según las filas «✅ con acceso vigente desde HU-21» de D8.1, sin reabrir las specs anteriores. La prueba de «solo borra los suyos» usa dos productores, y luego un productor y un artista.
+- **ADR 8.1:** la fila RBAC de `comments` se cierra en la spec backend de HU-17; la de las decisiones de revisión, en `TS-87`.
+- **Ampliación (TS-90..TS-94, TS-96):** según [`ampliacion-comite-2026-11.md`](../ampliacion-comite-2026-11.md) §5. El análisis se calcula en el navegador al subir y advierte sin bloquear; el A/B usa dos `<audio>` con las URLs de HU-16; el fallo de un correo no deshace la acción; varios productores comparten todo el estudio.
+- **Figma:** ninguna pantalla nueva o rediseñada se especifica sin su marco aprobado en `TS-88`. `TS-73` toma los marcos rediseñados del historial y el reproductor, no los anteriores.
+- **Fuera:** resumen con IA, aislamiento por productor, `TS-81`, `TS-82` y `studio_sessions` (HU-22/HU-23 en S6).
+- **ADR 8.5** (rate limiting) y **11.5** (plan de medición de RNF) siguen ABIERTOS y diferidos; no bloquean. Los endpoints de comentarios y de decisiones quedan sin límite de peticiones mientras 8.5 siga abierto.
 
 ## Condiciones de Ready
 
-AC vigentes en Jira, slice del ERD aprobado (§3.6, cerrado el 2026-10-06), veto de `comments` levantado en `CLAUDE.md` §5 **solo para TS-28..TS-30** (esta planificación), nada ABIERTO del ADR en el camino (8.1 está PARCIAL y la fila de `comments` se cierra en la spec de HU-17) y spec de capa aprobada antes de los tests (C1). S5 no tiene gate de infraestructura nuevo para las HU.
+AC vigentes en Jira; slice del ERD aprobado (§3.6 para `comments` y §3.7 para `production_access`, cerrados el 2026-10-06; `TS-87` para la ampliación); vetos levantados en `CLAUDE.md` §5 para estas historias; marco de Figma aprobado en `TS-88` para cada pantalla nueva o rediseñada; nada ABIERTO del ADR en el camino, y spec de capa aprobada antes de los tests (C1).
 
 ## Desglose funcional
 
-Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..`.09`. La comprobación en staging (`.09`) la hace el equipo y no bloquea el Done.
+Los criterios de aceptación y las checklists `.01`..`.09` viven en Jira. La comprobación en staging (`.09`) la hace el equipo y no bloquea el Done.
 
 ### TS-28 / ts-17 - HU-17 Comentar sobre una marca de tiempo
 
-- [ ] `ts-17.01` Spec backend: migración `create_comments_table` (ERD §3.6), endpoint de creación sobre una versión, validación de texto y de `timestamp_ms` contra `duration_ms`, solo versiones `verificada` de canciones vigentes, respuesta con autor y fecha, errores D3.1 y fila RBAC de `comments` (ADR 8.1).
-- [ ] `ts-17.02` Tests backend en rojo: texto vacío o solo espacios, marca negativa, igual y mayor que la duración, versión pendiente, fallida, borrada o ajena, autor y fecha registrados, CHECK de la tabla y permisos (artista y anónimo).
+- [ ] `ts-17.01` Spec backend: migración `create_comments_table` (ERD §3.6), endpoint de creación, validación de texto y de `timestamp_ms` contra `duration_ms`, solo versiones `verificada`, autor y fecha, errores D3.1 y fila RBAC de `comments` (ADR 8.1).
+- [ ] `ts-17.02` Tests backend en rojo: texto vacío, marca negativa, igual y mayor que la duración, versión pendiente, fallida o borrada, CHECK de la tabla y permisos.
 - [ ] `ts-17.03` Código backend hasta verde (equipo); Larastan y Pint limpios.
 - [ ] `ts-17.04` Review backend con C3.
-- [ ] `ts-17.05` Spec frontend: formulario de comentario junto al reproductor, marca tomada de la posición actual, validación del texto, envío, error y estado mientras se guarda.
+- [ ] `ts-17.05` Spec frontend: formulario junto al reproductor, marca tomada de la posición actual, validación, envío y error.
 - [ ] `ts-17.06` Tests frontend en rojo.
 - [ ] `ts-17.07` Código frontend hasta verde (equipo).
 - [ ] `ts-17.08` Review frontend con C3.
-- [ ] `ts-17.09` Comprobación en staging con una versión verificada real (equipo).
+- [ ] `ts-17.09` Comprobación en staging (equipo).
 
 ### TS-29 / ts-18 - HU-18 Ver comentarios en la línea de tiempo
 
 - [ ] `ts-18.01` Spec backend: listado por versión en orden de `timestamp_ms`, con autor y fecha, sin N+1; versión borrada o no verificada; permisos.
-- [ ] `ts-18.02` Tests backend en rojo: orden con marcas sin orden de inserción, empate de marcas, versión sin comentarios, versión borrada y permisos.
-- [ ] `ts-18.03` Código backend hasta verde (equipo); Larastan y Pint limpios.
+- [ ] `ts-18.02` Tests backend en rojo: orden con marcas sin orden de inserción, empates, vacío, versión borrada y permisos.
+- [ ] `ts-18.03` Código backend hasta verde (equipo).
 - [ ] `ts-18.04` Review backend con C3.
-- [ ] `ts-18.05` Spec frontend: marcadores sobre la línea de tiempo (decisión sobre los controles nativos), lista ordenada, vacío, carga y error, marcadores accesibles por teclado (RNF-07) y alta de un comentario nuevo sin recargar. Usa el inventario de `ts-44.01`.
+- [ ] `ts-18.05` Spec frontend con el marco de `TS-88`: marcadores, lista, vacío, carga, error, teclado (RNF-07) y comentario nuevo sin recargar.
 - [ ] `ts-18.06` Tests frontend en rojo.
 - [ ] `ts-18.07` Código frontend hasta verde (equipo).
 - [ ] `ts-18.08` Review frontend con C3.
@@ -107,62 +134,85 @@ Los criterios de aceptación viven en Jira. Cada historia sigue el ciclo `.01`..
 
 ### TS-30 / ts-19 - HU-19 Navegar al comentario y eliminar los propios
 
-- [ ] `ts-19.01` Spec backend: borrado físico solo del autor, respuesta ante comentario ajeno o inexistente (D3.1) y ausencia de edición.
-- [ ] `ts-19.02` Tests backend en rojo: el autor borra, otro productor no puede, inexistente, versión borrada, no hay ruta de edición y permisos.
-- [ ] `ts-19.03` Código backend hasta verde (equipo); Larastan y Pint limpios.
+- [ ] `ts-19.01` Spec backend: borrado físico solo del autor, ajeno o inexistente (D3.1) y ausencia de edición.
+- [ ] `ts-19.02` Tests backend en rojo.
+- [ ] `ts-19.03` Código backend hasta verde (equipo).
 - [ ] `ts-19.04` Review backend con C3.
-- [ ] `ts-19.05` Spec frontend: salto del reproductor a la marca (también tras renovar la URL), confirmación del borrado, botón solo en los propios, error y foco tras borrar.
-- [ ] `ts-19.06` Tests frontend en rojo.
+- [ ] `ts-19.05` Spec frontend: salto a la marca (también tras renovar la URL), confirmación del borrado, botón solo en los propios, error y foco.
+- [ ] `ts-19.06` Tests frontend en rojo, incluido el salto con URL caducada.
 - [ ] `ts-19.07` Código frontend hasta verde (equipo).
 - [ ] `ts-19.08` Review frontend con C3.
 - [ ] `ts-19.09` Comprobación en staging (equipo).
 
+### TS-31 / ts-20 y TS-32 / ts-21 - Acceso del artista
+
+Checklist estándar `.01`..`.09` de `backlog-format.md`. HU-20 monta el envío de correos con Resend (invitación, D6.4) que reutiliza `TS-94`. HU-21 cierra las filas «✅ con acceso vigente desde HU-21» de D8.1 para canciones, versiones y comentarios.
+
+### Ampliación del comité (TS-90..TS-94, TS-96)
+
+Cada Story lleva en Jira sus AC y su checklist `ts-amp-*.01`..`.09`. Resumen:
+
+- **TS-90 Motivo:** categoría y texto obligatorios desde la v2; enmienda de HU-13/HU-14.
+- **TS-91 Análisis:** LUFS (BS.1770), pico real, saturación, silencios y series por segundo, en un Web Worker; validado contra `ffmpeg`; advierte sin bloquear.
+- **TS-92 Revisión:** en revisión → aprobada o cambios pedidos; una fila por decisión.
+- **TS-93 A/B:** dos reproductores sincronizados, curvas superpuestas con zonas marcadas, motivo y diferencia de métricas, decisión del artista.
+- **TS-94 Correos:** en revisión (al artista) y decisión (a los productores), con Resend.
+- **TS-96 Autoría:** «creado por» y «subido por» con varios productores.
+
 ## Tasks y línea transversal
 
-### TS-73 / ts-44 - UI Figma: versiones, subida y reproductor
+### TS-87 - ERD y ADR de la ampliación
 
-Checklist `.01`..`.05` en Jira (inventario de marcos, enmienda de spec, tests solo donde cambia el comportamiento, código del equipo y review contra Figma). `ts-44.01` va en la semana 1 porque alimenta la spec frontend de HU-18. Las trampas de TS-70..TS-72 aplican: revisar los marcos móviles y `package.json` tras cualquier `shadcn add`.
+Gate de datos de la semana 1: `productions.due_date`, `versions.change_category`, `versions.change_reason`, `versions.analysis` y la tabla de decisiones de revisión, con la fila RBAC; ADR del análisis en el cliente, umbrales del chequeo y D6.4 ampliada. El agente redacta y el equipo aprueba.
 
-### TS-44 / ts-33 - Producción (equipo)
+### TS-88 - Diseño en Figma
 
-Railway, Vercel y Auth0 de producción sin secretos en el repo, merge a `main` con aprobación manual y monitoreo de uptime con alerta (RNF-04). Lo ejecuta el equipo; la condición del roadmap es que llegue preparado al cierre del S5.
+El equipo y el agente prototipan juntos con el MCP de Figma, en una página propia del archivo «Track Studio (Copy)». Semana 1: comparación A/B, historial y reproductor rediseñados, motivo y chequeo técnico. Semana 2: dashboard del proceso.
+
+### TS-73 / ts-44 y TS-74 / ts-45 - Fidelidad visual
+
+`TS-73` sobre los marcos rediseñados de `TS-88`. `TS-74` en cuanto HU-19 esté Done. Aplican las trampas de TS-70..TS-72: marcos móviles y `package.json` tras cualquier `shadcn add`.
+
+### TS-44 / ts-33 y TS-89 - Infraestructura (equipo)
+
+Producción (Railway, Vercel y Auth0, merge a `main` con aprobación manual y monitoreo de uptime con alerta) y segunda cuenta de productor en staging.
 
 ### TS-35..TS-37 - Calidad acumulativa de S5
 
-- [ ] `ts-24.s5.01` Incorporar al inventario los componentes críticos de comentarios (validación de la marca, autorización del borrado, línea de tiempo y salto) y enlazar sus pruebas unitarias.
-- [ ] `ts-25.s5.01` Incorporar a la matriz de integración los endpoints de comentarios y el flujo completo: subir, verificar, reproducir, comentar, listar, saltar y borrar.
-- [ ] `ts-26.s5.01` Ensayo integral en staging, registro de defectos críticos y altos, y evidencia de accesibilidad de los marcadores (RNF-07). Insumo del gate R2.
+- [ ] `ts-24.s5.01` Inventario de los componentes críticos nuevos (validación de la marca, autorización del borrado y de la decisión, cálculo de LUFS, sincronía A/B) con sus pruebas unitarias.
+- [ ] `ts-25.s5.01` Matriz de integración con los endpoints nuevos y el flujo completo: subir, analizar, verificar, revisar, comparar, comentar y decidir.
+- [ ] `ts-26.s5.01` Ensayo integral en staging, registro de defectos críticos y altos, y evidencia de accesibilidad de los marcadores y del A/B (RNF-07). Insumo del gate R2.
 
 ## Arrastre del S4
 
 Estos pendientes pasan **sin sumar SP** y se cierran en la semana 1:
 
-| Pendiente                                                  | Origen               | Bloqueo                                    |
-| ---------------------------------------------------------- | -------------------- | ------------------------------------------ |
+| Pendiente                                                  | Origen                 | Bloqueo                                    |
+| ---------------------------------------------------------- | ---------------------- | ------------------------------------------ |
 | PR #53, #54 y #55 abiertos desde el 2026-11-02 (evidencia de calidad S2 y S3) | TS-35..TS-37 | El equipo decide integrarlos o cerrarlos |
-| `ts-24.s4.01`, `ts-25.s4.01`, `ts-26.s4.01` evidencia de calidad S4 | TS-35..TS-37 | Ninguno                                |
-| Hueco de la barra móvil de `AppShell`                      | Handoff v39          | Ninguno; conviene cerrarlo junto con TS-73 |
-| Correcciones de la tesis (Auth0 v7, ClickUp → Jira)        | Roadmap, discrepancias | TS-46 ya está en `Listo` (ver riesgos)   |
+| `ts-24.s4.01`, `ts-25.s4.01`, `ts-26.s4.01` evidencia de calidad S4 | TS-35..TS-37 | Ninguno                                  |
+| Hueco de la barra móvil de `AppShell`                      | Handoff v39            | Ninguno; conviene cerrarlo junto con TS-73 |
+| Correcciones de la tesis (Auth0 v7, ClickUp → Jira)        | Roadmap, discrepancias | TS-46 ya está en `Listo` (ver riesgos)     |
 
 ## Gates de control
 
 ### Inicio (2026-11-16)
 
-- `TS Sprint 4` cerrado y `TS Sprint 5` con objetivo, TS-28..TS-30 (13 SP) y las Tasks asignadas.
-- Responsables de TS-28..TS-30 asignados en Jira (equipo).
+- `TS Sprint 4` cerrado y `TS Sprint 5` con objetivo, 40 SP y las Tasks asignadas (hecho).
+- Responsables asignados en Jira e inicio del sprint (equipo).
 
-### Mitad del sprint (2026-11-23)
+### Corte de la semana 1 (2026-11-23)
 
-- Spec backend de TS-28 aprobada y TS-28 backend en verde; specs backend de TS-29 y TS-30 aprobadas.
-- `ts-44.01` (inventario de Figma) hecho.
+- `TS-87` aprobada y los marcos de la semana 1 de `TS-88` aprobados.
+- HU-17..HU-19, TS-90, TS-91 y TS-96 Done o en review; **≥ 18 SP** cerrados.
 - El arrastre del S4 está cerrado.
 
-### Cierre (2026-11-27)
+### Cierre (2026-11-29)
 
-- TS-28, TS-29 y TS-30 cumplen la Definition of Done: HU-01..HU-19 en `Listo` (68/92 SP).
-- TS-44 preparada (gate «Fin de S5» del roadmap).
+- HU-17..HU-21 y TS-90..TS-94 y TS-96 cumplen la Definition of Done.
+- `TS-73` y `TS-74` integradas; marco del dashboard aprobado para `TS-95`.
+- `TS-44` preparada (gate «Fin de S5» del roadmap).
 - TS-35..TS-37 tienen la evidencia del S5.
-- No quedan defectos críticos abiertos del alcance S5.
 
 ## Definition of Done del sprint
 
@@ -172,23 +222,24 @@ La misma del S4: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 
 | Riesgo                                                   | Señal                                                              | Respuesta                                                                                                                  |
 | -------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Los controles nativos de `<audio>` no admiten marcadores | La spec de HU-18 propone reemplazar todo el reproductor            | Preferir una barra propia alineada a `duration_ms`; reemplazar los controles obliga a rehacer los tests de HU-15 y su accesibilidad. |
-| El salto pierde la posición al renovar la URL            | Saltar justo cuando caduca la URL deja el audio en 0               | El salto usa el mismo `resumeAt` del remontaje; test con URL caducada en `ts-19.06`.                                       |
-| El artista entra por la puerta de HU-17                  | La spec pide permisos de artista por producción                    | `production_access` sigue vetada hasta HU-20/S6; en S5 solo el productor.                                                  |
-| Comentarios sin límite de peticiones                     | Un cliente crea comentarios en bucle                               | ADR 8.5 sigue ABIERTO; se registra en TS-37 como hallazgo y se decide en S6, sin bloquear S5.                              |
-| TS-73 y HU-18 tocan el mismo reproductor                 | Conflictos en `VersionPlayer` entre dos ramas                      | `ts-44.01` primero; el código de TS-73 se integra antes o después de HU-18, no en paralelo sobre el mismo archivo.         |
-| TS-44 llega tarde a S6                                   | Sin accesos de producción al corte de mitad                        | S6 no tiene holgura (roadmap). El equipo lo escala en el corte de mitad; el agente no toca la infraestructura.             |
-| La evidencia de tesis no tiene ticket abierto            | TS-46, TS-47 y TS-48 están en `Listo`, pero el roadmap las cierra en S6 | El equipo confirma si la tesis ya se entregó o si hay que reabrirlas para S5 y S6.                                     |
-| La reserva de QA se absorbe                              | No hay evidencia de TS-35..TS-37 al corte                          | Proteger los 2 SP equivalentes y revisarlos en el cierre.                                                                  |
+| La velocidad no llega a 20–22 SP por semana              | Menos de 18 SP cerrados en el corte del 2026-11-23                 | Recortar la ampliación desde el final: correos, luego dashboard (§8 de la propuesta). El alcance principal y Figma no se recortan. |
+| `TS-87` o `TS-88` se retrasan                            | Sin ERD o sin marcos al tercer día                                 | Bloquean TS-90..TS-93. HU-17..HU-21 siguen sin depender de ellos; priorizar `TS-87` y los marcos A/B el primer día.        |
+| El LUFS no coincide con `ffmpeg`                         | La prueba de referencia de TS-91 falla fuera de tolerancia         | No se muestra el valor hasta que coincida (antiobjetivo de la propuesta); las curvas por banda pueden salir antes.          |
+| MP3 largos agotan la memoria del navegador               | La pestaña se cae al analizar                                      | Tope de duración en la spec de TS-91; por encima, la versión se sube «sin análisis».                                       |
+| Los controles nativos de `<audio>` no admiten marcadores | La spec de HU-18 propone reemplazar todo el reproductor            | El rediseño de `TS-88` resuelve la barra propia una sola vez para HU-18 y para el A/B.                                    |
+| El salto pierde la posición al renovar la URL            | Saltar justo cuando caduca la URL deja el audio en 0               | El salto y el A/B usan el mismo `resumeAt`; test con URL caducada.                                                         |
+| Varias ramas tocan `VersionPlayer`                       | Conflictos entre HU-18, TS-73 y TS-93                              | Integrar en orden: HU-18, TS-73, TS-93. No trabajar en paralelo sobre el mismo archivo.                                    |
+| Endpoints sin límite de peticiones                       | Un cliente crea comentarios o decisiones en bucle                  | ADR 8.5 sigue ABIERTO; se registra en TS-37 y se decide en S6.                                                             |
+| TS-44 llega tarde a S6                                   | Sin accesos de producción al corte de la semana 1                  | S6 no tiene holgura. El equipo lo escala en el corte; el agente no toca la infraestructura.                               |
+| La evidencia de tesis no tiene ticket abierto            | TS-46, TS-47 y TS-48 están en `Listo`, pero el roadmap las cierra en S6 | El equipo confirma si la tesis ya se entregó o si hay que reabrirlas.                                                 |
 
 ## Sincronización con Jira ejecutada
 
 - [x] 2026-11-16: TS-35..TS-37 movidas de `TS Sprint 4` a `TS Sprint 5` (id 73).
 - [x] 2026-11-16: `TS Sprint 4` (id 72) cerrado.
-- [x] 2026-11-16: creada `TS-86` (Sprint Planning S5, Task de `TS-1`) en el sprint 73, con la checklist de esta planificación.
-- [x] 2026-11-16: objetivo y fechas del `TS Sprint 5` registrados (2026-11-16 a 2026-11-30).
-- [x] 2026-11-16: TS-28, TS-29, TS-30, TS-73 y TS-44 movidas al sprint (13 SP funcionales).
-- [x] Checklists `ts-17.xx`, `ts-18.xx` y `ts-19.xx` añadidas a TS-28, TS-29 y TS-30, con la frontera de alcance. AC sin cambios.
-- [x] TS-73: casilla de código atribuida al equipo (regla 7 de `CLAUDE.md`), ventana S5 y frontera con TS-29.
-- [x] Casillas `.s5` y arrastre del S4 comentados en TS-35..TS-37.
-- [ ] Inicio del sprint en Jira (equipo).
+- [x] 2026-11-16: creada `TS-86` (Sprint Planning S5) con la checklist de esta planificación.
+- [x] 2026-11-16: TS-28, TS-29, TS-30, TS-73 y TS-44 movidas al sprint; checklists y fronteras en TS-28..TS-30 y TS-73 («humano» → «equipo»); casillas `.s5` comentadas en TS-35..TS-37.
+- [x] 2026-11-16 (replanificación): creadas TS-87..TS-96 con AC, SP y checklist; TS-87..TS-94 y TS-96 en el sprint; TS-95 sin sprint (S6).
+- [x] 2026-11-16: TS-31, TS-32 y TS-74 movidas al sprint, con comentario de la replanificación. Nota en TS-73 (marcos rediseñados) y en TS-39 (diagramas BPMN y de contexto).
+- [x] 2026-11-16: objetivo del sprint actualizado (40 SP) y fechas 2026-11-16 a 2026-11-30.
+- [ ] Responsables e inicio del sprint en Jira (equipo).
