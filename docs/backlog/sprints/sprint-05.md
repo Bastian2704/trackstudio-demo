@@ -1,6 +1,6 @@
 # Sprint 5 - Comentarios, acceso del artista y base del ciclo de revisión
 
-**Estado:** planificado el 2026-11-16 al cerrar `TS Sprint 4` y **replanificado el mismo día** con la ampliación del comité ([`ampliacion-comite-2026-11.md`](../ampliacion-comite-2026-11.md), aprobada por el equipo), repartida de forma equitativa entre S5 y S6. `TS Sprint 5` es el id 73. Jira manda sobre estado, checklist y criterios de aceptación.
+**Estado:** planificado el 2026-11-16 al cerrar `TS Sprint 4` y **replanificado el mismo día** con la ampliación de alcance ([`ampliacion-alcance-2026-11.md`](../ampliacion-alcance-2026-11.md), aprobada por el equipo), repartida de forma equitativa entre S5 y S6. `TS Sprint 5` es el id 73. Jira manda sobre estado, checklist y criterios de aceptación.
 **Ventana:** 2026-11-16 a 2026-11-29 (Jira cierra el 2026-11-30). **Release:** R2 - Beta con artista (el gate R2 sigue en S6).
 **Selección funcional:** HU-17..HU-21 (`TS-28`..`TS-32`, 18 SP) y la ampliación `TS-90`, `TS-91`, `TS-92` y `TS-96` (11 SP): **29 SP**. **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37`, sin contar los SP dos veces.
 **Tasks:** `TS-87` (ERD y ADR), `TS-88` (diseño en Figma), `TS-89` (Auth0, equipo), `TS-73` y `TS-74` (UI Figma), `TS-44` (producción, equipo), `TS-86` (Sprint Planning S5) y el arrastre del S4.
@@ -19,7 +19,7 @@ Entregar en staging los comentarios con marca de tiempo, el acceso del artista y
 | Tipo                  | Alcance                                                    |                              Capacidad |
 | --------------------- | ---------------------------------------------------------- | -------------------------------------: |
 | Historias funcionales | HU-17..HU-21                                               |                                  18 SP |
-| Ampliación del comité | TS-90, TS-91, TS-92, TS-96                                 |                                  11 SP |
+| Ampliación de alcance | TS-90, TS-91, TS-92, TS-96                                 |                                  11 SP |
 | Calidad transversal   | Avance verificable de HU-24..HU-26 sobre la superficie S5  |                      2 SP equivalentes |
 | Tasks sin SP          | TS-73, TS-74, TS-87, TS-88, TS-89, TS-44, TS-86 y arrastre | Consumen la misma capacidad del sprint |
 | **Objetivo total**    | Funcional + ampliación + transversal                       |                 **31 SP equivalentes** |
@@ -30,7 +30,7 @@ La ampliación se reparte de forma equitativa entre S5 y S6 (decisión del equip
 
 | Jira  | Tipo  |  SP | Título                                                    | Dependencias de entrega                     |
 | ----- | ----- | --: | --------------------------------------------------------- | ------------------------------------------- |
-| TS-87 | Task  |   — | ERD y ADR de la ampliación del comité                     | — (gate de datos de la ampliación)          |
+| TS-87 | Task  |   — | ERD y ADR de la ampliación de alcance                     | — (gate de datos de la ampliación)          |
 | TS-88 | Task  |   — | Diseño en Figma: revisión, A/B, chequeo y dashboard       | Aprobación del equipo para escribir en Figma |
 | TS-28 | Story |   5 | HU-17 Comentar sobre una marca de tiempo                  | TS-26 (Listo); ERD §3.6                     |
 | TS-29 | Story |   5 | HU-18 Ver comentarios en la línea de tiempo               | TS-28; marcos de TS-88                      |
@@ -88,7 +88,7 @@ Vienen del ERD §3.6, de D4.5, de D8.1, de `CLAUDE.md` §5 y de la propuesta apr
 - **HU-19 (TS-30):** el salto pasa por el mismo `resumeAt` con el que `VersionPlayer` conserva la posición al renovar la URL. Borrado físico, solo del autor. Sin edición.
 - **Artista:** HU-17..HU-19 nacen solo para el productor. HU-20/HU-21 habilitan al artista con acceso vigente según las filas «✅ con acceso vigente desde HU-21» de D8.1, sin reabrir las specs anteriores. La prueba de «solo borra los suyos» usa dos productores, y luego un productor y un artista.
 - **ADR 8.1:** la fila RBAC de `comments` se cierra en la spec backend de HU-17; la de las decisiones de revisión, en `TS-87`.
-- **Ampliación en S5 (TS-90, TS-91, TS-92, TS-96):** según [`ampliacion-comite-2026-11.md`](../ampliacion-comite-2026-11.md) §5. El análisis se calcula en el navegador al subir y advierte sin bloquear; la revisión registra una fila por decisión; varios productores comparten todo el estudio. En S5 el artista decide desde el historial; la decisión desde la comparación A/B llega con `TS-93` en S6.
+- **Ampliación en S5 (TS-90, TS-91, TS-92, TS-96):** según [`ampliacion-alcance-2026-11.md`](../ampliacion-alcance-2026-11.md) §5. El análisis se calcula en el navegador al subir y advierte sin bloquear; la revisión registra una fila por decisión; varios productores comparten todo el estudio. En S5 el artista decide desde el historial; la decisión desde la comparación A/B llega con `TS-93` en S6.
 - **Figma:** ninguna pantalla nueva o rediseñada se especifica sin su marco aprobado en `TS-88`. `TS-73` toma los marcos rediseñados del historial y el reproductor, no los anteriores.
 - **Fuera de S5:** comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`), que van en S6. Fuera del proyecto: resumen con IA, aislamiento por productor, `TS-81` y `TS-82`. `studio_sessions` espera a HU-22/HU-23 (S6).
 - **ADR 8.5** (rate limiting) y **11.5** (plan de medición de RNF) siguen ABIERTOS y diferidos; no bloquean. Los endpoints de comentarios y de decisiones quedan sin límite de peticiones mientras 8.5 siga abierto.
@@ -141,7 +141,7 @@ Los criterios de aceptación y las checklists `.01`..`.09` viven en Jira. La com
 
 Checklist estándar `.01`..`.09` de `backlog-format.md`. HU-20 monta el envío de correos con Resend (invitación, D6.4), que `TS-94` reutiliza en S6. HU-21 cierra las filas «✅ con acceso vigente desde HU-21» de D8.1 para canciones, versiones y comentarios.
 
-### Ampliación del comité en S5 (TS-90, TS-91, TS-92, TS-96)
+### Ampliación de alcance en S5 (TS-90, TS-91, TS-92, TS-96)
 
 Cada Story lleva en Jira sus AC y su checklist `ts-amp-*.01`..`.09`. Resumen:
 

@@ -59,7 +59,7 @@ Todas salen de reglas ya vigentes; ninguna abre alcance:
 
 - **Origen:** en la revisión de avance, el comité vio el alcance simple («calza en Programación 4») y pidió proceso, motivo de cada versión, dashboard de indicadores, análisis o servicios externos, comunicación y varios productores.
 - **Decisiones del equipo:**
-  - Se aprueba [`ampliacion-comite-2026-11.md`](../../backlog/ampliacion-comite-2026-11.md): flujo de revisión y aprobación, motivo de la versión, análisis técnico en el navegador (LUFS, pico real, saturación, silencios; $0 de AWS), A/B con curvas y decisión, correos, dashboard del proceso y autoría con varios productores. Total: 27 SP.
+  - Se aprueba [`ampliacion-alcance-2026-11.md`](../../backlog/ampliacion-alcance-2026-11.md): flujo de revisión y aprobación, motivo de la versión, análisis técnico en el navegador (LUFS, pico real, saturación, silencios; $0 de AWS), A/B con curvas y decisión, correos, dashboard del proceso y autoría con varios productores. Total: 27 SP.
   - Queda fuera el resumen con IA, por costo.
   - Ampliación **repartida de forma equitativa entre S5 y S6**, unos 5 SP más por semana que hasta ahora. Hubo una primera lectura de «20–22 SP por semana» (40 SP en el S5) que el equipo corrigió el mismo día.
   - El alcance principal y todas las Tasks de Figma quedan listos el 2026-12-11.

@@ -1,11 +1,11 @@
-# Ampliación de alcance tras la revisión del comité (2026-11)
+# Ampliación de alcance (2026-11)
 
 **Estado:** **aprobada por el equipo el 2026-11-16** y registrada en Jira (§9). No autoriza implementación por sí sola: cada Story necesita el slice del ERD aprobado (`TS-87`) y su spec de capa antes de los tests (`metodologia-sdd-tdd.md`, Ready).
-**Origen:** revisión de avance con el comité de titulación (noviembre de 2026), transcrita por el equipo.
+**Origen:** revisión de avance de noviembre de 2026 (registrada en el roadmap, decisión del 2026-11-16).
 
 ## 1. Por qué
 
-El comité consideró el alcance «simple»: artistas, producciones y canciones son CRUD que «calza en Programación 4». Pidió ver un **proceso** (la producción musical con sus caminos alternos) y cómo el software lo sostiene, procesa datos y muestra resultados. Sus seis observaciones:
+Con artistas, producciones y canciones, el sistema guarda archivos pero no sostiene el **proceso** de producción musical, con sus caminos alternos, ni procesa datos ni muestra resultados. La ampliación cubre seis necesidades:
 
 1. Mostrar el proceso de producción, sus caminos alternos y qué parte implementa el sistema, al inicio de la presentación.
 2. Que cada versión explique qué cambió y por qué.
@@ -14,7 +14,7 @@ El comité consideró el alcance «simple»: artistas, producciones y canciones 
 5. Comunicación con el artista: avisos de «ya terminé, revisa».
 6. Varios productores en el mismo estudio.
 
-El objetivo de esta ampliación es que, en la defensa, el comité vea un flujo de **revisión y aprobación** de versiones con datos procesados, y no un almacén de archivos.
+El objetivo de esta ampliación es que Track Studio sea un flujo de **revisión y aprobación** de versiones con datos procesados, y no un almacén de archivos.
 
 ## 2. Objetivos, no objetivos y antiobjetivos
 
