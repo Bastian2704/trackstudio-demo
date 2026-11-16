@@ -91,8 +91,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 > **Actualizado el 2026-11-16 (Sprint 5 replanificado, `docs/backlog/sprints/sprint-05.md` y `docs/backlog/ampliacion-comite-2026-11.md`):**
 >
 > - Se levanta el veto de `comments` **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6.
-> - Se levanta el veto de `production_access` y del acceso del artista **solo para `TS-31` y `TS-32`** (HU-20, HU-21), que pasan de S6 a S5, semana 2. Hasta que HU-21 esté Done, solo actúa el productor.
-> - Se aprueba la **ampliación del comité** (`TS-90`..`TS-96`): motivo de la versión, análisis técnico en el cliente, flujo de revisión, comparación A/B, correos del flujo, dashboard del proceso (S6) y autoría con varios productores. Sus migraciones y contratos esperan al slice del ERD y al ADR de `TS-87`. Ninguna pantalla nueva se especifica sin su marco aprobado en `TS-88` (Figma).
+> - Se levanta el veto de `production_access` y del acceso del artista **solo para `TS-31` y `TS-32`** (HU-20, HU-21), que pasan de S6 a S5. Hasta que HU-21 esté Done, solo actúa el productor.
+> - Se aprueba la **ampliación del comité**, repartida entre S5 y S6. En S5: motivo de la versión (`TS-90`), análisis técnico en el cliente (`TS-91`), flujo de revisión (`TS-92`) y autoría con varios productores (`TS-96`). En S6: comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`). Sus migraciones y contratos esperan al slice del ERD y al ADR de `TS-87`. Ninguna pantalla nueva se especifica sin su marco aprobado en `TS-88` (Figma).
 > - Fidelidad visual en S5: `TS-73` (sobre los marcos rediseñados de `TS-88`) y `TS-74` (comentarios).
 > - Siguen fuera: `studio_sessions` hasta HU-22/HU-23 (S6), resumen con IA, aislamiento por productor, notificaciones dentro de la aplicación (`TS-82`) y `TS-81`.
 >

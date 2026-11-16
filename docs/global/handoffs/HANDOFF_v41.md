@@ -61,14 +61,15 @@ Todas salen de reglas ya vigentes; ninguna abre alcance:
 - **Decisiones del equipo:**
   - Se aprueba [`ampliacion-comite-2026-11.md`](../../backlog/ampliacion-comite-2026-11.md): flujo de revisión y aprobación, motivo de la versión, análisis técnico en el navegador (LUFS, pico real, saturación, silencios; $0 de AWS), A/B con curvas y decisión, correos, dashboard del proceso y autoría con varios productores. Total: 27 SP.
   - Queda fuera el resumen con IA, por costo.
-  - Capacidad de **20–22 SP por semana**.
+  - Ampliación **repartida de forma equitativa entre S5 y S6**, unos 5 SP más por semana que hasta ahora. Hubo una primera lectura de «20–22 SP por semana» (40 SP en el S5) que el equipo corrigió el mismo día.
   - El alcance principal y todas las Tasks de Figma quedan listos el 2026-12-11.
   - Las pantallas nuevas se diseñan antes en Figma, juntos, con el MCP (`TS-88`).
   - Si hay que recortar, caen primero los correos y luego el dashboard.
 - **Jira:**
   - Creadas `TS-87`..`TS-96`.
   - HU-20/HU-21 (`TS-31`, `TS-32`) y `TS-74` pasan al S5.
-  - El S5 queda en 40 SP; `TS-95` (dashboard) va en S6.
+  - El S5 queda en 29 SP: HU-17..HU-21, TS-90, TS-91, TS-92 y TS-96.
+  - Se creó `TS Sprint 6` (id 74) con 27 SP de trabajo nuevo (HU-22, HU-23, HU-27, HU-28, TS-93, TS-94 y TS-95) más el cierre de HU-24..HU-26, y con TS-75 y TS-76.
 - **Docs:** `sprint-05.md` reescrito; `CLAUDE.md` §5, roadmap («Reglas de alcance» y «Siguiente paso») y `jira-key-map.md` actualizados.
 - **Siguiente paso:**
   - `TS-87`, el slice del ERD y el ADR. Es el gate de TS-90..TS-92.
@@ -78,4 +79,4 @@ Todas salen de reglas ya vigentes; ninguna abre alcance:
 ## 8. Cómo retomar el entorno
 
 - **Jira:** usar el servidor MCP `atlassian-ts`. Si `getAccessibleAtlassianResources` no devuelve el sitio de `TS`, volver a autenticarlo con `/mcp`.
-- **Sprint de Jira:** `TS Sprint 5` es el id 73, en el tablero 3.
+- **Sprint de Jira:** `TS Sprint 5` es el id 73 y `TS Sprint 6` el id 74, en el tablero 3.

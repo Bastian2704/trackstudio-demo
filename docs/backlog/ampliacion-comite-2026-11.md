@@ -44,7 +44,7 @@ El objetivo de esta ampliación es que, en la defensa, el comité vea un flujo d
 ## 3. Restricciones
 
 - **Fechas:** el alcance principal y todas las Tasks de Figma (`TS-73`..`TS-76`) quedan listos para el 2026-12-11. La fecha no es rígida para la ampliación, pero el plan la busca para la misma fecha (decisión del equipo del 2026-11-16).
-- **Capacidad:** el equipo se compromete a 20–22 SP por semana (decisión del equipo del 2026-11-16), frente a 16 SP en dos semanas del S4.
+- **Capacidad:** la ampliación se reparte de forma equitativa entre S5 y S6, con unos 5 SP más por semana que hasta ahora: 27–29 SP por sprint, frente a 16 SP del S4 (decisión del equipo del 2026-11-16, que corrige una primera lectura de 20–22 SP por semana).
 - **Costo:** presupuesto de AWS de USD 1 al mes. Nada de la ampliación puede generar cargos.
 - **Arquitectura vigente:** el audio no pasa por Railway (D7.1); la duración ya la reporta el frontend (ERD §3.5); no hay jobs ni worker de colas desplegados; Resend está configurado (`TS-43`).
 - **Proceso:** ciclo SDD/TDD híbrido, ERD antes de las migraciones, ADR para las decisiones técnicas nuevas y veto en `CLAUDE.md` §5 hasta que se levante por historia.
@@ -151,37 +151,39 @@ Extiende `TS-85` (`GET /api/v1/dashboard`):
 - Umbrales del chequeo técnico y su carácter de advertencia.
 - Ampliación de D6.4: Resend envía también los avisos del flujo de revisión.
 
-## 8. Plan semanal
+## 8. Plan por sprint
 
-| Semana | Principal | Ampliación | Figma | SP |
+Reparto equitativo entre los dos sprints restantes (decisión del equipo del 2026-11-16):
+
+| Sprint | Principal | Ampliación | Figma | SP |
 | --- | --- | --- | --- | --: |
-| 1 · 16–22 nov | HU-17, HU-18, HU-19 | Motivo de la versión; cálculo y guardado del análisis | TS-73 | ~20 |
-| 2 · 23–29 nov | HU-20, HU-21 | Flujo de revisión, A/B con decisión, correos y curvas | TS-74 | ~19 |
-| 3 · 30 nov–6 dic | HU-22, HU-23, HU-27, cierre de HU-24..HU-26 | Dashboard del proceso | TS-75 | ~22 |
-| 4 · 7–11 dic | HU-28 | Diagramas, ensayo de la defensa y margen | TS-76 | — |
+| S5 · 16–29 nov | HU-17..HU-21 (18) | Motivo (2), análisis y chequeo (5), flujo de revisión (3), autoría (1) | TS-88 (diseño), TS-73, TS-74 | 29 |
+| S6 · 30 nov–11 dic | HU-22, HU-23, HU-27, HU-28 (11) y cierre de HU-24..HU-26 | A/B con curvas y decisión (8), correos (3), dashboard del proceso (5) | TS-75, TS-76 | 27 + 8 de cierre |
 
-**Estimaciones de la ampliación** (gruesas, a validar por el equipo): flujo de revisión con motivo 5, A/B con decisión 5, dashboard del proceso 5, correos 3, análisis y chequeo técnico 8. Total: 26 SP sobre los 92 de la baseline (más los 3 de `TS-85`).
+Los 8 SP de HU-24..HU-26 se cierran en S6, pero su trabajo ya se hace en cada sprint con la reserva de 2 SP equivalentes; no son esfuerzo nuevo del S6. La semana del 7 al 11 de diciembre incluye HU-28, los diagramas de §5.8 y el ensayo de la defensa.
 
-**Diseño previo en Figma:** las pantallas nuevas y las que se reforman se prototipan en Figma antes de su spec frontend (ver §11). La revisión, el A/B y el chequeo se diseñan en la semana 1, porque se construyen en la 2; el dashboard del proceso, en la semana 2.
+**Estimaciones de la ampliación** (gruesas, a validar por el equipo): motivo 2, análisis y chequeo técnico 5, flujo de revisión 3, A/B con curvas y decisión 8, correos 3, dashboard del proceso 5 y autoría 1. Total: 27 SP sobre los 92 de la baseline (más los 3 de `TS-85`).
 
-**Control:** corte cada lunes. La meta es no recortar nada (decisión del equipo del 2026-11-16). Si una semana queda por debajo de 18 SP, la ampliación se recorta desde el final de este orden: flujo de revisión, A/B, análisis y curvas, dashboard, correos. El alcance principal y Figma no se recortan.
+**Diseño previo en Figma:** las pantallas nuevas y las que se reforman se prototipan en Figma antes de su spec frontend (ver §11), todas durante S5: primero las que se construyen en S5 (historial y reproductor, motivo, chequeo, revisión) y después el A/B y el dashboard, que se construyen en S6.
+
+**Control:** corte a mitad y al cierre de cada sprint. La meta es no recortar nada (decisión del equipo del 2026-11-16). Si la velocidad no llega, la ampliación se recorta desde el final de este orden: flujo de revisión, A/B, análisis y curvas, dashboard, correos. El alcance principal y Figma no se recortan.
 
 ## 9. Registro en Jira (2026-11-16)
 
 | Jira | Tipo | Bloque | SP | Sprint |
 | --- | --- | --- | --: | --- |
-| `TS-87` | Task de `TS-1` | ERD y ADR de la ampliación (gate de datos) | — | S5, semana 1 |
-| `TS-88` | Task de `TS-67` | Diseño en Figma de las pantallas nuevas y rediseñadas | — | S5, semanas 1–2 |
+| `TS-87` | Task de `TS-1` | ERD y ADR de la ampliación (gate de datos) | — | S5, primeros días |
+| `TS-88` | Task de `TS-67` | Diseño en Figma de las pantallas nuevas y rediseñadas | — | S5 |
 | `TS-89` | Task de `TS-1` | Segunda cuenta de productor en Auth0 (equipo) | — | S5 |
-| `TS-90` | Story de `TS-6` | Motivo de la versión | 2 | S5, semana 1 |
-| `TS-91` | Story de `TS-6` | Análisis técnico al subir | 5 | S5, semana 1 |
-| `TS-92` | Story de `TS-6` | Flujo de revisión y aprobación | 3 | S5, semana 2 |
-| `TS-93` | Story de `TS-6` | Comparación A/B con curvas y decisión | 8 | S5, semana 2 |
-| `TS-94` | Story de `TS-6` | Correos del flujo de revisión | 3 | S5, semana 2 |
-| `TS-95` | Story de `TS-4` | Dashboard del proceso | 5 | S6, semana 3 |
+| `TS-90` | Story de `TS-6` | Motivo de la versión | 2 | S5 |
+| `TS-91` | Story de `TS-6` | Análisis técnico al subir | 5 | S5 |
+| `TS-92` | Story de `TS-6` | Flujo de revisión y aprobación | 3 | S5 |
+| `TS-93` | Story de `TS-6` | Comparación A/B con curvas y decisión | 8 | S6 |
+| `TS-94` | Story de `TS-6` | Correos del flujo de revisión | 3 | S6 |
+| `TS-95` | Story de `TS-4` | Dashboard del proceso | 5 | S6 |
 | `TS-96` | Story de `TS-2` | Varios productores: autoría visible | 1 | S5 |
 
-Total de la ampliación: **27 SP** (los 26 de §8 más 1 de `TS-96`). HU-20 y HU-21 (`TS-31`, `TS-32`) pasan de S6 a S5, semana 2, porque el artista tiene que poder entrar para decidir. `TS-74` (UI de comentarios) entra en S5, semana 2. Los diagramas de §5.8 quedan comentados en `TS-39` (HU-28).
+Total de la ampliación: **27 SP**. HU-20 y HU-21 (`TS-31`, `TS-32`) pasan de S6 a S5, porque el flujo de revisión necesita que el artista pueda entrar. `TS-74` (UI de comentarios) entra en S5. `TS Sprint 6` se creó en Jira (id 74) con HU-22, HU-23, HU-27, HU-28, TS-93, TS-94, TS-95, TS-75 y TS-76. Los diagramas de §5.8 quedan comentados en `TS-39` (HU-28).
 
 Decisión registrada en `roadmap.md` («Reglas de alcance»); vetos actualizados en `CLAUDE.md` §5; plan del sprint en `sprints/sprint-05.md`.
 
