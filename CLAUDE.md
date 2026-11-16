@@ -21,7 +21,7 @@ Es un monorepo con reglas por capa: además de este archivo raíz, hay un `backe
 
 Antes de escribir una spec, un test o proponer una implementación:
 
-1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec. `TS-42` (bucket/IAM) está Listo; en S4 queda solo verificar el CORS del bucket (equipo) antes de la reproducción de HU-15.)
+1. **¿Toca algo `ABIERTO` en el ADR?** Si sí, no lo trabajo todavía — señalo la decisión pendiente. La lista viva está al final del ADR ("Resumen de puntos abiertos priorizados"); no la copio aquí, la consulto. (Hoy, lo que más bloquea: **11.5** plan de medición de RNF y **8.5** rate limiting. El **bloque 7 (audio/S3) está CERRADO** desde el 2026-08-18: el **ERD completo está CERRADO** desde el 2026-10-06 (`TS-49`, `docs/erd/modelo-completo.md`). Ninguno de los dos bloquea ya las historias de datos; lo que las limita es el sprint asignado (§5) y su propia spec. `TS-42` (bucket/IAM) está Listo y la reproducción de HU-15 quedó integrada en S4.)
 2. **¿Cae en "Qué NO hacer todavía" (§5)?** Si sí, no lo hago aunque parezca razonable.
 3. **¿Afecta una convención** (nombres, commits, ramas, formato de error, zona horaria, capas)? La verifico contra el doc que la posee antes de aplicarla.
 
@@ -86,7 +86,9 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ---
 
-## 5. Qué NO hacer todavía (alcance vigente de Sprint 4)
+## 5. Qué NO hacer todavía (alcance vigente de Sprint 5)
+
+> **Actualizado el 2026-11-16 (Sprint 5, `docs/backlog/sprints/sprint-05.md`):** se levanta el veto de `comments` (migración `create_comments_table`, creación, listado, salto y borrado) **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6. En S5 solo comenta el productor: `production_access` y el acceso del artista siguen vetados hasta HU-20/HU-21 (S6). Fidelidad visual en S5: solo `TS-73` (versiones, subida y reproductor); el estilo de los comentarios es de `TS-74` (S6). `studio_sessions` sigue vetada. Las notas y viñetas siguientes se leen con esta.
 
 > **Actualizado el 2026-11-12 (`TS-85`, dashboard parcial):** se levanta el veto de las «métricas del dashboard» **solo para `TS-85`**: `GET /api/v1/dashboard` y la ruta `/dashboard`, del productor, con datos de las tablas existentes y sin migraciones. El resto del marco `1:76`, las estadísticas del artista y `TS-80` siguen fuera. Decisión en `docs/backlog/roadmap.md` («Reglas de alcance»).
 
@@ -101,7 +103,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 - Se permiten en S2 las migraciones e interfaces de `artists` y `productions` que estén cubiertas por una spec aprobada y por el slice correspondiente del ERD. No se inventa el esquema desde la implementación.
 - Subida de archivos, S3 de aplicación, `versions` y presigned POST (D7.1, enmendada el 2026-10-20; antes PUT): solo dentro de `TS-24`, con `TS-42` (bucket/IAM, equipo) listo. Fuera de esa historia siguen vetados.
 - `songs` ya existe (`TS-21`, Listo). En S3 se amplía con el máximo por formato (`TS-20`), el listado (`TS-22`) y el borrado en cascada (`TS-23`), según `docs/erd/modelo-completo.md` §3.4.
-- No crear migraciones de `comments`, `studio_sessions` ni `production_access`. `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
+- No crear migraciones de `studio_sessions` ni `production_access`; la de `comments` solo en `TS-28` (S5). `production_access` permanece diferida a HU-20/S6; su diseño sí debe quedar cerrado en `TS-49`.
 - No implementar hash de integridad todavía; corresponde a S4. Sí se pueden definir en el ERD y las specs las fronteras decididas por D7.x.
 - No construir interfaces funcionales fuera de artistas, producciones, canciones (HU-09..HU-12) y la subida de HU-13. Historial y reproducción de versiones, comentarios, acceso del artista y sesiones esperan su sprint.
 - Fidelidad visual con Figma (épica `TS-67`): en S3 solo `TS-68` (tokens y shell con navegación lateral), `TS-69` (login/errores) y `TS-70` (artistas). Cada Task de UI espera a que su módulo funcional esté Done. Del prototipo sin RF solo se adopta la navegación lateral; buscador, métricas, portada, avance y menú «⋮» siguen fuera.

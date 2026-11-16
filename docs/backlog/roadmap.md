@@ -164,3 +164,5 @@ Release y sprint son atributos de planificación, no padres. Jira es la fuente d
 2. `TS Sprint 4` (2026-11-02 a 2026-11-13) planificado el 2026-11-03 con [`sprints/sprint-04.md`](sprints/sprint-04.md) como baseline: TS-25, TS-27 y TS-26 (13 SP), TS-71, TS-72 y TS-45, más la reserva de TS-35..TS-37. La verificación por ETag queda en TS-25 (decisión del equipo).
 3. Cierre R1 al final del S4 (hito del 2026-11-13): HU-01..HU-16, 55/92 SP.
 4. Cerrar en la semana 1 el arrastre del S3 (evidencia de TS-46, calidad S3 y comprobaciones `.09` en staging).
+5. S4 cerrado en Jira el 2026-11-16 con TS-25, TS-26, TS-27 y TS-85 en `Listo` (13 SP de la baseline + 3 SP de alcance nuevo). **R1 cerrado:** 55/92 SP de la baseline.
+6. `TS Sprint 5` (2026-11-16 a 2026-11-27) planificado el 2026-11-16 con [`sprints/sprint-05.md`](sprints/sprint-05.md) como baseline: TS-28, TS-29 y TS-30 (13 SP), TS-73 y TS-44, más la reserva de TS-35..TS-37. En S5 solo comenta el productor; el artista espera a HU-21. Hito de la semana 10: 68/92 SP.
