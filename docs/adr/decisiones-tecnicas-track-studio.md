@@ -153,6 +153,7 @@ Las respuestas construidas por el manejador usan el media type **`application/pr
 | Hash no coincide | 422 | `AUDIO_HASH_MISMATCH` |
 | Presigned URL expirada | 410 | `PRESIGNED_URL_EXPIRED` |
 | Demasiadas peticiones | 429 | `RATE_LIMITED` |
+| Fallo al enviar un correo (Resend) | 502 | `MAIL_DELIVERY_FAILED` |
 | Error interno | 500 | `INTERNAL_ERROR` |
 
 **Nivel de adhesión a RFC 9457 (cierra 3.6, 2026-09-17):** **completo**. Se emiten `type` e `instance` en toda respuesta de error, no solo los campos pragmáticos. El motivo original para diferirlos —que la URL de `type` apuntaba a un dominio no comprado— desapareció al confirmarse `trackstudio.site` (bloque 10). El `type` **se deriva del `code`**, no se escribe a mano: `https://trackstudio.site/errors/{code en kebab-case}` (`FORBIDDEN` → `.../errors/forbidden`). El `instance` es la ruta pedida.
