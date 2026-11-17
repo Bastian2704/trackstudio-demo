@@ -21,6 +21,13 @@ Al subir una versión nueva, el productor elige una categoría:
 - ¿Sirven estas seis? ¿Falta alguna que use el estudio (por ejemplo, edición o afinación, letra o estructura) o sobra alguna?
 - Respuesta:
 
+> **Propuesta:** se elige **una sola categoría por versión**, la del cambio principal, y el texto explica el resto.
+
+- ¿Le basta con una, o es habitual que una versión cambie varias cosas a la vez (por ejemplo, voz y mezcla) y quiere marcar varias? *(Si la respuesta es «varias», cambia el ERD: `change_category` deja de ser una columna simple.)*
+- Respuesta:
+
+Hay una explicación visual con ejemplos de cómo se vería en la página «Categorías del cambio» (enlace en el PR de `TS-87`).
+
 ### 2. Volumen objetivo
 
 > **Propuesta:** advertir si el volumen integrado queda fuera de **−14 LUFS ± 1 LU**, es decir, por debajo de −15 o por encima de −13. Es la referencia de Spotify y YouTube.
