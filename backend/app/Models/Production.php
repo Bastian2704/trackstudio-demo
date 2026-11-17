@@ -52,4 +52,10 @@ class Production extends Model
     {
         return $this->hasMany(Song::class);
     }
+
+    /** @return HasMany<ProductionAccess, $this> */
+    public function accesses(): HasMany
+    {
+        return $this->hasMany(ProductionAccess::class);
+    }
 }

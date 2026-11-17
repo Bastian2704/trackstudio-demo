@@ -17,6 +17,7 @@ enum ErrorCode: string
     case AudioHashMismatch = 'AUDIO_HASH_MISMATCH';
     case PresignedUrlExpired = 'PRESIGNED_URL_EXPIRED';
     case RateLimited = 'RATE_LIMITED';
+    case MailDeliveryFailed = 'MAIL_DELIVERY_FAILED';
     case InternalError = 'INTERNAL_ERROR';
 
     public function status(): int
@@ -31,6 +32,7 @@ enum ErrorCode: string
             self::AudioHashMismatch => 422,
             self::RateLimited => 429,
             self::ResourceNotFound => 404,
+            self::MailDeliveryFailed => 502,
             self::InternalError => 500,
         };
     }
@@ -47,6 +49,7 @@ enum ErrorCode: string
             self::AudioHashMismatch => 'No se pudo verificar la integridad del audio',
             self::PresignedUrlExpired => 'La URL de carga ha expirado',
             self::RateLimited => 'Demasiadas solicitudes',
+            self::MailDeliveryFailed => 'No se pudo enviar el correo',
             self::InternalError => 'Error interno del servidor',
         };
     }
