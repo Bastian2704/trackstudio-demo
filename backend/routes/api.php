@@ -180,8 +180,8 @@ Route::get('/versions/{version}/playback-url', [VersionController::class, 'playb
     ]);
 
 Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])
-        ->where('token', '[A-Za-z0-9]{64}')
-        ->middleware([
-            'auth:auth0-api',
-            'can:perform-artist-action',
-        ]);
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware([
+        'auth:auth0-api',
+        'can:perform-artist-action',
+    ]);

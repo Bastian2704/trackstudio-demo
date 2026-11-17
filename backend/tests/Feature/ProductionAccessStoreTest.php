@@ -254,6 +254,7 @@ it('si el correo falla no queda nada', function () {
     Log::shouldHaveReceived('error')
         ->withArgs(fn (string $mensaje, array $contexto = []): bool => $mensaje === 'production_access.mail_failed'
             && ($contexto['artist_id'] ?? null) === $artista->id
+            && ($contexto['exception'] ?? null) === RuntimeException::class
             && ! str_contains((string) json_encode($contexto), $artista->email))
         ->once();
 });

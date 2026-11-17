@@ -49,10 +49,11 @@ final class ProductionAccessService
 
             try {
                 $this->mailer->send($artist->email, $mail);
-            } catch (Throwable) {
+            } catch (Throwable $e) {
                 Log::error('production_access.mail_failed', [
                     'artist_id' => $artist->id,
                     'production_id' => $production->id,
+                    'exception' => $e::class,
                 ]);
 
                 throw new ApiProblemException(

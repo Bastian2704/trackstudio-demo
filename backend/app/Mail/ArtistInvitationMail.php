@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/** Sin ShouldQueue: no hay worker y el envío va dentro de la transacción*/
+/** Sin ShouldQueue: no hay worker y el envío va dentro de la transacción (HU-20 §3.7). */
 final class ArtistInvitationMail extends Mailable
 {
     public function __construct(

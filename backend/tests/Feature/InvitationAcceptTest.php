@@ -7,6 +7,7 @@ use App\Models\Artist;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 
@@ -156,6 +157,53 @@ it('rechaza una cuenta ya vinculada a otro artista', function () {
         ->assertJsonPath('errors.token.0', 'Tu cuenta ya está vinculada a otro artista.');
 
     expectInvitacionIntacta($artista);
+});
+
+// El único de artists.user_id incluye los borrados: sin withTrashed() la comprobación pasa y la base da 500.
+it('rechaza una cuenta vinculada a un artista borrado', function () {
+    $usuario = User::factory()->create(['auth0_sub' => claimsDeToken()['sub']]);
+    Artist::factory()->create([
+        'status' => ArtistStatus::Activo,
+        'user_id' => $usuario->id,
+        'invitation_token' => null,
+    ])->delete();
+    [$artista, $token] = artistaInvitado();
+    impersonarToken(claimsDeToken('artista'));
+
+    aceptar($token)
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.token.0', 'Tu cuenta ya está vinculada a otro artista.');
+
+    expectInvitacionIntacta($artista);
+});
+
+it('no pisa una aceptación concurrente del mismo token', function () {
+    [$artista, $token] = artistaInvitado();
+    $otraCuenta = User::factory()->create();
+    impersonarToken(claimsDeToken('artista'));
+
+    // Otra aceptación gana la carrera justo antes de que esta escriba.
+    $adelantada = false;
+    DB::beforeExecuting(function (string $sql) use (&$adelantada, $artista, $otraCuenta): void {
+        if ($adelantada || ! str_starts_with($sql, 'update "artists"')) {
+            return;
+        }
+
+        $adelantada = true;
+        DB::table('artists')->where('id', $artista->id)->update([
+            'user_id' => $otraCuenta->id,
+            'status' => ArtistStatus::Activo->value,
+            'invitation_token' => null,
+            'invitation_expires_at' => null,
+        ]);
+    });
+
+    aceptar($token)
+        ->assertNotFound()
+        ->assertJsonPath('code', 'RESOURCE_NOT_FOUND');
+
+    expect($adelantada)->toBeTrue()
+        ->and($artista->refresh()->user_id)->toBe($otraCuenta->id);
 });
 
 it('solo el rol artista acepta', function (?string $rol, int $http, string $code) {
