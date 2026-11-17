@@ -25,6 +25,7 @@ import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
 import { fetchSongs } from '@/routes/songs/songApi'
 import SongList from '@/routes/songs/SongList'
+import ProductionAccessPanel from '@/routes/access/ProductionAccessPanel'
 import ProductionForm from './ProductionForm'
 import ProductionFormatNotice from './ProductionFormatNotice'
 import { deleteProduction, fetchProduction, updateProduction } from './productionApi'
@@ -127,6 +128,7 @@ export default function ProductionEditPage() {
           {songCount !== undefined && (
             <ProductionFormatNotice format={query.data.format} songCount={songCount} />
           )}
+          <ProductionAccessPanel productionId={id} artistId={query.data.artist_id} />
           <SongList productionId={id} />
           <AlertDialog
             open={confirmOpen}

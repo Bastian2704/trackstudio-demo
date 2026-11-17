@@ -82,6 +82,7 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
 function altaCorrecta(datos = produccion()) {
   return ({ method, url }: { method: string; url: string }): RespuestaSimulada => {
     if (method === 'POST') return { status: 201, data: { data: datos } }
+    if (url.endsWith('/access')) return { status: 200, data: { data: [] } }
     return url.endsWith('/songs') ? pagina([]) : { status: 200, data: { data: datos } }
   }
 }
