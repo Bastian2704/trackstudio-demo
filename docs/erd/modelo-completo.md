@@ -3,10 +3,11 @@
 > **Jira:** `TS-49` (`ts-38.01`..`ts-38.09`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado) y [`modelo-sprint-2.md`](modelo-sprint-2.md) (delta de S2, slice de `productions` aprobado el 2026-10-05)
 > **Estado:** **aprobado por el equipo el 2026-10-06.** Cierra el ERD (`ts-38.09`).
+> **Ampliación `TS-87` (2026-11-17):** `productions.due_date` (§3.3), `versions.change_category` y `versions.analysis` (§3.5) y la tabla `version_reviews` (§3.9), según [`ampliacion-alcance-2026-11.md`](../backlog/ampliacion-alcance-2026-11.md) §6. **Propuesta, pendiente de aprobación del equipo** (`ts-amp-erd.03`). Hasta entonces no se migra nada de la ampliación.
 
 ## 1. Alcance y precedencia
 
-Este documento fija el **diseño objetivo** de las ocho entidades del sistema: `users`, `artists`, `productions`, `songs`, `versions`, `comments`, `production_access` y `studio_sessions`. Aprobarlo cierra el ERD (ADR §6, «Estado del ERD»).
+Este documento fija el **diseño objetivo** de las entidades del sistema: `users`, `artists`, `productions`, `songs`, `versions`, `comments`, `production_access` y `studio_sessions`, más `version_reviews` desde la ampliación de alcance (`TS-87`). Aprobarlo cierra el ERD (ADR §6, «Estado del ERD»).
 
 Aprobar el diseño **no autoriza a migrar**. Cada tabla se crea en la historia que la consume, con su spec aprobada y sus tests en rojo (§7). Hasta entonces sigue vigente el veto de `CLAUDE.md` §5.
 
@@ -54,6 +55,17 @@ Diccionario en `modelo-minimo-sprint-1.md` §3.2 y delta en `modelo-sprint-2.md`
 Diccionario, decisiones y migración en [`modelo-sprint-2.md`](modelo-sprint-2.md) §5. Resumen: `id`, `artist_id` (FK, índice), `name` (único parcial `(artist_id, lower(name))`), `format` (`sencillo | ep | album`), timestamps y `deleted_at`.
 
 Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbum ≥ 7, y solo bloquean los máximos (§5.1.5). Las aplica el Service al crear canciones (§3.4) y al cambiar el formato.
+
+**Delta de la ampliación (`TS-87`, propuesta).** Este delta lo gobierna este documento, no `modelo-sprint-2.md`.
+
+| Columna | Tipo PostgreSQL | Nulabilidad | Restricciones e índices | Propósito |
+| --- | --- | --- | --- | --- |
+| `due_date` | `date` | `NULL` | — | Fecha de entrega opcional que fija el productor (dashboard del proceso, `TS-95`). |
+
+- Es un `date`, no un instante: una fecha de entrega no tiene hora. «Hoy» se calcula en UTC-5 (D3.2) al compararla.
+- **Atrasada** es un dato derivado (I8): la fecha ya pasó y no todas las canciones vigentes están cerradas. La spec de `TS-95` fija qué cuenta como canción cerrada (propuesta: su última versión verificada vigente está `aprobada`, §3.9).
+- Sin `CHECK` contra el pasado: el productor puede registrar una fecha ya vencida y la producción aparece atrasada.
+- **Migración:** `add_due_date_to_productions_table` en `TS-95` (S6). La columna es nula, así que la migración solo agrega (expand de D9.4).
 
 ### 3.4 `songs`
 
@@ -105,7 +117,8 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 | `song_id` | `uuid` | `NOT NULL` | FK → `songs.id`; cubierto por el único `versions_song_id_version_number_unique` | Canción a la que pertenece. |
 | `version_number` | `integer` | `NOT NULL` | `CHECK (version_number > 0)`; **único total** `(song_id, version_number)`, que incluye las filas borradas | Número secuencial, automático e inmodificable (HU-14, D7.3). |
 | `label` | `varchar(100)` | `NULL` | — | Nombre corto opcional que escribe el productor al subir (p. ej., «Master final»). Si es `NULL`, el historial muestra «v{version_number}» (HU-14; decisión del equipo del 2026-10-06). |
-| `description` | `text` | `NULL` | — | Descripción opcional (HU-14). |
+| `description` | `text` | `NULL` | — | Descripción opcional (HU-14). **Desde `TS-90` es el texto del motivo**: qué cambió y por qué. Es obligatoria cuando la canción ya tiene una versión verificada vigente (ver «Integridad»). |
+| `change_category` | `varchar(20)` | `NULL` | `CHECK (change_category IN ('voz', 'instrumentos', 'mezcla', 'master', 'arreglo', 'otro'))` | Categoría del cambio (`TS-90`). Es nula en la primera versión que suena y en las versiones anteriores a `TS-90`. *Ampliación `TS-87`, propuesta.* |
 | `s3_key` | `varchar(512)` | `NOT NULL` | `UNIQUE` | `{artist_id}/{production_id}/{song_id}/v{version_number}.{ext}` (D7.3). |
 | `content_type` | `varchar(50)` | `NOT NULL` | `CHECK (content_type IN ('audio/wav', 'audio/mpeg'))` | Tipo declarado y fijado como condición de la presigned URL (D7.7). El frontend normaliza las variantes (`audio/x-wav`, `audio/wave`) a `audio/wav`. La extensión del key se deriva de aquí (`wav`/`mp3`). |
 | `size_bytes` | `bigint` | `NOT NULL` | `CHECK (size_bytes > 0 AND size_bytes <= 524288000)` | Tamaño declarado al firmar. Al verificar, el Service lo reemplaza por el `ContentLength` que devuelve `HeadObject`. Límite de 500 MB (D7.7). |
@@ -113,25 +126,30 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 | `upload_status` | `varchar(20)` | `NOT NULL` | `DEFAULT 'pendiente'`; `CHECK (upload_status IN ('pendiente', 'verificada', 'fallida'))` | Ciclo de subida y verificación (D7.4). |
 | `verified_at` | `timestamptz` | `NULL` | — | Momento de la verificación con `HeadObject`. |
 | `duration_ms` | `integer` | `NULL` | `CHECK (duration_ms > 0)` | Duración del audio que reporta el frontend al confirmar la subida. Solo se usa para acotar el timestamp de los comentarios (§3.6). |
+| `analysis` | `jsonb` | `NULL` | `CHECK (analysis IS NULL OR jsonb_typeof(analysis) = 'object')` | Resumen del análisis técnico que calcula el navegador y envía al confirmar la subida (`TS-91`). Es nulo en las versiones «sin análisis». *Ampliación `TS-87`, propuesta.* |
 | `uploaded_by` | `uuid` | `NOT NULL` | FK → `users.id`; índice `versions_uploaded_by_index` | Quién subió la versión (HU-13: el productor). |
 | `created_at` | `timestamptz` | `NOT NULL` | — | Fecha que muestra el historial (HU-14). |
 | `updated_at` | `timestamptz` | `NOT NULL` | — | Auditoría (D3.2). |
 | `deleted_at` | `timestamptz` | `NULL` | — | Soft delete (D4.5, cascada de HU-12). |
 
-Restricción entre columnas: `CHECK (upload_status <> 'verificada' OR (etag IS NOT NULL AND verified_at IS NOT NULL AND duration_ms IS NOT NULL))` (`versions_verified_complete_check`). Una versión verificada siempre tiene la evidencia de integridad y la duración.
+Restricción entre columnas: `CHECK (upload_status <> 'verificada' OR (etag IS NOT NULL AND verified_at IS NOT NULL AND duration_ms IS NOT NULL))` (`versions_verified_complete_check`). Una versión verificada siempre tiene la evidencia de integridad y la duración. `analysis` queda fuera a propósito: una versión puede quedar `verificada` «sin análisis».
 
-**Relaciones.** `songs` 1 — 0..N `versions`. `versions` 1 — 0..N `comments`. `users` 1 — 0..N `versions` (`uploaded_by`).
+Restricción de la ampliación (`TS-87`, propuesta): `CHECK (change_category IS NULL OR (description IS NOT NULL AND length(btrim(description)) > 0))` (`versions_change_reason_check`). Si hay categoría, hay texto. El `IS NOT NULL` explícito es necesario: con `description` nula, `length(btrim(NULL))` da `NULL` y PostgreSQL daría el `CHECK` por cumplido. La regla inversa (desde cuándo es obligatorio el motivo) depende de otras filas y la aplica el Service.
+
+**Relaciones.** `songs` 1 — 0..N `versions`. `versions` 1 — 0..N `comments`. `versions` 1 — 0..1 `version_reviews` (§3.9). `users` 1 — 0..N `versions` (`uploaded_by`).
 
 **Integridad.**
 
 - El único `(song_id, version_number)` es **total, no parcial**. Una versión borrada conserva su número, que no se reutiliza nunca: el historial no se reescribe y el key de S3 no colisiona (D7.3).
 - `version_number` lo asigna el Service, nunca el cliente, dentro de una transacción que bloquea la fila de la canción (`SELECT … FOR UPDATE`) y calcula `max(version_number) + 1`, contando también las filas borradas y las fallidas. El único total es la última barrera.
 - `s3_key` es único y se construye a partir de `version_number`, así que la fila y el objeto de S3 no pueden desincronizarse (D7.3).
+- **Motivo obligatorio (`TS-90`, decisión del equipo del 2026-11-17):** al firmar, si la canción ya tiene alguna versión `verificada` vigente, el Service exige `change_category` y `description` (422, D3.1). La regla no depende de `version_number`, porque los huecos de la numeración harían que una primera versión real numerada 2 pidiera motivo. La comprobación ocurre dentro de la misma transacción que bloquea la canción para reservar el número, así que no hay carrera.
+- **`analysis` (`TS-91`):** el Service valida la forma y los rangos y no recalcula nada, con el mismo trato que `duration_ms`. Forma orientativa, que fija la spec de `TS-91`: `schema_version`, métricas globales (`integrated_lufs`, `true_peak_dbtp`, `clipped_samples`, tramos de silencio en ms) y series por tramo de 1 s (volumen y energía en graves, medios y agudos). Con 4 series y 10 min de audio son unos 2.400 números (~30 KB). La spec fija el tope de duración y de tamaño, y la tolerancia frente a `ffmpeg`.
 
 **Ciclo de vida** (frontera de D7.1, D7.4 y D7.6):
 
 1. **Firma (HU-13):** el Service reserva el número, crea la fila en `pendiente` con `content_type`, el `size_bytes` declarado y `s3_key`, y devuelve la presigned POST (15 min, D7.6; POST desde la enmienda de D7.1 del 2026-10-20).
-2. **Confirmación:** el frontend informa del ETag y de `duration_ms`. El Service llama a `HeadObject` mediante `HashVerifierContract` (D4.3) y, si el ETag coincide, pasa la fila a `verificada` con `etag`, `verified_at`, el `size_bytes` real y `duration_ms`. Si no coincide, pasa a `fallida`.
+2. **Confirmación:** el frontend informa del ETag, de `duration_ms` y, desde `TS-91`, del `analysis` (opcional). El Service llama a `HeadObject` mediante `HashVerifierContract` (D4.3) y, si el ETag coincide, pasa la fila a `verificada` con `etag`, `verified_at`, el `size_bytes` real y `duration_ms`. Si no coincide, pasa a `fallida`.
 3. **Abandono:** una fila `pendiente` cuya URL caducó sin confirmarse puede pasar a `fallida`. El mecanismo (job programado o paso perezoso al consultar) lo decide la spec de HU-14. Su número queda consumido.
 4. Solo las versiones `verificada` aparecen en el historial (HU-14), se reproducen (HU-15/16) y admiten comentarios (§3.6).
 
@@ -149,8 +167,11 @@ Que haya huecos en la numeración (por subidas fallidas) es un efecto aceptado: 
 | `duration_ms` reportada por el frontend | Calcularla en el backend | El archivo nunca pasa por Railway (D7.1). El dato solo acota los comentarios, así que el riesgo de manipulación es bajo y queda acotado por RBAC. |
 | `label` opcional con «v{n}» de respaldo | `label` obligatorio, o ninguna etiqueta salvo el número | Nombrar la versión resuelve el problema original del estudio (versiones sin nombre) sin obligar a escribir texto en cada subida. |
 | `content_type` con `CHECK` cerrado | `varchar` libre | D7.7 admite exactamente WAV y MP3. Normalizar en el frontend mantiene la condición de la presigned URL determinista. |
+| `description` como texto del motivo (`TS-87`) | Columna nueva `change_reason` | Decisión del equipo del 2026-11-17: un solo texto en la subida, sin dos campos que se confundan. `description` ya existe y es opcional, así que no hace falta migrarla. |
+| `analysis` en `jsonb` (`TS-87`) | Columnas por métrica, o tabla de series | Las métricas se leen siempre juntas y con su versión, y nunca se filtran en SQL. El dashboard solo cuenta advertencias, y eso se resuelve al leer. `schema_version` permite cambiar la forma sin migrar. |
+| Motivo exigido por «ya hay una verificada» (`TS-87`) | Exigirlo si `version_number >= 2` | Decisión del equipo del 2026-11-17, por los huecos de numeración aceptados más arriba. |
 
-**Migración.** `create_versions_table` en `TS-24` (HU-13, S3), con todas las columnas. La lógica de verificación llega en `TS-25`/`TS-27` (S4).
+**Migración.** `create_versions_table` en `TS-24` (HU-13, S3), con todas las columnas. La lógica de verificación llega en `TS-25`/`TS-27` (S4). Ampliación: `add_change_category_to_versions_table` en `TS-90` y `add_analysis_to_versions_table` en `TS-91` (S5). Las dos agregan columnas nulas, así que solo amplían el esquema (expand de D9.4).
 
 ### 3.6 `comments`
 
@@ -281,6 +302,57 @@ Como hay un único estudio, el rango es la única dimensión y **no hace falta l
 
 **Migración.** `create_studio_sessions_table` en `TS-33` (HU-22, S6). La exclusión se crea con `DB::statement` dentro de la migración, porque el Schema Builder de Laravel no la expresa.
 
+### 3.9 `version_reviews` — ampliación `TS-87` (propuesta)
+
+**Propósito.** Flujo de revisión y aprobación (`TS-92`; decisión desde la comparación A/B en `TS-93`): una fila por cada decisión del artista sobre una versión. Alimenta las rondas y los tiempos de respuesta del dashboard (`TS-95`) y los correos (`TS-94`). Sprint objetivo: S5.
+
+**Diccionario.**
+
+| Columna | Tipo PostgreSQL | Nulabilidad | Restricciones e índices | Propósito |
+| --- | --- | --- | --- | --- |
+| `id` | `uuid` | `NOT NULL` | PK | Identificador (D6.1). |
+| `version_id` | `uuid` | `NOT NULL` | FK → `versions.id`; **único total** `version_reviews_version_id_unique`, que también cubre la FK (I2) | Versión decidida. Admite una sola decisión. |
+| `decided_by` | `uuid` | `NOT NULL` | FK → `users.id`; índice `version_reviews_decided_by_index` | Usuario del artista que decide. |
+| `decision` | `varchar(20)` | `NOT NULL` | `CHECK (decision IN ('aprobada', 'cambios_pedidos'))` | Resultado de la revisión (I6). |
+| `body` | `text` | `NULL` | `CHECK (decision <> 'cambios_pedidos' OR (body IS NOT NULL AND length(btrim(body)) > 0))` | Qué hay que cambiar. Obligatorio al pedir cambios y opcional al aprobar. |
+| `created_at` | `timestamptz` | `NOT NULL` | — | Momento de la decisión. |
+
+No tiene `updated_at` (`UPDATED_AT = null`) ni `deleted_at`. La decisión no se edita ni se borra (§2, I5).
+
+**Relaciones.** `versions` 1 — 0..1 `version_reviews`. `users` 1 — 0..N `version_reviews` (`decided_by`).
+
+**Estado de revisión** (derivado, sin columna, I8; decisiones del equipo del 2026-11-17). Aplica a una versión `verificada` y vigente:
+
+| Estado | Condición |
+| --- | --- |
+| `aprobada` / `cambios_pedidos` | Tiene fila en `version_reviews`; vale su `decision`. |
+| `en_revision` | No tiene fila y es la última versión `verificada` vigente de su canción (mayor `version_number`). |
+| `superada` | No tiene fila y hay otra versión `verificada` vigente más nueva en la canción. |
+
+- La revisión empieza en `versions.verified_at`. **Tiempo de respuesta** = `version_reviews.created_at − versions.verified_at`. **Rondas** de una canción = versiones con `cambios_pedidos` hasta la `aprobada`. No hace falta guardar nada más.
+- Si se borra la versión más nueva, la anterior sin decisión vuelve a quedar `en_revision`, porque el estado se deriva. Es un efecto aceptado: borrar una versión la saca del flujo.
+
+**Integridad.**
+
+- **Una decisión por versión** (decisión del equipo del 2026-11-17): el único sobre `version_id` es la última barrera. Cuando el artista decide, la ronda se cierra. Para cambiar de opinión, el productor sube otra versión, y una versión nueva sobre una canción ya aprobada abre otra ronda (propuesta §5.1).
+- **Solo se decide sobre la versión `en_revision`:** el Service comprueba, dentro de una transacción que bloquea la canción (`SELECT … FOR UPDATE`, el mismo bloqueo de la subida), que la versión sea la última `verificada` vigente y no tenga decisión. Si no, responde 422 (D3.1). Una violación del único por carrera también se traduce a 422, no a 500. La spec de `TS-92` fija el `code`.
+- `decided_by` apunta a `users` y no a `artists`, igual que `comments.author_id` (§3.6). El artista que decide siempre tiene cuenta, porque solo decide con acceso vigente (HU-21). El vínculo con `artists` se resuelve con `artists.user_id`.
+
+**Ciclo de vida.** Se crea al decidir y no se modifica. Si la versión se borra de forma lógica, la decisión queda oculta con ella. Si la versión se purga físicamente, antes se borran sus decisiones (la FK lo impone, §2, I3), igual que sus comentarios.
+
+**Autorización.** Solo decide el artista con acceso vigente a la producción (HU-20/HU-21, §3.7). Su `status` no puede ser `inactivo`. El productor **no** decide: ve el estado y las decisiones. Ninguno edita ni borra una decisión. Antes de HU-21 nadie puede decidir, así que `TS-92` va detrás de `TS-32`.
+
+**Decisiones y alternativas.**
+
+| Decisión | Alternativa descartada | Motivo |
+| --- | --- | --- |
+| Tabla de decisiones | Columna de estado en `versions` | Perdería quién decidió y cuándo, que son los datos del dashboard (propuesta §4.2). |
+| Una decisión por versión (único total) | Varias decisiones, vale la última | Decisión del equipo del 2026-11-17. El estado se deriva sin ambigüedad y las rondas se cuentan por versión. |
+| `en_revision` solo en la última versión | Cualquier versión sin decisión sigue en revisión | Decisión del equipo del 2026-11-17. Evita que una canción quede con varias versiones aprobadas a la vez. |
+| `superada` derivada | Guardarla como estado | I8: es una consecuencia de que exista una versión más nueva y no un hecho del dominio. |
+
+**Migración.** `create_version_reviews_table` en `TS-92` (S5).
+
 ## 4. Diagrama completo
 
 ```mermaid
@@ -298,6 +370,8 @@ erDiagram
     users ||--o{ production_access : "otorga (granted_by)"
     productions ||--o{ studio_sessions : "agenda"
     users ||--o{ studio_sessions : "registra o solicita (created_by)"
+    versions ||--o| version_reviews : "recibe decisión"
+    users ||--o{ version_reviews : "decide (decided_by)"
 
     users {
         uuid id PK
@@ -327,6 +401,7 @@ erDiagram
         uuid artist_id FK
         varchar name "UK parcial con artist_id"
         varchar format "sencillo | ep | album"
+        date due_date "NULL (TS-87)"
         timestamptz created_at
         timestamptz updated_at
         timestamptz deleted_at "NULL"
@@ -348,7 +423,8 @@ erDiagram
         uuid song_id FK
         integer version_number "UK con song_id"
         varchar label "NULL"
-        text description "NULL"
+        text description "NULL, motivo desde TS-90"
+        varchar change_category "NULL (TS-87)"
         varchar s3_key UK
         varchar content_type "audio/wav | audio/mpeg"
         bigint size_bytes
@@ -356,6 +432,7 @@ erDiagram
         varchar upload_status "pendiente | verificada | fallida"
         timestamptz verified_at "NULL"
         integer duration_ms "NULL"
+        jsonb analysis "NULL (TS-87)"
         uuid uploaded_by FK
         timestamptz created_at
         timestamptz updated_at
@@ -392,6 +469,15 @@ erDiagram
         timestamptz created_at
         timestamptz updated_at
     }
+
+    version_reviews {
+        uuid id PK
+        uuid version_id "FK, UK"
+        uuid decided_by FK
+        varchar decision "aprobada | cambios_pedidos"
+        text body "NULL"
+        timestamptz created_at
+    }
 ```
 
 ## 5. Trazabilidad RF/HU → entidad
@@ -406,6 +492,9 @@ erDiagram
 | RF-06 Acceso del artista | HU-20 (`TS-31`), HU-21 (`TS-32`) | `production_access`; `artists` (invitación de D6.4) | D6.4, D6.5, D6.7, D8.1 |
 | RF-07 Sesiones | HU-22 (`TS-33`), HU-23 (`TS-34`) | `studio_sessions` | D6.7 |
 | — (identidad) | HU-03 (`TS-14`), HU-04 (`TS-15`) | `users` | D4.8, D6.1 |
+| Ampliación: motivo y análisis | `TS-90`, `TS-91` | `versions.change_category`, `versions.description`, `versions.analysis` | D7.9, D7.10 (propuesta) |
+| Ampliación: revisión | `TS-92`, `TS-93`, `TS-94` | `version_reviews`; `versions`, `production_access` | D6.4, D8.1 |
+| Ampliación: dashboard del proceso | `TS-95` | `productions.due_date`; `version_reviews`, `versions` | D3.2 |
 
 ## 6. Inventario de restricciones e índices
 
@@ -415,10 +504,11 @@ erDiagram
 | `artists` | `user_id` (único), `created_by` | `lower(name)` y `lower(email)` parciales, `invitation_token` | `status` |
 | `productions` | `artist_id` | `(artist_id, lower(name))` parcial | `format` |
 | `songs` | `production_id` | `(production_id, lower(name))` parcial | `position`, `status` |
-| `versions` | `(song_id, version_number)` (único), `uploaded_by` | `(song_id, version_number)` total, `s3_key` | `version_number`, `content_type`, `size_bytes`, `upload_status`, `duration_ms`, verificada completa |
+| `versions` | `(song_id, version_number)` (único), `uploaded_by` | `(song_id, version_number)` total, `s3_key` | `version_number`, `content_type`, `size_bytes`, `upload_status`, `duration_ms`, verificada completa; `change_category`, motivo con texto y `analysis` objeto (`TS-87`) |
 | `comments` | `(version_id, timestamp_ms)`, `author_id` | — | `body`, `timestamp_ms` |
 | `production_access` | `production_id`, `artist_id`, `granted_by` | `(production_id, artist_id)` parcial vigente | `revoked_at >= granted_at` |
 | `studio_sessions` | `production_id`, `created_by` | — | `ends_at > starts_at`, `status`, `cancelled_at`, exclusión de solapes; índice en `starts_at` |
+| `version_reviews` (`TS-87`) | `version_id` (único), `decided_by` | `version_id` total | `decision`, texto al pedir cambios |
 
 Contención (D6.7): no se añaden más índices que los anteriores hasta que una medición de RNF-03 los justifique.
 
@@ -432,10 +522,15 @@ Contención (D6.7): no se añaden más índices que los anteriores hasta que una
 | `versions` | `TS-24` (S3); verificación en `TS-25`/`TS-27` (S4) | Planificada en S3 (`sprint-03.md`) |
 | `comments` | `TS-28` (S5) | Diseño de este documento |
 | `production_access`, `studio_sessions` | `TS-31`, `TS-33` (S6) | Diseño de este documento |
+| `versions.change_category` · `versions.analysis` | `TS-90` · `TS-91` (S5) | Propuesta `TS-87` |
+| `version_reviews` | `TS-92` (S5, detrás de `TS-32`) | Propuesta `TS-87` |
+| `productions.due_date` | `TS-95` (S6) | Propuesta `TS-87` |
 
 ## 8. Verificación del diseño
 
 El DDL derivado de §3 se ejecutó el 2026-10-05 contra el PostgreSQL de Sail dentro de `BEGIN … ROLLBACK`, sin dejar rastro y sin migraciones. Comprobaciones: que todo el DDL compila, incluidos los índices parciales con `lower()`, el `CHECK` entre columnas de `versions` y la exclusión de `studio_sessions`; los rechazos esperados (nombre duplicado, número de versión repetido aunque la anterior esté borrada, versión verificada sin ETag, comentario vacío, segundo acceso vigente, sesión confirmada que se solapa, borrado físico de un padre con hijos); y las aceptaciones esperadas (reutilizar el nombre de una fila borrada, sesiones contiguas, una solicitud solapada, volver a otorgar un acceso tras revocarlo).
+
+**Ampliación `TS-87` (2026-11-17).** El DDL nuevo se ejecutó dentro de `BEGIN … ROLLBACK` en un contenedor desechable con la misma imagen de Sail (`postgres:18-alpine`), sin migraciones. Rechazos esperados: categoría sin texto (nulo o en blanco), categoría fuera del catálogo, `analysis` que no es un objeto, segunda decisión sobre la misma versión, pedir cambios sin texto (nulo o en blanco), decisión fuera del catálogo y borrado físico de una versión que tiene decisión. Aceptaciones esperadas: versión sin motivo ni análisis, versión con categoría, texto y análisis, aprobación sin texto y `due_date` nula o vencida.
 
 ## 9. Aprobación
 
@@ -443,3 +538,8 @@ El DDL derivado de §3 se ejecutó el 2026-10-05 contra el PostgreSQL de Sail de
 - **Aprobado por:** el equipo (Bastian2704), 2026-10-06.
 
 Al aprobarse, se actualizan en la misma rama: D6.5/D6.7/D4.6 y el «Estado del ERD» del ADR (pasa a CERRADO), `sprint-02.md` y Jira (`TS-49`, `TS-18`, `TS-20` y las notas obsoletas del bloque 7 en `TS-21`..`TS-33`).
+
+**Ampliación `TS-87`:**
+
+- **Propuesta:** 2026-11-17. Las decisiones del equipo de ese día fijan cuatro puntos: `description` como texto del motivo, motivo exigido si ya hay una versión verificada, una decisión por versión y `superada` derivada.
+- **Aprobado por:** pendiente (`ts-amp-erd.03`).

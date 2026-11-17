@@ -3,7 +3,7 @@
 **Proyecto:** Track Studio — Gestión de proyectos musicales para Milenium Sound
 **Equipo:** Sebastian Abad (SM + Dev), Adrián Cornejo (Dev)
 **Product Owner:** Efraín Abad (Milenium Sound)
-**Última actualización:** 2026-09-29
+**Última actualización:** 2026-11-17 (ampliación de alcance, `TS-87`: D6.4, D7.9, D7.10 y D8.1, propuesta)
 
 **Leyenda de estado:**
 `DECIDIDO` decisión cerrada · `ABIERTO` requiere definición · `PENDIENTE` depende de otro bloque · `PARCIAL` decisión tomada pero con partes que dependen de otro punto todavía abierto
@@ -289,6 +289,19 @@ Al crear el artista se genera un token único con expiración; el correo (Resend
 
 > **Nota de 2026-10-04 (`TS-16`):** el token se emite al **invitar**, no al registrar. HU-05 (S2) crea el artista con estado `invitado` y los tres campos de invitación en `NULL`; el envío por Resend llega en S5 (`ts-32`) y la invitación forma parte de HU-20. Generar el token en el alta dejaría tokens sin enviar que caducarían antes de usarse. El mecanismo de esta decisión no cambia: solo el momento de emisión.
 
+> **Ampliación de 2026-11-17 (`TS-87`, propuesta): correos del flujo de revisión.** Resend, a través del mismo `MailerContract` que crea HU-20 para la invitación (D4.3), envía también los avisos de la revisión (`TS-94`, S6):
+>
+> | Evento | Destinatario | Dirección |
+> | --- | --- | --- |
+> | Una versión queda `en_revision` (al verificarse, HU-14) | Artista dueño de la producción con acceso vigente y `status` distinto de `inactivo` (§3.7 del ERD) | `artists.email` |
+> | El artista aprueba o pide cambios (`TS-92`) | Productor que subió la versión | `users.email` de `versions.uploaded_by` |
+>
+> - **Destinatario del aviso de decisión:** es quien subió la versión. El rol no se persiste (D4.8), así que no hay una lista local de productores, y consultar la Management API de Auth0 en cada decisión sería una dependencia nueva para un aviso. Si `users.email` es nulo, no se envía y queda registrado.
+> - **Si no hay acceso vigente** al verificarse la versión, no se envía nada. Cuando el acceso se otorga después, el aviso de HU-20 cubre ese caso.
+> - **Envío síncrono, después del commit** (`DB::afterCommit`): no hay worker de colas desplegado (propuesta de la ampliación §3), y montarlo sería infraestructura nueva del equipo (`CLAUDE.md` §0.6).
+> - **Un fallo de envío no deshace la acción:** la decisión o la verificación ya quedaron guardadas. El error se registra en el log y en Sentry (D9.3), sin reintento. La respuesta HTTP no cambia. Un aviso que no llegó no invalida un dato del dominio, y reintentar sin cola obligaría a guardar el estado del envío.
+> - Plantillas, asunto y textos: spec de `TS-94`. El corte de alcance del S6 (correos primero, propuesta §8) deja esta parte sin implementar sin afectar al flujo.
+
 → *ISO 25010: seguridad (autenticidad). Cubre: RF-01, RF-06.*
 
 ### D6.5 — Acceso a producciones vía pivote `production_access`
@@ -378,6 +391,12 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 - **`studio_sessions`:** siempre pertenecen a una producción. Una restricción de exclusión impide solapar sesiones `confirmada`, y la cancelación es un estado, no un borrado.
 - **Formato del ERD:** Mermaid dentro de documentos Markdown versionados en `docs/erd/`, con enfoque design-first (se diseña y aprueba antes de migrar).
 
+Ampliación de alcance (`TS-87`, propuesta del 2026-11-17, pendiente de aprobación del equipo):
+
+- `productions.due_date`, `versions.change_category` y `versions.analysis` (`jsonb`), y la tabla `version_reviews` (`modelo-completo.md` §3.3, §3.5 y §3.9).
+- El texto del motivo reutiliza `versions.description` y es obligatorio cuando la canción ya tiene una versión verificada.
+- Una decisión por versión. El estado de revisión (`en_revision`, `superada`, `aprobada`, `cambios_pedidos`) se deriva y no se guarda.
+
 ---
 
 ## 7. Almacenamiento y subida de audio (S3) — **CERRADO** (2026-08-18)
@@ -392,6 +411,8 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 | 7.6 | Expiración de presigned URLs + refresco por sesión | DECIDIDO | 15 min, ver D7.6 |
 | 7.7 | Validación WAV/MP3 ≤ 500 MB en front y back | DECIDIDO | Ver D7.7 |
 | 7.8 | Versioning, cifrado y lifecycle del bucket | DECIDIDO (2026-10-20) | Ver D7.8 |
+| 7.9 | ¿Dónde se calcula el análisis técnico del audio? | DECIDIDO (2026-11-16; propuesta `TS-87`) | En el navegador, al subir. Ver D7.9 |
+| 7.10 | Chequeo técnico: umbrales y efecto | **PARCIAL** (`TS-87`) | Advierte y no bloquea; los valores esperan la confirmación del productor. Ver D7.10 |
 
 **Nota:** con Railway (5 GB de disco, 100 conexiones) y archivos de hasta 500 MB, la subida directa navegador→S3 es prácticamente obligatoria. 7.3 aborda el dolor original del estudio (versiones duplicadas sin nomenclatura).
 
@@ -515,6 +536,47 @@ Los objetos actuales **no expiran nunca**: el audio se conserva hasta la purga (
 
 → *ISO 25010: fiabilidad (recuperabilidad), seguridad (confidencialidad). Cubre: RNF-02, RNF-04.*
 
+### D7.9 — Análisis técnico calculado en el navegador, al subir (2026-11-17, propuesta `TS-87`)
+
+Enfoque elegido por el equipo el 2026-11-16 (ampliación de alcance §4.1). Aquí se fijan sus reglas.
+
+**Decisión:** el frontend calcula el análisis en un Web Worker mientras sube el archivo y lo envía en la confirmación de HU-14, junto con el ETag y `duration_ms`. Calcula el volumen integrado (ITU-R BS.1770 / EBU R128), el pico real, las muestras saturadas, los tramos de silencio y las series por segundo de volumen y bandas. Se guarda en `versions.analysis` (`jsonb`, ERD §3.5).
+
+**Reglas:**
+
+- **Confianza:** el mismo trato que `duration_ms` (ERD §3.5, D7.1). El backend no tiene el archivo (D7.1) y no recalcula nada. Valida la forma (`schema_version`, claves y tipos), los rangos físicos (volumen y pico ≤ 0 en sus escalas, conteos ≥ 0, tramos dentro de `duration_ms`) y el tamaño, y responde 422 (D3.1) si no cumple. Un productor que manipule su propio análisis solo se engaña a sí mismo. No es una frontera de seguridad: lo acota el RBAC (D8.1).
+- **El análisis es opcional:** si falla, se cancela o supera el tope de duración, la versión se verifica igual y queda «sin análisis» (`analysis` nulo). Las versiones anteriores a `TS-91` también quedan sin análisis. Nunca se bloquea una subida por el análisis.
+- **Precisión defendible:** el cálculo se valida contra `ffmpeg -af ebur128=peak=true` con archivos de referencia, en una prueba automatizada del frontend. Mientras el volumen integrado o el pico real no entren en la tolerancia, la interfaz **no los muestra** (antiobjetivo de la propuesta §2), aunque las demás métricas sí salgan. Tolerancia propuesta: ±0,5 LU en volumen integrado y ±0,5 dB en pico real (el sobremuestreo del pico real cambia entre implementaciones). La spec de `TS-91` la fija y documenta los archivos de referencia.
+- **Recursos:** WAV leído por partes (`File.slice`) y MP3 decodificado por el navegador (`decodeAudioData`), con un tope de duración del MP3 que fija la spec. Sin librerías de audio nuevas si la Web Audio API basta. Una dependencia nueva requiere justificación en la spec (`frontend/CLAUDE.md`).
+- **Costo:** USD 0 en AWS y ninguna infraestructura nueva (restricción de la propuesta §3).
+
+**Alternativas descartadas:** `ffmpeg` en el servidor tras verificar (necesita worker de colas y descargar desde S3, infraestructura nueva del equipo) y el análisis al reproducir (descarga dos archivos completos en cada comparación). Detalle en la propuesta §4.1.
+
+→ *ISO 25010: adecuación funcional (corrección), eficiencia (uso de recursos). Cubre: `TS-91`, `TS-93`, `TS-95`.*
+
+### D7.10 — Chequeo técnico: advierte, no bloquea (2026-11-17, PARCIAL, propuesta `TS-87`)
+
+**Decidido:**
+
+- El chequeo compara el `analysis` de la versión con umbrales de referencia y **muestra advertencias**. Nunca bloquea la subida, la verificación ni la revisión: el productor decide (propuesta §5.3).
+- Las advertencias **no se guardan**. Se derivan al leer comparando `analysis` con los umbrales vigentes (ERD I8). Si cambia un umbral, cambian las advertencias de todas las versiones sin migrar nada. El dashboard (`TS-95`) las cuenta igual.
+- Los umbrales viven en **una sola constante compartida** del backend, que el endpoint expone junto con el análisis, para que el frontend no duplique los valores. Se versionan en el repo, no son configurables por el usuario.
+- Sin análisis no hay chequeo: la versión aparece «sin análisis» y no cuenta como versión con advertencias.
+
+**Pendiente de confirmación del productor** (preguntas en [`docs/backlog/consulta-productor-ts87.md`](../backlog/consulta-productor-ts87.md)). Valores propuestos por el agente, tomados de referencias de la industria:
+
+| Chequeo | Advertencia si… | Referencia |
+| --- | --- | --- |
+| Volumen integrado | fuera de −14 LUFS ± 1 LU | Normalización de Spotify y YouTube (−14 LUFS) |
+| Pico real | > −1,0 dBTP | Recomendación de las plataformas para la codificación con pérdida |
+| Saturación | ≥ 1 evento de 3 o más muestras seguidas a fondo de escala | Criterio habitual de los detectores de clipping |
+| Silencio | tramo < −60 dBFS de 2 s o más, sin contar el inicio ni el final | — |
+| Alcance | volumen y pico solo en `master`; saturación y silencio en todas | Una mezcla no se entrega normalizada |
+
+Mientras no se confirmen, `TS-91` se implementa con estos valores. Cambiarlos después es editar una constante (ver arriba), así que no bloquea la historia.
+
+→ *ISO 25010: adecuación funcional (pertinencia). Cubre: `TS-91`, `TS-95`.*
+
 ---
 
 **Bloque 7 — completo.** Las 7 decisiones (D7.1-D7.7) quedan cerradas; D7.8 se añadió el 2026-10-20 con `TS-42`. Desbloquea: el ERD completo (entidad `versions` ya puede modelarse) y las HU-13 a HU-16 pueden empezar a evaluarse contra la Definition of Ready.
@@ -523,7 +585,7 @@ Los objetos actuales **no expiran nunca**: el audio se conserva hasta la purga (
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11) y `versions` el 2026-10-20 (HU-13); faltan filas de `productions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
+| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11), `versions` el 2026-10-20 (HU-13) y `version_reviews` propuesta el 2026-11-17 (`TS-87`); faltan filas de `productions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
 | 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
@@ -551,6 +613,9 @@ Documentación formal de las reglas de autorización que ya implican D4.2 (API R
 | `versions` | Ver historial | ✅ desde HU-14 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `versions` | Reproducir | ✅ desde HU-15/HU-16 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `versions` | Borrar (cascada de HU-12) | ✅ | ❌ |
+| `version_reviews` | Decidir: aprobar o pedir cambios (`TS-92`; propuesta `TS-87`) | ❌ (403) | ❌ hoy; ✅ con acceso vigente desde HU-21, artista no `inactivo`, solo sobre la versión `en_revision` |
+| `version_reviews` | Ver el estado y las decisiones | ✅ | ❌ hoy; ✅ con acceso vigente desde HU-21 |
+| `version_reviews` | Editar o borrar una decisión | ❌ | ❌ |
 | Endpoint de humo (`/api/v1/me`) | Ver | ✅ | ✅ |
 
 **Evidencia auditable (D3.1):** el 403 que recibe un `artista` al intentar una acción marcada ❌ arriba es la prueba end-to-end de que esta matriz se cumple en código, no solo en documentación — es el entregable de HU-04 y de la Definition of Done del Sprint 1.
@@ -698,3 +763,4 @@ Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y 
 7. ⚠️ **3.7 — Origen del `trace_id`.** ¿Lo genera el frontend (header `X-Trace-Id`) o únicamente el backend? **Ya no bloquea:** el backend genera un ULID por respuesta de error, comportamiento compatible con ambas salidas (ver D3.1). Queda por decidir si el frontend aporta el suyo para correlación end-to-end.
 8. ⚠️ **5.8 — Estado global de React.** Zustand (recomendado) vs Context vs Redux — verificar cuando exista estado compartido real que lo justifique.
 9. **Cuentas externas (bloque 10)** — no es una decisión pendiente, es trámite: seguir el orden de `sprint-01-guia-arranque.md` §2 (dominio+Resend primero por lead time de DNS).
+10. ⚠️ **7.10 — Valores del chequeo técnico.** Confirmación del productor pendiente ([`consulta-productor-ts87.md`](../backlog/consulta-productor-ts87.md)). **No bloquea:** `TS-91` usa los valores propuestos y cambiarlos es editar una constante (ver D7.10).

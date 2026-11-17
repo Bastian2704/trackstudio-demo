@@ -154,7 +154,7 @@ Cada Story lleva en Jira sus AC y su checklist `ts-amp-*.01`..`.09`. Resumen:
 
 ### TS-87 - ERD y ADR de la ampliación
 
-Gate de datos de la primera mitad: `productions.due_date`, `versions.change_category`, `versions.change_reason`, `versions.analysis` y la tabla de decisiones de revisión, con la fila RBAC; ADR del análisis en el cliente, umbrales del chequeo y D6.4 ampliada. Cubre también lo que necesitan `TS-94` y `TS-95` en S6. El agente redacta y el equipo aprueba.
+Gate de datos de la primera mitad: `productions.due_date`, `versions.change_category` (el texto del motivo reutiliza `versions.description`, enmienda del 2026-11-17), `versions.analysis` y la tabla de decisiones de revisión, con la fila RBAC; ADR del análisis en el cliente, umbrales del chequeo y D6.4 ampliada. Cubre también lo que necesitan `TS-94` y `TS-95` en S6. El agente redacta y el equipo aprueba.
 
 ### TS-88 - Diseño en Figma
 
