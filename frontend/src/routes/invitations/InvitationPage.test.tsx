@@ -11,7 +11,7 @@ import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/te
 import { contextoAuth0 } from '@/test/auth0'
 
 /*
- * TS-31 (HU-20) — ts-20.06, spec frontend HU-20 §4 tests 11 a 15.
+ * TS-31 (HU-20) — ts-20.06, spec frontend HU-20 §4 tests 11 a 15, y 17 (C3 de .08).
  *
  * Contrato de POST /api/v1/invitations/{token}/accept: spec backend HU-20 §3.6.
  * La página es pública (§3.3): sin sesión ofrece registro o login y no llama
@@ -44,11 +44,13 @@ function conSesion() {
   )
 }
 
-function renderInvitacion() {
-  const queryClient = new QueryClient({
+function nuevoCliente() {
+  return new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
+}
 
+function renderInvitacion(queryClient = nuevoCliente()) {
   render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
@@ -105,6 +107,19 @@ describe('InvitationPage', () => {
     expect(screen.getByText('Tu cuenta ya está vinculada.')).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Continuar' }).getAttribute('href')).toBe('/me')
     expect(posts(peticiones)).toEqual([{ method: 'POST', url: URL_ACEPTAR, body: undefined }])
+  })
+
+  // Si /me ya estaba en caché (rol o datos viejos), tras vincular la cuenta debe volver a pedirse.
+  it('tras aceptar invalida la caché de /me', async () => {
+    conSesion()
+    simularApi(() => ({ status: 200, data: { data: ARTISTA } }))
+    const queryClient = nuevoCliente()
+    queryClient.setQueryData(['me'], { sub: 'auth0|usuario-de-prueba', role: 'artista' })
+    renderInvitacion(queryClient)
+
+    await screen.findByRole('heading', { name: 'Invitación aceptada' })
+
+    await waitFor(() => expect(queryClient.getQueryState(['me'])?.isInvalidated).toBe(true))
   })
 
   it('invitación no válida o caducada', async () => {
