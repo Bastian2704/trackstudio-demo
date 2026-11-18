@@ -90,7 +90,7 @@ productor sube vN ─► en revisión ─┬─► artista aprueba ─► aproba
 
 ### 5.2 Motivo de la versión
 
-- Desde la v2, la subida exige una **categoría** (voz, instrumentos, mezcla, master, arreglo, otro) y un **texto** de motivo. La v1 no lo pide. *(Lista de categorías: propuesta del agente, a validar con el productor.)*
+- Desde la v2, la subida exige una **categoría** (voz, instrumentos, mezcla, master, arreglo, otro) y un **texto** de motivo. La v1 no lo pide. *(Lista de categorías y una sola por versión: confirmadas por el productor el 2026-11-17, `consulta-productor-ts87.md`.)*
 - Se muestra en el historial y en la comparación.
 
 ### 5.3 Análisis y chequeo técnico
@@ -141,7 +141,7 @@ Extiende `TS-85` (`GET /api/v1/dashboard`):
 ## 6. Cambios de modelo (slice del ERD a aprobar antes de las migraciones)
 
 - `productions.due_date` (`date`, nulo).
-- `versions.change_category` y `versions.change_reason` (nulos en la v1; obligatorios desde la v2, validado en el Service).
+- `versions.change_category` y `versions.change_reason` (nulos en la v1; obligatorios desde la v2, validado en el Service). *Enmienda de `TS-87` (2026-11-17): el texto del motivo reutiliza `versions.description` en vez de crear `change_reason`, y es obligatorio cuando la canción ya tiene una versión verificada, no por número. Diseño en [`modelo-completo.md`](../erd/modelo-completo.md) §3.5 y §3.9.*
 - `versions.analysis` (`jsonb`, nulo en las versiones anteriores al cambio), con métricas globales y series por segundo.
 - Tabla de decisiones de revisión: versión, artista que decide, decisión (`aprobada` o `cambios_pedidos`), texto y fecha. El estado «en revisión» se deriva de la ausencia de decisión. *(Nombre de tabla y columnas: a fijar en el ERD.)*
 
