@@ -3,7 +3,7 @@
 > **Jira:** `TS-49` (`ts-38.01`..`ts-38.09`)
 > **Base:** [`modelo-minimo-sprint-1.md`](modelo-minimo-sprint-1.md) (`TS-54`, cerrado) y [`modelo-sprint-2.md`](modelo-sprint-2.md) (delta de S2, slice de `productions` aprobado el 2026-10-05)
 > **Estado:** **aprobado por el equipo el 2026-10-06.** Cierra el ERD (`ts-38.09`).
-> **Ampliación `TS-87` (2026-11-17):** `productions.due_date` (§3.3), `versions.change_category` y `versions.analysis` (§3.5) y la tabla `version_reviews` (§3.9), según [`ampliacion-alcance-2026-11.md`](../backlog/ampliacion-alcance-2026-11.md) §6. **Propuesta, pendiente de aprobación del equipo** (`ts-amp-erd.03`). Hasta entonces no se migra nada de la ampliación.
+> **Ampliación `TS-87` (2026-11-17):** `productions.due_date` (§3.3), `versions.change_category` y `versions.analysis` (§3.5) y la tabla `version_reviews` (§3.9), según [`ampliacion-alcance-2026-11.md`](../backlog/ampliacion-alcance-2026-11.md) §6. **Aprobada por el equipo el 2026-11-18** (`ts-amp-erd.03`). Sus migraciones se escriben en cada historia (§7).
 
 ## 1. Alcance y precedencia
 
@@ -56,7 +56,7 @@ Diccionario, decisiones y migración en [`modelo-sprint-2.md`](modelo-sprint-2.m
 
 Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbum ≥ 7, y solo bloquean los máximos (§5.1.5). Las aplica el Service al crear canciones (§3.4) y al cambiar el formato.
 
-**Delta de la ampliación (`TS-87`, propuesta).** Este delta lo gobierna este documento, no `modelo-sprint-2.md`.
+**Delta de la ampliación (`TS-87`, aprobado).** Este delta lo gobierna este documento, no `modelo-sprint-2.md`.
 
 | Columna | Tipo PostgreSQL | Nulabilidad | Restricciones e índices | Propósito |
 | --- | --- | --- | --- | --- |
@@ -118,7 +118,7 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 | `version_number` | `integer` | `NOT NULL` | `CHECK (version_number > 0)`; **único total** `(song_id, version_number)`, que incluye las filas borradas | Número secuencial, automático e inmodificable (HU-14, D7.3). |
 | `label` | `varchar(100)` | `NULL` | — | Nombre corto opcional que escribe el productor al subir (p. ej., «Master final»). Si es `NULL`, el historial muestra «v{version_number}» (HU-14; decisión del equipo del 2026-10-06). |
 | `description` | `text` | `NULL` | — | Descripción opcional (HU-14). **Desde `TS-90` es el texto del motivo**: qué cambió y por qué. Es obligatoria cuando la canción ya tiene una versión verificada vigente (ver «Integridad»). |
-| `change_category` | `varchar(20)` | `NULL` | `CHECK (change_category IN ('voz', 'instrumentos', 'mezcla', 'master', 'arreglo', 'otro'))` | Categoría del cambio (`TS-90`). Es nula en la primera versión que suena y en las versiones anteriores a `TS-90`. Lista y una sola categoría por versión confirmadas por el productor el 2026-11-17 (`consulta-productor-ts87.md`, pregunta 1). *Ampliación `TS-87`, propuesta.* |
+| `change_category` | `varchar(20)` | `NULL` | `CHECK (change_category IN ('voz', 'instrumentos', 'mezcla', 'master', 'arreglo', 'otro'))` | Categoría del cambio (`TS-90`). Es nula en la primera versión que suena y en las versiones anteriores a `TS-90`. Lista y una sola categoría por versión confirmadas por el productor el 2026-11-17 (`consulta-productor-ts87.md`, pregunta 1). *Ampliación `TS-87`.* |
 | `s3_key` | `varchar(512)` | `NOT NULL` | `UNIQUE` | `{artist_id}/{production_id}/{song_id}/v{version_number}.{ext}` (D7.3). |
 | `content_type` | `varchar(50)` | `NOT NULL` | `CHECK (content_type IN ('audio/wav', 'audio/mpeg'))` | Tipo declarado y fijado como condición de la presigned URL (D7.7). El frontend normaliza las variantes (`audio/x-wav`, `audio/wave`) a `audio/wav`. La extensión del key se deriva de aquí (`wav`/`mp3`). |
 | `size_bytes` | `bigint` | `NOT NULL` | `CHECK (size_bytes > 0 AND size_bytes <= 524288000)` | Tamaño declarado al firmar. Al verificar, el Service lo reemplaza por el `ContentLength` que devuelve `HeadObject`. Límite de 500 MB (D7.7). |
@@ -126,7 +126,7 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 | `upload_status` | `varchar(20)` | `NOT NULL` | `DEFAULT 'pendiente'`; `CHECK (upload_status IN ('pendiente', 'verificada', 'fallida'))` | Ciclo de subida y verificación (D7.4). |
 | `verified_at` | `timestamptz` | `NULL` | — | Momento de la verificación con `HeadObject`. |
 | `duration_ms` | `integer` | `NULL` | `CHECK (duration_ms > 0)` | Duración del audio que reporta el frontend al confirmar la subida. Solo se usa para acotar el timestamp de los comentarios (§3.6). |
-| `analysis` | `jsonb` | `NULL` | `CHECK (analysis IS NULL OR jsonb_typeof(analysis) = 'object')` | Resumen del análisis técnico que calcula el navegador y envía al confirmar la subida (`TS-91`). Es nulo en las versiones «sin análisis». *Ampliación `TS-87`, propuesta.* |
+| `analysis` | `jsonb` | `NULL` | `CHECK (analysis IS NULL OR jsonb_typeof(analysis) = 'object')` | Resumen del análisis técnico que calcula el navegador y envía al confirmar la subida (`TS-91`). Es nulo en las versiones «sin análisis». *Ampliación `TS-87`.* |
 | `uploaded_by` | `uuid` | `NOT NULL` | FK → `users.id`; índice `versions_uploaded_by_index` | Quién subió la versión (HU-13: el productor). |
 | `created_at` | `timestamptz` | `NOT NULL` | — | Fecha que muestra el historial (HU-14). |
 | `updated_at` | `timestamptz` | `NOT NULL` | — | Auditoría (D3.2). |
@@ -134,7 +134,7 @@ Reglas de formato por número de canciones vigentes: sencillo 1, EP 2–6, álbu
 
 Restricción entre columnas: `CHECK (upload_status <> 'verificada' OR (etag IS NOT NULL AND verified_at IS NOT NULL AND duration_ms IS NOT NULL))` (`versions_verified_complete_check`). Una versión verificada siempre tiene la evidencia de integridad y la duración. `analysis` queda fuera a propósito: una versión puede quedar `verificada` «sin análisis».
 
-Restricción de la ampliación (`TS-87`, propuesta): `CHECK (change_category IS NULL OR (description IS NOT NULL AND length(btrim(description)) > 0))` (`versions_change_reason_check`). Si hay categoría, hay texto. El `IS NOT NULL` explícito es necesario: con `description` nula, `length(btrim(NULL))` da `NULL` y PostgreSQL daría el `CHECK` por cumplido. La regla inversa (desde cuándo es obligatorio el motivo) depende de otras filas y la aplica el Service.
+Restricción de la ampliación (`TS-87`): `CHECK (change_category IS NULL OR (description IS NOT NULL AND length(btrim(description)) > 0))` (`versions_change_reason_check`). Si hay categoría, hay texto. El `IS NOT NULL` explícito es necesario: con `description` nula, `length(btrim(NULL))` da `NULL` y PostgreSQL daría el `CHECK` por cumplido. La regla inversa (desde cuándo es obligatorio el motivo) depende de otras filas y la aplica el Service.
 
 **Relaciones.** `songs` 1 — 0..N `versions`. `versions` 1 — 0..N `comments`. `versions` 1 — 0..1 `version_reviews` (§3.9). `users` 1 — 0..N `versions` (`uploaded_by`).
 
@@ -302,7 +302,7 @@ Como hay un único estudio, el rango es la única dimensión y **no hace falta l
 
 **Migración.** `create_studio_sessions_table` en `TS-33` (HU-22, S6). La exclusión se crea con `DB::statement` dentro de la migración, porque el Schema Builder de Laravel no la expresa.
 
-### 3.9 `version_reviews` — ampliación `TS-87` (propuesta)
+### 3.9 `version_reviews` — ampliación `TS-87`
 
 **Propósito.** Flujo de revisión y aprobación (`TS-92`; decisión desde la comparación A/B en `TS-93`): una fila por cada decisión del artista sobre una versión. Alimenta las rondas y los tiempos de respuesta del dashboard (`TS-95`) y los correos (`TS-94`). Sprint objetivo: S5.
 
@@ -492,7 +492,7 @@ erDiagram
 | RF-06 Acceso del artista | HU-20 (`TS-31`), HU-21 (`TS-32`) | `production_access`; `artists` (invitación de D6.4) | D6.4, D6.5, D6.7, D8.1 |
 | RF-07 Sesiones | HU-22 (`TS-33`), HU-23 (`TS-34`) | `studio_sessions` | D6.7 |
 | — (identidad) | HU-03 (`TS-14`), HU-04 (`TS-15`) | `users` | D4.8, D6.1 |
-| Ampliación: motivo y análisis | `TS-90`, `TS-91` | `versions.change_category`, `versions.description`, `versions.analysis` | D7.9, D7.10 (propuesta) |
+| Ampliación: motivo y análisis | `TS-90`, `TS-91` | `versions.change_category`, `versions.description`, `versions.analysis` | D7.9, D7.10 (PARCIAL: umbrales) |
 | Ampliación: revisión | `TS-92`, `TS-93`, `TS-94` | `version_reviews`; `versions`, `production_access` | D6.4, D8.1 |
 | Ampliación: dashboard del proceso | `TS-95` | `productions.due_date`; `version_reviews`, `versions` | D3.2 |
 
@@ -522,9 +522,9 @@ Contención (D6.7): no se añaden más índices que los anteriores hasta que una
 | `versions` | `TS-24` (S3); verificación en `TS-25`/`TS-27` (S4) | Planificada en S3 (`sprint-03.md`) |
 | `comments` | `TS-28` (S5) | Diseño de este documento |
 | `production_access`, `studio_sessions` | `TS-31`, `TS-33` (S6) | Diseño de este documento |
-| `versions.change_category` · `versions.analysis` | `TS-90` · `TS-91` (S5) | Propuesta `TS-87` |
-| `version_reviews` | `TS-92` (S5, detrás de `TS-32`) | Propuesta `TS-87` |
-| `productions.due_date` | `TS-95` (S6) | Propuesta `TS-87` |
+| `versions.change_category` · `versions.analysis` | `TS-90` · `TS-91` (S5) | Aprobado `TS-87` |
+| `version_reviews` | `TS-92` (S5, detrás de `TS-32`) | Aprobado `TS-87` |
+| `productions.due_date` | `TS-95` (S6) | Aprobado `TS-87` |
 
 ## 8. Verificación del diseño
 
@@ -542,4 +542,4 @@ Al aprobarse, se actualizan en la misma rama: D6.5/D6.7/D4.6 y el «Estado del E
 **Ampliación `TS-87`:**
 
 - **Propuesta:** 2026-11-17. Las decisiones del equipo de ese día fijan cuatro puntos: `description` como texto del motivo, motivo exigido si ya hay una versión verificada, una decisión por versión y `superada` derivada.
-- **Aprobado por:** pendiente (`ts-amp-erd.03`).
+- **Aprobado por:** el equipo (Bastian2704), 2026-11-18 (`ts-amp-erd.03`). Pregunta 1 de la consulta confirmada por el productor el 2026-11-17. Los ajustes que pida la revisión del PR se aplican sobre esta aprobación.

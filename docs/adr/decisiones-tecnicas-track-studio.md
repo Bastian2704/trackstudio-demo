@@ -3,7 +3,7 @@
 **Proyecto:** Track Studio — Gestión de proyectos musicales para Milenium Sound
 **Equipo:** Sebastian Abad (SM + Dev), Adrián Cornejo (Dev)
 **Product Owner:** Efraín Abad (Milenium Sound)
-**Última actualización:** 2026-11-17 (ampliación de alcance, `TS-87`: D6.4, D7.9, D7.10 y D8.1, propuesta)
+**Última actualización:** 2026-11-17 (ampliación de alcance, `TS-87`: D6.4, D7.9, D7.10 y D8.1, aprobado por el equipo el 2026-11-18)
 
 **Leyenda de estado:**
 `DECIDIDO` decisión cerrada · `ABIERTO` requiere definición · `PENDIENTE` depende de otro bloque · `PARCIAL` decisión tomada pero con partes que dependen de otro punto todavía abierto
@@ -289,7 +289,7 @@ Al crear el artista se genera un token único con expiración; el correo (Resend
 
 > **Nota de 2026-10-04 (`TS-16`):** el token se emite al **invitar**, no al registrar. HU-05 (S2) crea el artista con estado `invitado` y los tres campos de invitación en `NULL`; el envío por Resend llega en S5 (`ts-32`) y la invitación forma parte de HU-20. Generar el token en el alta dejaría tokens sin enviar que caducarían antes de usarse. El mecanismo de esta decisión no cambia: solo el momento de emisión.
 
-> **Ampliación de 2026-11-17 (`TS-87`, propuesta): correos del flujo de revisión.** Resend, a través del mismo `MailerContract` que crea HU-20 para la invitación (D4.3), envía también los avisos de la revisión (`TS-94`, S6):
+> **Ampliación de 2026-11-17 (`TS-87`): correos del flujo de revisión.** Resend, a través del mismo `MailerContract` que crea HU-20 para la invitación (D4.3), envía también los avisos de la revisión (`TS-94`, S6):
 >
 > | Evento | Destinatario | Dirección |
 > | --- | --- | --- |
@@ -391,7 +391,7 @@ Decisiones aprobadas en `TS-49` (2026-10-05/06):
 - **`studio_sessions`:** siempre pertenecen a una producción. Una restricción de exclusión impide solapar sesiones `confirmada`, y la cancelación es un estado, no un borrado.
 - **Formato del ERD:** Mermaid dentro de documentos Markdown versionados en `docs/erd/`, con enfoque design-first (se diseña y aprueba antes de migrar).
 
-Ampliación de alcance (`TS-87`, propuesta del 2026-11-17, pendiente de aprobación del equipo):
+Ampliación de alcance (`TS-87`, aprobada por el equipo el 2026-11-18):
 
 - `productions.due_date`, `versions.change_category` y `versions.analysis` (`jsonb`), y la tabla `version_reviews` (`modelo-completo.md` §3.3, §3.5 y §3.9).
 - El texto del motivo reutiliza `versions.description` y es obligatorio cuando la canción ya tiene una versión verificada.
@@ -411,7 +411,7 @@ Ampliación de alcance (`TS-87`, propuesta del 2026-11-17, pendiente de aprobaci
 | 7.6 | Expiración de presigned URLs + refresco por sesión | DECIDIDO | 15 min, ver D7.6 |
 | 7.7 | Validación WAV/MP3 ≤ 500 MB en front y back | DECIDIDO | Ver D7.7 |
 | 7.8 | Versioning, cifrado y lifecycle del bucket | DECIDIDO (2026-10-20) | Ver D7.8 |
-| 7.9 | ¿Dónde se calcula el análisis técnico del audio? | DECIDIDO (2026-11-16; propuesta `TS-87`) | En el navegador, al subir. Ver D7.9 |
+| 7.9 | ¿Dónde se calcula el análisis técnico del audio? | DECIDIDO (2026-11-18, `TS-87`) | En el navegador, al subir. Ver D7.9 |
 | 7.10 | Chequeo técnico: umbrales y efecto | **PARCIAL** (`TS-87`) | Advierte y no bloquea; los valores esperan la confirmación del productor. Ver D7.10 |
 
 **Nota:** con Railway (5 GB de disco, 100 conexiones) y archivos de hasta 500 MB, la subida directa navegador→S3 es prácticamente obligatoria. 7.3 aborda el dolor original del estudio (versiones duplicadas sin nomenclatura).
@@ -536,7 +536,7 @@ Los objetos actuales **no expiran nunca**: el audio se conserva hasta la purga (
 
 → *ISO 25010: fiabilidad (recuperabilidad), seguridad (confidencialidad). Cubre: RNF-02, RNF-04.*
 
-### D7.9 — Análisis técnico calculado en el navegador, al subir (2026-11-17, propuesta `TS-87`)
+### D7.9 — Análisis técnico calculado en el navegador, al subir (2026-11-18, `TS-87`)
 
 Enfoque elegido por el equipo el 2026-11-16 (ampliación de alcance §4.1). Aquí se fijan sus reglas.
 
@@ -554,7 +554,7 @@ Enfoque elegido por el equipo el 2026-11-16 (ampliación de alcance §4.1). Aqu�
 
 → *ISO 25010: adecuación funcional (corrección), eficiencia (uso de recursos). Cubre: `TS-91`, `TS-93`, `TS-95`.*
 
-### D7.10 — Chequeo técnico: advierte, no bloquea (2026-11-17, PARCIAL, propuesta `TS-87`)
+### D7.10 — Chequeo técnico: advierte, no bloquea (2026-11-18, PARCIAL, `TS-87`)
 
 **Decidido:**
 
@@ -585,7 +585,7 @@ Mientras no se confirmen, `TS-91` se implementa con estos valores. Cambiarlos de
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11), `versions` el 2026-10-20 (HU-13) y `version_reviews` propuesta el 2026-11-17 (`TS-87`); faltan filas de `productions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
+| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11), `versions` el 2026-10-20 (HU-13) y `version_reviews` el 2026-11-18 (`TS-87`); faltan filas de `productions`/`comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
 | 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
@@ -613,7 +613,7 @@ Documentación formal de las reglas de autorización que ya implican D4.2 (API R
 | `versions` | Ver historial | ✅ desde HU-14 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `versions` | Reproducir | ✅ desde HU-15/HU-16 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `versions` | Borrar (cascada de HU-12) | ✅ | ❌ |
-| `version_reviews` | Decidir: aprobar o pedir cambios (`TS-92`; propuesta `TS-87`) | ❌ (403) | ❌ hoy; ✅ con acceso vigente desde HU-21, artista no `inactivo`, solo sobre la versión `en_revision` |
+| `version_reviews` | Decidir: aprobar o pedir cambios (`TS-92`; `TS-87`) | ❌ (403) | ❌ hoy; ✅ con acceso vigente desde HU-21, artista no `inactivo`, solo sobre la versión `en_revision` |
 | `version_reviews` | Ver el estado y las decisiones | ✅ | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `version_reviews` | Editar o borrar una decisión | ❌ | ❌ |
 | Endpoint de humo (`/api/v1/me`) | Ver | ✅ | ✅ |

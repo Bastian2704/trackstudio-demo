@@ -90,7 +90,7 @@ productor sube vN ─► en revisión ─┬─► artista aprueba ─► aproba
 
 ### 5.2 Motivo de la versión
 
-- Desde la v2, la subida exige una **categoría** (voz, instrumentos, mezcla, master, arreglo, otro) y un **texto** de motivo. La v1 no lo pide. *(Lista de categorías: propuesta del agente, a validar con el productor.)*
+- Desde la v2, la subida exige una **categoría** (voz, instrumentos, mezcla, master, arreglo, otro) y un **texto** de motivo. La v1 no lo pide. *(Lista de categorías y una sola por versión: confirmadas por el productor el 2026-11-17, `consulta-productor-ts87.md`.)*
 - Se muestra en el historial y en la comparación.
 
 ### 5.3 Análisis y chequeo técnico
