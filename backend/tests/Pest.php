@@ -6,7 +6,9 @@ use App\Auth\UserRepository;
 use App\Contracts\AudioStorageContract;
 use App\Contracts\HashVerifierContract;
 use App\Contracts\MailerContract;
+use App\Enums\ArtistStatus;
 use App\Enums\AudioContentType;
+use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Song;
 use App\Models\User;
@@ -701,4 +703,36 @@ function tokenDelCorreo(Mailable $mail): string
         ->toBe(1, 'El correo no trae el enlace de invitación al frontend.');
 
     return $coincidencia[1];
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-21
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Monta la cadena completa de acceso efectivo para el `sub` de
+ * `claimsDeToken()`: usuario local, artista enlazado, una producción suya y su
+ * acceso. Devuelve la producción. Con `$artista` y `$acceso` se construyen los
+ * casos negativos (inactivo, sin cuenta enlazada, revocado) sin repetir el montaje.
+ *
+ * @param  array<string, mixed>  $artista
+ * @param  array<string, mixed>  $acceso
+ */
+function artistaConAcceso(array $artista = [], array $acceso = []): Production
+{
+    $usuario = User::query()->firstOrCreate(['auth0_sub' => claimsDeToken()['sub']]);
+
+    $artist = Artist::factory()->create(array_merge([
+        'user_id' => $usuario->id,
+        'status' => ArtistStatus::Activo,
+        'invitation_token' => null,
+        'invitation_expires_at' => null,
+    ], $artista));
+
+    $production = Production::factory()->create(['artist_id' => $artist->id]);
+    crearAcceso($production, $acceso);
+
+    return $production;
 }
