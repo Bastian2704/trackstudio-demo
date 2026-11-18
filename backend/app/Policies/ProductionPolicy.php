@@ -15,11 +15,18 @@ final class ProductionPolicy
         return $this->isProducer($user);
     }
 
+    public function viewAny(StatelessUserContract $user): bool
+    {
+        $role = $user->getAttribute('role');
+
+        return $role === Role::Productor || $role === Role::Artista;
+    }
+
     public function view(
         StatelessUserContract $user,
         Production $production
     ): bool {
-        return $this->isProducer($user);
+        return $this->isProducer($user) || $this->artistCanRead($user, $production->id);
     }
 
     public function update(
@@ -34,6 +41,12 @@ final class ProductionPolicy
         Production $production
     ): bool {
         return $this->isProducer($user);
+    }
+
+    private function artistCanRead(StatelessUserContract $user, string $productionId): bool
+    {
+        return $user->getAttribute('role') === Role::Artista
+            && Production::query()->whereKey($productionId)->accessibleBy((string) $user->getAuthIdentifier())->exists();
     }
 
     private function isProducer(StatelessUserContract $user): bool

@@ -27,6 +27,10 @@ final class ProductionResource extends JsonResource
             'format' => $this->resource->format->value,
             'created_at' => $this->resource->created_at?->toIso8601String(),
             'updated_at' => $this->resource->updated_at?->toIso8601String(),
+            'artist' => $this->whenLoaded('artist', fn (): array => [
+                'id' => $this->resource->artist->id,
+                'name' => $this->resource->artist->name,
+            ]),
         ];
     }
 }

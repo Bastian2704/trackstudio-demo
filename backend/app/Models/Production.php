@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ArtistStatus;
 use App\Enums\ProductionFormat;
 use Database\Factories\ProductionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -57,5 +59,21 @@ class Production extends Model
     public function accesses(): HasMany
     {
         return $this->hasMany(ProductionAccess::class);
+    }
+
+    /**
+     * Acceso efectivo del artista con única definición de la
+     * cadena `sub` -> `users` -> `artists` -> acceso sin
+     * revocar.
+     *
+     * @param  Builder<Production>  $query
+     */
+    public function scopeAccessibleBy(Builder $query, string $auth0Sub): void
+    {
+        $query->whereHas('accesses', fn (Builder $acceso) => $acceso
+            ->whereNull('revoked_at')
+            ->whereHas('artist', fn (Builder $artista) => $artista
+                ->where('status', '!=', ArtistStatus::Inactivo->value)
+                ->whereHas('user', fn (Builder $usuario) => $usuario->where('auth0_sub', $auth0Sub))));
     }
 }
