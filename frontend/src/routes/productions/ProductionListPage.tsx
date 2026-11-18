@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, EllipsisVertical, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 
 import ErrorAlert from '@/components/ErrorAlert'
 import {
@@ -26,6 +26,7 @@ import { formatDateTime } from '@/lib/dates'
 import { noticeFrom } from '@/lib/notice'
 import { cn } from '@/lib/utils'
 import { PAGE_BUTTON, PANEL_CLASS, TITLE_CLASS } from '@/routes/artists/artistStyles'
+import ProductionEditDialog from './ProductionEditDialog'
 import ProductionFormatBadge from './ProductionFormatBadge'
 import { deleteProduction, fetchProductions } from './productionApi'
 import type { ProductionListItem } from './productionSchema'
@@ -38,12 +39,12 @@ function pageFrom(raw: string | null): number {
 export default function ProductionListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const esProductor = useRoles().includes('productor')
   const page = pageFrom(searchParams.get('page'))
   const [notice, setNotice] = useState(() => noticeFrom(location.state))
   const [pending, setPending] = useState<ProductionListItem | null>(null)
+  const [editing, setEditing] = useState<ProductionListItem | null>(null)
   const goTo = (n: number) => setSearchParams({ page: String(n) })
 
   const query = useQuery({
@@ -72,7 +73,7 @@ export default function ProductionListPage() {
 
   let body
   if (query.isPending) {
-    body = <p className={stateClass}>Cargando…</p>
+    body = <p className={stateClass}>Cargando producciones…</p>
   } else if (query.isError) {
     body = <ErrorAlert>No se pudo cargar el listado de producciones.</ErrorAlert>
   } else if (query.data.meta.total === 0) {
@@ -94,7 +95,7 @@ export default function ProductionListPage() {
     const { data, meta } = query.data
     body = (
       <>
-        <ul aria-label="Producciones" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul aria-label="Producciones" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {data.map((production) => (
             <li key={production.id}>
               <article className={cn(PANEL_CLASS, 'group relative h-full space-y-3 p-6')}>
@@ -108,8 +109,7 @@ export default function ProductionListPage() {
                             variant="ghost"
                             size="icon-sm"
                             aria-label={`Acciones de ${production.name}`}
-                            // Visible siempre en táctil; con puntero, al pasar o enfocar.
-                            className="pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100 data-popup-open:opacity-100"
+                            className="relative z-10 data-popup-open:opacity-100 lg:opacity-0 lg:group-focus-within:opacity-100 lg:group-hover:opacity-100"
                           />
                         }
                       >
@@ -117,7 +117,10 @@ export default function ProductionListPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => void navigate(`/producciones/${production.id}/editar`)}
+                          onClick={() => {
+                            setNotice(null)
+                            setEditing(production)
+                          }}
                         >
                           Editar
                         </DropdownMenuItem>
@@ -133,45 +136,54 @@ export default function ProductionListPage() {
                 </div>
                 <h2 className="text-xl/7 font-semibold">
                   <Link
-                    to={`/producciones/${production.id}`}
-                    className="underline-offset-4 hover:text-accent-foreground hover:underline"
+                    to={
+                      esProductor
+                        ? `/producciones/${production.id}/editar`
+                        : `/producciones/${production.id}`
+                    }
+                    className="underline-offset-4 group-hover:text-accent-foreground after:absolute after:inset-0 after:rounded-[8px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-ring"
                   >
                     {production.name}
                   </Link>
                 </h2>
                 <p className="text-sm text-muted-foreground">{production.artist.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {`Creada el ${formatDateTime(production.created_at)}`}
+                  Creada el{' '}
+                  <time dateTime={production.created_at}>
+                    {formatDateTime(production.created_at)}
+                  </time>
                 </p>
               </article>
             </li>
           ))}
         </ul>
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-xs font-semibold tracking-[0.6px] text-muted-foreground">{`Mostrando ${meta.from}–${meta.to} de ${meta.total} producciones`}</p>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Anterior"
-              className={PAGE_BUTTON}
-              disabled={meta.current_page <= 1}
-              onClick={() => goTo(meta.current_page - 1)}
-            >
-              <ChevronLeft aria-hidden="true" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label="Siguiente"
-              className={PAGE_BUTTON}
-              disabled={meta.current_page >= meta.last_page}
-              onClick={() => goTo(meta.current_page + 1)}
-            >
-              <ChevronRight aria-hidden="true" />
-            </Button>
+        {meta.last_page > 1 && (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-semibold tracking-[0.6px] text-muted-foreground">{`Mostrando ${meta.from}–${meta.to} de ${meta.total} producciones`}</p>
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label="Anterior"
+                className={PAGE_BUTTON}
+                disabled={meta.current_page <= 1}
+                onClick={() => goTo(meta.current_page - 1)}
+              >
+                <ChevronLeft aria-hidden="true" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label="Siguiente"
+                className={PAGE_BUTTON}
+                disabled={meta.current_page >= meta.last_page}
+                onClick={() => goTo(meta.current_page + 1)}
+              >
+                <ChevronRight aria-hidden="true" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </>
     )
   }
@@ -199,6 +211,16 @@ export default function ProductionListPage() {
         <ErrorAlert>No se pudo eliminar la producción. Inténtalo de nuevo.</ErrorAlert>
       )}
       {body}
+      {editing && (
+        <ProductionEditDialog
+          production={editing}
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditing(null)
+          }}
+          onSaved={() => setNotice('Cambios guardados.')}
+        />
+      )}
       <AlertDialog
         open={pending !== null}
         onOpenChange={(open) => {

@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 
-import { Plus } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PANEL_CLASS, TITLE_CLASS } from '@/routes/artists/artistStyles'
+import { TITLE_CLASS } from '@/routes/artists/artistStyles'
 import ProductionFormatBadge from './ProductionFormatBadge'
 
 import { noticeFrom } from '@/lib/notice'
@@ -15,17 +15,17 @@ import type { ApiErrorBody } from '@/lib/api'
 import { fetchSongs } from '@/routes/songs/songApi'
 import SongList from '@/routes/songs/SongList'
 import ProductionAccessPanel from '@/routes/access/ProductionAccessPanel'
-import ProductionForm from './ProductionForm'
+import ProductionEditDialog from './ProductionEditDialog'
 import ProductionFormatNotice from './ProductionFormatNotice'
-import { fetchProduction, updateProduction } from './productionApi'
-import { FORMAT_RULES, type Production, type ProductionInput } from './productionSchema'
+import { fetchProduction } from './productionApi'
+import { FORMAT_RULES, type Production } from './productionSchema'
 import ErrorAlert from '@/components/ErrorAlert'
 
 export default function ProductionEditPage() {
   const { id = '' } = useParams()
   const location = useLocation()
-  const queryClient = useQueryClient()
   const [notice, setNotice] = useState(() => noticeFrom(location.state))
+  const [editOpen, setEditOpen] = useState(false)
 
   const query = useQuery<Production, AxiosError<ApiErrorBody>>({
     queryKey: ['productions', id],
@@ -41,21 +41,11 @@ export default function ProductionEditPage() {
   const max = query.data ? FORMAT_RULES[query.data.format].max : null
   const isFull = songCount !== undefined && max !== null && songCount >= max
 
-  const updateMutation = useMutation({
-    mutationFn: (input: ProductionInput) => updateProduction(id, input),
-    onSuccess: (production) => {
-      queryClient.setQueryData(['productions', id], production)
-      setNotice('Cambios guardados.')
-    },
-  })
-
   if (query.isError) {
     const notFound = query.error.response?.data?.code === 'RESOURCE_NOT_FOUND'
     return (
       <main className="space-y-8">
-        <h1 className={TITLE_CLASS}>
-          {notFound ? 'Producción no encontrada' : 'Editar producción'}
-        </h1>
+        <h1 className={TITLE_CLASS}>{notFound ? 'Producción no encontrada' : 'Producción'}</h1>
         {!notFound && <ErrorAlert>No se pudo cargar la producción.</ErrorAlert>}
       </main>
     )
@@ -70,17 +60,29 @@ export default function ProductionEditPage() {
               <ProductionFormatBadge format={query.data.format} />
             </div>
           )}
-          <h1 className={TITLE_CLASS}>Editar producción</h1>
+          <h1 className={TITLE_CLASS}>{query.data?.name ?? 'Producción'}</h1>
         </div>
-        {query.isSuccess && !isFull && (
-          <Link
-            to={`/producciones/${id}/canciones/nueva`}
-            className={cn(buttonVariants(), 'gap-2 px-6 text-xs font-bold tracking-[0.6px]')}
-          >
-            <Plus aria-hidden="true" />
-            Nueva canción
-          </Link>
-        )}
+        <div className="flex gap-2 max-md:flex-col">
+          {query.isSuccess && (
+            <Button
+              variant="outline"
+              className="gap-2 px-6 text-xs font-bold tracking-[0.6px]"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil aria-hidden="true" />
+              Editar
+            </Button>
+          )}
+          {query.isSuccess && !isFull && (
+            <Link
+              to={`/producciones/${id}/canciones/nueva`}
+              className={cn(buttonVariants(), 'gap-2 px-6 text-xs font-bold tracking-[0.6px]')}
+            >
+              <Plus aria-hidden="true" />
+              Nueva canción
+            </Link>
+          )}
+        </div>
       </div>
       {notice && (
         <p role="status" className="text-sm text-muted-foreground">
@@ -91,13 +93,12 @@ export default function ProductionEditPage() {
         <p>Cargando…</p>
       ) : (
         <>
-          <section className={cn(PANEL_CLASS, 'max-w-lg p-6')}>
-            <ProductionForm
-              values={{ name: query.data.name, format: query.data.format }}
-              submitLabel="Guardar cambios"
-              onSubmit={(input) => updateMutation.mutateAsync(input)}
-            />
-          </section>
+          <ProductionEditDialog
+            production={query.data}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSaved={() => setNotice('Cambios guardados.')}
+          />
           {songCount !== undefined && (
             <ProductionFormatNotice format={query.data.format} songCount={songCount} />
           )}
