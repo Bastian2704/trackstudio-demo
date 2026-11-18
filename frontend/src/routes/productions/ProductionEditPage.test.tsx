@@ -42,6 +42,8 @@ import {
  *
  * TS-32 (HU-21) — enmienda de HU-08, spec frontend HU-21 §3.3 test 10: el borrado
  * sale de la edición y pasa al menú del listado (ProductionListPage.test.tsx).
+ * §3.3b test 10b: la página titula con el nombre y edita nombre y formato en un
+ * modal que abre «Editar»; `abrirEdicion` lo abre y espera la precarga.
  *
  * TS-71 (épica TS-67) — ts-42.03, spec frontend TS-71 §4 tests 2 y 3: etiqueta
  * del formato guardado sobre el título. Se consulta por `span` para no confundirla
@@ -142,9 +144,19 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
   return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
 }
 
-async function esperarPrecarga() {
-  await screen.findByLabelText('Nombre')
+async function esperarPrecarga(titulo = 'Sesiones del álbum') {
+  await screen.findByRole('heading', { level: 1, name: titulo })
+}
+
+/** Abre el modal de edición y espera los valores precargados. */
+async function abrirEdicion(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Editar' }))
+  await screen.findByRole('dialog', { name: 'Editar producción' })
   await waitFor(() => expect(nombre().value).toBe('Sesiones del álbum'))
+}
+
+function guardar() {
+  return screen.getByRole('button', { name: 'Guardar cambios' })
 }
 
 /** Botón que confirma el borrado de una canción desde el listado (HU-12). */
@@ -159,7 +171,8 @@ function borrados(peticiones: PeticionRegistrada[]) {
 const AVISO = 'Formato de la producción'
 
 async function textoDelAviso() {
-  return (await screen.findByRole('region', { name: AVISO })).textContent ?? ''
+  // `hidden`: el aviso sigue en la página aunque el modal la oculte al árbol accesible.
+  return (await screen.findByRole('region', { name: AVISO, hidden: true })).textContent ?? ''
 }
 
 /** `n` canciones distintas, en posiciones 1..n. */
@@ -175,12 +188,15 @@ function variasCanciones(n: number) {
 describe('ProductionEditPage', () => {
   it('precarga la producción', async () => {
     const peticiones = simularApi(conPrecarga(() => ({ status: 500 })))
-    renderEdicion()
+    const user = renderEdicion()
 
-    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
     await esperarPrecarga()
-    expect(formato().value).toBe('album')
     expect(peticiones[0]).toMatchObject({ method: 'GET', url: URL_PRODUCCION })
+    expect(screen.queryByLabelText('Nombre')).toBeNull()
+    expect(screen.queryByLabelText('Formato')).toBeNull()
+
+    await abrirEdicion(user)
+    expect(formato().value).toBe('album')
   })
 
   it('guarda los cambios con PUT', async () => {
@@ -192,18 +208,19 @@ describe('ProductionEditPage', () => {
     )
     const user = renderEdicion()
     await esperarPrecarga()
+    await abrirEdicion(user)
 
     await user.clear(nombre())
     await user.type(nombre(), 'Sesiones del EP')
     await user.selectOptions(formato(), 'EP')
-    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await user.click(guardar())
 
     await waitFor(() => expect(textoEnRol('status', 'Cambios guardados.')).toBe(true))
     expect(peticiones.filter((p) => p.method !== 'GET')).toEqual([
       { method: 'PUT', url: URL_PRODUCCION, body: { name: 'Sesiones del EP', format: 'ep' } },
     ])
-    expect(nombre().value).toBe('Sesiones del EP')
-    expect(formato().value).toBe('ep')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.getByRole('heading', { level: 1, name: 'Sesiones del EP' })).toBeTruthy()
   })
 
   it('muestra en su campo el 422 al editar', async () => {
@@ -213,14 +230,16 @@ describe('ProductionEditPage', () => {
     )
     const user = renderEdicion()
     await esperarPrecarga()
+    await abrirEdicion(user)
 
     await user.clear(nombre())
     await user.type(nombre(), 'Otra producción')
-    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await user.click(guardar())
 
     expect(await screen.findByText(mensaje)).toBeTruthy()
     expect(nombre().getAttribute('aria-invalid')).toBe('true')
     expect(nombre().value).toBe('Otra producción')
+    expect(screen.getByRole('dialog', { name: 'Editar producción' })).toBeTruthy()
   })
 
   it('una producción inexistente muestra no encontrado', async () => {
@@ -228,8 +247,7 @@ describe('ProductionEditPage', () => {
     renderEdicion()
 
     expect(await screen.findByRole('heading', { name: 'Producción no encontrada' })).toBeTruthy()
-    expect(screen.queryByLabelText('Nombre')).toBeNull()
-    expect(screen.queryByLabelText('Formato')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Eliminar producción' })).toBeNull()
   })
 
@@ -250,7 +268,7 @@ describe('ProductionEditPage', () => {
     await waitFor(() =>
       expect(textoEnRol('alert', 'No se pudo cargar el listado de canciones.')).toBe(true),
     )
-    expect(nombre().value).toBe('Sesiones del álbum')
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
   })
 
@@ -337,8 +355,9 @@ describe('ProductionEditPage', () => {
     await esperarPrecarga()
     expect(await textoDelAviso()).toContain('Un EP tiene de 2 a 6 canciones.')
 
+    await abrirEdicion(user)
     await user.selectOptions(formato(), 'Álbum')
-    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await user.click(guardar())
 
     await waitFor(() => expect(textoEnRol('status', 'Cambios guardados.')).toBe(true))
     expect(await textoDelAviso()).toContain('Un álbum tiene 7 canciones o más.')
@@ -357,8 +376,9 @@ describe('ProductionEditPage', () => {
     await esperarPrecarga()
     await textoDelAviso()
 
+    await abrirEdicion(user)
     await user.selectOptions(formato(), 'Sencillo')
-    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await user.click(guardar())
 
     expect(await screen.findByText(mensaje)).toBeTruthy()
     expect(formato().getAttribute('aria-invalid')).toBe('true')
@@ -380,11 +400,12 @@ describe('ProductionEditPage', () => {
     expect(await screen.findByText('Álbum', { selector: 'span' })).toBeTruthy()
 
     // Elegir otra opción sin guardar no cambia la etiqueta.
+    await abrirEdicion(user)
     await user.selectOptions(formato(), 'EP')
     expect(screen.queryByText('EP', { selector: 'span' })).toBeNull()
     expect(screen.getByText('Álbum', { selector: 'span' })).toBeTruthy()
 
-    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    await user.click(guardar())
 
     expect(await screen.findByText('EP', { selector: 'span' })).toBeTruthy()
     expect(screen.queryByText('Álbum', { selector: 'span' })).toBeNull()
@@ -397,7 +418,7 @@ describe('ProductionEditPage', () => {
     simularApi(respuesta)
     renderEdicion()
 
-    await screen.findByRole('heading', { name: 'Editar producción' })
+    await screen.findByRole('heading', { level: 1, name: 'Producción' })
     await new Promise((resolver) => setTimeout(resolver, 50))
     expect(screen.queryByText(/^(Sencillo|EP|Álbum)$/, { selector: 'span' })).toBeNull()
   })
@@ -406,7 +427,7 @@ describe('ProductionEditPage', () => {
     simularApi(() => new Promise<RespuestaSimulada>(() => {}))
     renderEdicion()
 
-    await screen.findByRole('heading', { name: 'Editar producción' })
+    await screen.findByRole('heading', { level: 1, name: 'Producción' })
     await new Promise((resolver) => setTimeout(resolver, 50))
     expect(screen.queryByRole('link', { name: 'Nueva canción' })).toBeNull()
   })

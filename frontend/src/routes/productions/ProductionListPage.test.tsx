@@ -90,8 +90,9 @@ function renderListado(rol: 'productor' | 'artista', entrada = '/producciones') 
   return userEvent.setup()
 }
 
+// `hidden`: con un modal abierto, Base UI oculta el resto de la página al árbol accesible.
 function ubicacion() {
-  return screen.getByRole('status', { name: 'Ubicación actual' }).textContent
+  return screen.getByRole('status', { name: 'Ubicación actual', hidden: true }).textContent
 }
 
 function paginasPedidas(peticiones: PeticionRegistrada[]) {
@@ -123,7 +124,10 @@ function confirmar() {
 }
 
 describe('ProductionListPage', () => {
-  it('lista las tarjetas en el orden del servidor', async () => {
+  it.each([
+    { rol: 'productor' as const, sufijo: '/editar' },
+    { rol: 'artista' as const, sufijo: '' },
+  ])('lista las tarjetas en el orden del servidor: $rol', async ({ rol, sufijo }) => {
     const marea = produccion({ name: 'Marea', format: 'ep' })
     const faro = produccion({
       name: 'Faro',
@@ -132,21 +136,21 @@ describe('ProductionListPage', () => {
       artist: { id: 'otro', name: 'Sol Vega' },
     })
     const peticiones = simularApi(() => pagina([marea, faro]))
-    renderListado('productor')
+    renderListado(rol)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Producciones' })).toBeTruthy()
     const [primera, segunda] = await tarjetas()
 
     expect(within(primera).getByRole('link', { name: 'Marea' }).getAttribute('href')).toBe(
-      `/producciones/${marea.id}`,
+      `/producciones/${marea.id}${sufijo}`,
     )
     expect(primera.textContent).toContain('EP')
     expect(primera.textContent).toContain('Luna Rivera')
-    expect(within(primera).getByText(/^Creada el /).textContent).toBe(
-      `Creada el ${formatDateTime(marea.created_at)}`,
-    )
+    const fecha = primera.querySelector('time')
+    expect(fecha?.getAttribute('datetime')).toBe(marea.created_at)
+    expect(fecha?.parentElement?.textContent).toBe(`Creada el ${formatDateTime(marea.created_at)}`)
     expect(within(segunda).getByRole('link', { name: 'Faro' }).getAttribute('href')).toBe(
-      `/producciones/${faro.id}`,
+      `/producciones/${faro.id}${sufijo}`,
     )
     expect(segunda.textContent).toContain('Álbum')
     expect(segunda.textContent).toContain('Sol Vega')
@@ -213,11 +217,69 @@ describe('ProductionListPage', () => {
     ).toBe('/producciones/nueva')
 
     await user.click(await screen.findByRole('button', { name: 'Acciones de Marea' }))
-    expect(await screen.findByRole('menuitem', { name: 'Eliminar' })).toBeTruthy()
-    await user.click(screen.getByRole('menuitem', { name: 'Editar' }))
+    expect(await screen.findByRole('menuitem', { name: 'Editar' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Eliminar' })).toBeTruthy()
+    expect(ubicacion()).toBe('/producciones')
+  })
 
-    expect(await screen.findByText('Edición simulada')).toBeTruthy()
-    expect(ubicacion()).toBe(`/producciones/${marea.id}/editar`)
+  /*
+   * §3.3b test 4b: «Editar» del menú abre el modal de edición sin navegar.
+   */
+  it('«Editar» del menú abre el modal y renombra', async () => {
+    const marea = produccion({ name: 'Marea', format: 'ep' })
+    let renombrada = false
+    const peticiones = simularApi((p) => {
+      if (p.method === 'PUT') {
+        renombrada = true
+        return { status: 200, data: { data: { ...marea, name: 'Mareas' } } }
+      }
+      return pagina([renombrada ? { ...marea, name: 'Mareas' } : marea])
+    })
+    const user = renderListado('productor')
+
+    await user.click(await screen.findByRole('button', { name: 'Acciones de Marea' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Editar' }))
+
+    await screen.findByRole('dialog', { name: 'Editar producción' })
+    expect(ubicacion()).toBe('/producciones')
+    const nombre = screen.getByLabelText<HTMLInputElement>('Nombre')
+    await waitFor(() => expect(nombre.value).toBe('Marea'))
+    expect(screen.getByLabelText<HTMLSelectElement>('Formato').value).toBe('ep')
+
+    await user.clear(nombre)
+    await user.type(nombre, 'Mareas')
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+
+    await waitFor(() => expect(textoEnRol('status', 'Cambios guardados.')).toBe(true))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(await screen.findByRole('link', { name: 'Mareas' })).toBeTruthy()
+    expect(peticiones.filter((p) => p.method === 'PUT')).toEqual([
+      {
+        method: 'PUT',
+        url: `/api/v1/productions/${marea.id}`,
+        body: { name: 'Mareas', format: 'ep' },
+      },
+    ])
+    expect(paginasPedidas(peticiones)).toEqual([1, 1])
+  })
+
+  it('un 422 al renombrar deja el modal abierto con el error en su campo', async () => {
+    const mensaje = 'Ya existe una producción con ese nombre para este artista.'
+    simularApi((p) =>
+      p.method === 'PUT'
+        ? problema(422, 'VALIDATION_ERROR', { errors: { name: [mensaje] } })
+        : pagina([produccion({ name: 'Marea' })]),
+    )
+    const user = renderListado('productor')
+
+    await user.click(await screen.findByRole('button', { name: 'Acciones de Marea' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Editar' }))
+    await screen.findByRole('dialog', { name: 'Editar producción' })
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+
+    expect(await screen.findByText(mensaje)).toBeTruthy()
+    expect(screen.getByLabelText('Nombre').getAttribute('aria-invalid')).toBe('true')
+    expect(screen.getByRole('dialog', { name: 'Editar producción' })).toBeTruthy()
   })
 
   it('el artista no ve acciones', async () => {

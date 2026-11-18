@@ -160,7 +160,10 @@ describe('ProductionCreatePage', () => {
     await rellenar(user, 'Sesiones del álbum', 'Álbum')
     await user.click(boton())
 
-    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
+    // TS-32 (HU-21 §3.3b): la gestión titula con el nombre y edita en un modal.
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sesiones del álbum' }),
+    ).toBeTruthy()
     expect(peticiones[0]).toMatchObject({
       method: 'GET',
       url: '/api/v1/artists',
@@ -172,8 +175,7 @@ describe('ProductionCreatePage', () => {
       body: { artist_id: ARTIST_ID, name: 'Sesiones del álbum', format: 'album' },
     })
     await waitFor(() => expect(textoEnRol('status', 'Producción registrada.')).toBe(true))
-    await waitFor(() => expect(nombre().value).toBe('Sesiones del álbum'))
-    expect(formato().value).toBe('album')
+    expect(screen.getByText('Álbum', { selector: 'span' })).toBeTruthy()
   })
 
   it.each([
