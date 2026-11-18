@@ -19,12 +19,12 @@ Al subir una versión nueva, el productor elige una categoría:
 > **Propuesta:** voz · instrumentos · mezcla · master · arreglo · otro
 
 - ¿Sirven estas seis? ¿Falta alguna que use el estudio (por ejemplo, edición o afinación, letra o estructura) o sobra alguna?
-- Respuesta:
+- Respuesta (2026-11-17): **Sí.** Sirven las seis; no agrega ninguna. «Otro» cubre lo demás.
 
 > **Propuesta:** se elige **una sola categoría por versión**, la del cambio principal, y el texto explica el resto.
 
 - ¿Le basta con una, o es habitual que una versión cambie varias cosas a la vez (por ejemplo, voz y mezcla) y quiere marcar varias? *(Si la respuesta es «varias», cambia el ERD: `change_category` deja de ser una columna simple.)*
-- Respuesta:
+- Respuesta (2026-11-17): **Una sola** categoría por versión. El ERD no cambia.
 
 Hay una explicación visual con ejemplos de cómo se vería en la página «Categorías del cambio» (enlace en el PR de `TS-87`).
 
