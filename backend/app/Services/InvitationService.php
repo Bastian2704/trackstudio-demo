@@ -10,6 +10,7 @@ use App\Models\User;
 use Auth0\Laravel\Users\StatelessUserContract;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class InvitationService
@@ -40,9 +41,11 @@ final class InvitationService
                 'user_id' => $user->id,
                 'invitation_token' => null,
                 'invitation_expires_at' => null,
-                'status' => $artist->status === ArtistStatus::Inactivo
-                    ? ArtistStatus::Inactivo
-                    : ArtistStatus::Activo,
+                'status' => DB::raw(sprintf(
+                    "CASE WHEN status = '%s' THEN status ELSE '%s' END",
+                    ArtistStatus::Inactivo->value,
+                    ArtistStatus::Activo->value,
+                )),
             ]);
 
         if ($actualizadas === 0) {

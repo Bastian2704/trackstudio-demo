@@ -76,11 +76,14 @@ final class ProductionAccessService
 
     public function revoke(ProductionAccess $access): void
     {
-        if ($access->revoked_at !== null) {
+        $revocadas = ProductionAccess::query()
+            ->whereKey($access->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => CarbonImmutable::now()]);
+
+        if ($revocadas === 0) {
             return;
         }
-
-        $access->update(['revoked_at' => CarbonImmutable::now()]);
 
         Log::info('production_access.revoked', [
             'access_id' => $access->id,
