@@ -38,6 +38,11 @@ La parte B (comentarios del artista) espera a HU-19 (`TS-30`). Por eso `TS-32` n
   - `/producciones` (`ProductionListPage`): tarjetas. El productor tiene «Nueva producción» y el menú «⋮» con Editar y Eliminar. Con puntero el menú aparece al pasar o enfocar; en táctil se ve siempre.
   - `/producciones/:id` (`ProductionDetailPage`) y `/canciones/:id` (`SongDetailPage`): vistas de lectura para los dos roles.
 - `/producciones/nueva` tiene un combobox con búsqueda que pide `GET /artists?per_page=100`, excluye a los inactivos y pinta en su campo el 422 de `artist_id`. La ruta anidada `/artistas/:id/producciones/nueva` desaparece.
+- **Tarjetas y edición en modal** (segunda decisión del equipo del día, spec frontend HU-21 §3.3b):
+  - la tarjeta entera navega, con el patrón «stretched link»: el productor va a la gestión (`/producciones/:id/editar`) y el artista a la lectura;
+  - nombre y formato se editan en `ProductionEditDialog`, que abren el botón «Editar» de la gestión y el «Editar» del menú de la tarjeta;
+  - el `h1` de la gestión pasa a ser el nombre de la producción.
+- Se alinearon con la spec cuatro detalles del listado: «Cargando producciones…», `<time dateTime>`, la paginación solo si `last_page > 1` y la visibilidad del «⋮» desde `lg`.
 - `SongList` tiene un modo `readOnly`.
 - El borrado de la producción pasa de la edición al menú del listado.
 - `ArtistListPage` deja de mostrar producciones.
@@ -66,6 +71,8 @@ La parte B (comentarios del artista) espera a HU-19 (`TS-30`). Por eso `TS-32` n
 
   Para añadir otro componente, hay que repetir el mismo procedimiento.
 - **Advertencia nueva de ESLint:** `react-refresh/only-export-components` en `combobox.tsx` (`useComboboxAnchor`). Es de la misma clase que `button.tsx` → `TS-58`.
+- **Modales de Base UI en jsdom:** con un `Dialog` abierto, el resto de la página sale del árbol accesible. Para consultar fuera del modal hace falta `{ hidden: true }`.
+- **Test #16 (403 → /403):** `App.test.tsx` simula el interceptor en todo el archivo y no puede recorrer la cadena completa. Queda cubierto entre `ProductionDetailPage` (no captura el 403), `App::FORBIDDEN navega` y `api.test.ts`; la spec lo registra.
 - **Combobox de Base UI en jsdom:** funciona con `user.type` sobre `getByRole('combobox', { name })` y `findByRole('option')`, sin trucos.
 - **Pest:** el aviso `fopen(... test-run-history): Permission denied` es inofensivo.
 
@@ -81,5 +88,5 @@ La parte B (comentarios del artista) espera a HU-19 (`TS-30`). Por eso `TS-32` n
 
 ## 7. Próximos pasos
 
-1. Prueba manual en staging con un artista con acceso y otro sin él.
+1. Prueba manual en staging con un artista con acceso y otro sin él, incluido `.09`: la tarjeta entera clicable y el «⋮» con hover, foco y en táctil.
 2. Parte B cuando TS-30 esté Done.
