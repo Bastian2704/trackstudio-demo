@@ -18,7 +18,7 @@ uses(RefreshDatabase::class);
 | TS-31 — Aceptar invitación: POST /api/v1/invitations/{token}/accept
 |--------------------------------------------------------------------------
 |
-| Spec: docs/specs/backend/HU-20.md §3.6 y §4 (#16–#21). En la base solo vive
+| Spec: docs/specs/backend/HU-20.md §3.6 y §4 (#16–#21, #28, #29). En la base solo vive
 | el SHA-256 del token (§3.1); el test guarda el hash y envía el token en claro.
 |
 */
@@ -204,6 +204,32 @@ it('no pisa una aceptación concurrente del mismo token', function () {
 
     expect($adelantada)->toBeTrue()
         ->and($artista->refresh()->user_id)->toBe($otraCuenta->id);
+});
+
+it('no reactiva a un artista desactivado durante la aceptación', function () {
+    [$artista, $token] = artistaInvitado();
+    impersonarToken(claimsDeToken('artista'));
+
+    // El productor desactiva al artista entre la lectura y el UPDATE.
+    $desactivado = false;
+    DB::beforeExecuting(function (string $sql) use (&$desactivado, $artista): void {
+        if ($desactivado || ! str_starts_with($sql, 'update "artists"')) {
+            return;
+        }
+
+        $desactivado = true;
+        DB::table('artists')->where('id', $artista->id)->update(['status' => ArtistStatus::Inactivo->value]);
+    });
+
+    aceptar($token)
+        ->assertOk()
+        ->assertJsonPath('data.status', 'inactivo');
+
+    $artista->refresh();
+
+    expect($desactivado)->toBeTrue()
+        ->and($artista->status)->toBe(ArtistStatus::Inactivo)
+        ->and($artista->user_id)->toBe(usuarioDelToken()?->id);
 });
 
 it('solo el rol artista acepta', function (?string $rol, int $http, string $code) {
