@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import ArtistListPage from '@/routes/artists/ArtistListPage'
-import ProductionCreatePage from '@/routes/productions/ProductionCreatePage'
 import {
   problema,
   restaurarApi,
@@ -23,6 +22,9 @@ import {
  * comprobar que la página vive en ?page (spec §3.2).
  *
  * TS-70 (épica TS-67) — ts-41.03, spec frontend TS-70 §4 tests 1 y 2.
+ *
+ * TS-32 (HU-21) — enmienda de HU-06, spec frontend HU-21 §3.7 test 14: el
+ * listado ya no trae producciones ni la acción «Nueva producción».
  */
 const URL_LISTADO = '/api/v1/artists'
 
@@ -37,7 +39,6 @@ function artista(cambios: Record<string, unknown> = {}) {
     status: 'activo',
     created_at: '2026-10-08T14:03:11+00:00',
     updated_at: '2026-10-08T14:03:11+00:00',
-    productions: [],
     ...cambios,
   }
 }
@@ -83,7 +84,6 @@ function renderListado(entrada = '/artistas') {
       <MemoryRouter initialEntries={[entrada]}>
         <Routes>
           <Route path="/artistas" element={<ArtistListPage />} />
-          <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />
         </Routes>
         <Ubicacion />
       </MemoryRouter>
@@ -135,12 +135,12 @@ describe('ArtistListPage', () => {
     const encabezados = within(await tabla())
       .getAllByRole('columnheader')
       .map((th) => th.textContent?.trim())
-    expect(encabezados).toEqual(['Artista', 'Contacto', 'Producciones', 'Estado', 'Acciones'])
+    expect(encabezados).toEqual(['Artista', 'Contacto', 'Estado', 'Acciones'])
 
     const datos = await filas()
     expect(datos).toHaveLength(3)
     expect(celdas(datos[0]).slice(0, 2)).toEqual(['Luna Rivera', 'luna@ejemplo.test'])
-    expect(celdas(datos[0])[3]).toBe('Activo')
+    expect(celdas(datos[0])[2]).toBe('Activo')
     expect(celdas(datos[1]).slice(0, 2)).toEqual(['Mar Soto', 'mar@ejemplo.test'])
     expect(celdas(datos[2]).slice(0, 2)).toEqual(['Río Paz', 'rio@ejemplo.test'])
     expect(paginasPedidas(peticiones)).toEqual([1])
@@ -168,49 +168,14 @@ describe('ArtistListPage', () => {
     renderListado()
 
     const [fila] = await filas()
-    expect(celdas(fila)[3]).toBe(etiqueta)
+    expect(celdas(fila)[2]).toBe(etiqueta)
   })
 
-  it('enlaza cada producción con su formato', async () => {
-    const lista = [
-      artista({
-        name: 'Luna Rivera',
-        productions: [
-          { id: 'a1b2c3d4-0000-4000-8000-000000000001', name: 'Marea', format: 'ep' },
-          { id: 'a1b2c3d4-0000-4000-8000-000000000002', name: 'Faro', format: 'album' },
-          { id: 'a1b2c3d4-0000-4000-8000-000000000003', name: 'Ola', format: 'sencillo' },
-        ],
-      }),
-    ]
-    simularApi(() => pagina(lista))
-    renderListado()
-
-    const [fila] = await filas()
-    const enlaces = within(fila)
-      .getAllByRole('link')
-      .filter((a) => a.getAttribute('href')?.startsWith('/producciones/'))
-      .map((a) => [a.textContent?.trim(), a.getAttribute('href')])
-
-    expect(enlaces).toEqual([
-      ['Marea · EP', '/producciones/a1b2c3d4-0000-4000-8000-000000000001/editar'],
-      ['Faro · Álbum', '/producciones/a1b2c3d4-0000-4000-8000-000000000002/editar'],
-      ['Ola · Sencillo', '/producciones/a1b2c3d4-0000-4000-8000-000000000003/editar'],
-    ])
-  })
-
-  it('indica cuando un artista no tiene producciones', async () => {
-    simularApi(() => pagina([artista({ productions: [] })]))
-    renderListado()
-
-    const [fila] = await filas()
-    expect(celdas(fila)[2]).toBe('Sin producciones')
-  })
-
-  it('ofrece editar y registrar producción desde cada fila', async () => {
+  it('ofrece editar desde cada fila y ya no muestra producciones', async () => {
     const luna = artista({ name: 'Luna Rivera' })
     const mar = artista({ name: 'Mar Soto' })
     simularApi(() => pagina([luna, mar]))
-    const user = renderListado()
+    renderListado()
 
     await tabla()
     expect(screen.getByRole('link', { name: 'Editar Luna Rivera' }).getAttribute('href')).toBe(
@@ -219,14 +184,9 @@ describe('ArtistListPage', () => {
     expect(screen.getByRole('link', { name: 'Editar Mar Soto' }).getAttribute('href')).toBe(
       `/artistas/${mar.id}/editar`,
     )
-    expect(
-      screen.getByRole('link', { name: 'Nueva producción para Luna Rivera' }).getAttribute('href'),
-    ).toBe(`/artistas/${luna.id}/producciones/nueva`)
-
-    await user.click(screen.getByRole('link', { name: 'Nueva producción para Mar Soto' }))
-
-    expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
-    expect(ubicacion()).toBe(`/artistas/${mar.id}/producciones/nueva`)
+    expect(screen.queryByRole('link', { name: /Nueva producción/ })).toBeNull()
+    expect(screen.queryByText('Sin producciones')).toBeNull()
+    expect(screen.queryByRole('columnheader', { name: 'Producciones' })).toBeNull()
   })
 
   it('muestra el resumen de paginación', async () => {
@@ -377,9 +337,8 @@ describe('ArtistListPage', () => {
     renderListado()
 
     for (const fila of await filas()) {
-      const [, contacto, producciones] = within(fila).getAllByRole('cell')
+      const [, contacto] = within(fila).getAllByRole('cell')
       expect(contacto.getAttribute('data-label')).toBe('Contacto')
-      expect(producciones.getAttribute('data-label')).toBe('Producciones')
     }
   })
 })

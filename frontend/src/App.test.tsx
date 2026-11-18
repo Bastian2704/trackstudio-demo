@@ -53,6 +53,37 @@ function renderApp(contexto: ReturnType<typeof contextoAuth0>, initialEntry: str
   )
 }
 
+/** Página paginada vacía de Laravel, para los GET que el caso no mira. */
+function paginaVacia() {
+  return {
+    status: 200,
+    data: {
+      data: [],
+      links: { first: null, last: null, prev: null, next: null },
+      meta: { current_page: 1, from: null, last_page: 1, per_page: 15, to: null, total: 0 },
+    },
+  }
+}
+
+const PRODUCCION = {
+  id: '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f',
+  artist_id: '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d',
+  name: 'Sesiones del álbum',
+  format: 'album',
+  created_at: '2026-10-08T14:03:11+00:00',
+  updated_at: '2026-10-08T14:03:11+00:00',
+}
+
+const CANCION = {
+  id: '9d3d7b63-2a3c-4d4e-9f5a-6b7c8d9e0f1a',
+  production_id: PRODUCCION.id,
+  name: 'Intro',
+  position: 1,
+  status: 'por_hacer',
+  created_at: '2026-10-13T14:03:11+00:00',
+  updated_at: '2026-10-13T14:03:11+00:00',
+}
+
 describe('App', () => {
   it('la ruta /productor está protegida para artista', async () => {
     const roleClaim = import.meta.env.VITE_AUTH0_ROLE_CLAIM
@@ -166,22 +197,59 @@ describe('App', () => {
   /*
    * TS-19 (HU-08) — ts-08.06, spec frontend §4 test 18.
    */
-  it.each([
-    ['/artistas/9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d/producciones/nueva'],
-    ['/producciones/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/editar'],
-  ])('las rutas de producciones son solo del productor: artista en %s', async (ruta) => {
-    renderApp(contextoConRol('artista'), ruta)
+  it.each([['/producciones/nueva'], ['/producciones/9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f/editar']])(
+    'las rutas de producciones son solo del productor: artista en %s',
+    async (ruta) => {
+      renderApp(contextoConRol('artista'), ruta)
 
-    expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
-  })
+      expect(await screen.findByRole('heading', { name: '403 · Acceso denegado' })).toBeTruthy()
+    },
+  )
 
   it('las rutas de producciones son solo del productor: productor en el alta', async () => {
+    simularApi(() => paginaVacia())
+    renderApp(contextoConRol('productor'), '/producciones/nueva')
+
+    expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
+  })
+
+  /*
+   * TS-32 (HU-21) — spec frontend HU-21 §3.1 y §4 test 15: el listado y las
+   * vistas de lectura son de los dos roles; el alta anidada bajo /artistas ya no
+   * existe y cae en la ruta comodín.
+   */
+  it.each([
+    { rol: 'productor', ruta: '/producciones', encabezado: 'Producciones' },
+    { rol: 'artista', ruta: '/producciones', encabezado: 'Producciones' },
+    { rol: 'productor', ruta: `/producciones/${PRODUCCION.id}`, encabezado: PRODUCCION.name },
+    { rol: 'artista', ruta: `/producciones/${PRODUCCION.id}`, encabezado: PRODUCCION.name },
+    { rol: 'productor', ruta: `/canciones/${CANCION.id}`, encabezado: CANCION.name },
+    { rol: 'artista', ruta: `/canciones/${CANCION.id}`, encabezado: CANCION.name },
+  ])(
+    'las vistas de lectura son de los dos roles: $rol en $ruta',
+    async ({ rol, ruta, encabezado }) => {
+      simularApi(({ url }) => {
+        if (url === `/api/v1/productions/${PRODUCCION.id}`)
+          return { status: 200, data: { data: PRODUCCION } }
+        if (url === `/api/v1/songs/${CANCION.id}`) return { status: 200, data: { data: CANCION } }
+        return paginaVacia()
+      })
+      renderApp(contextoConRol(rol), ruta)
+
+      expect(await screen.findByRole('heading', { level: 1, name: encabezado })).toBeTruthy()
+    },
+  )
+
+  it('el alta anidada bajo /artistas ya no existe', async () => {
+    simularApi(() => paginaVacia())
     renderApp(
       contextoConRol('productor'),
       '/artistas/9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d/producciones/nueva',
     )
 
-    expect(await screen.findByRole('heading', { name: 'Registrar producción' })).toBeTruthy()
+    // La ruta comodín lleva a «/», y Home manda al productor a /me.
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi sesión' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Registrar producción' })).toBeNull()
   })
 
   it.each([

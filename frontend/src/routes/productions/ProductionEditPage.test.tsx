@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import ArtistEditPage from '@/routes/artists/ArtistEditPage'
 import ProductionEditPage from '@/routes/productions/ProductionEditPage'
 import {
   pagina,
@@ -40,6 +39,9 @@ import {
  *
  * TS-31 (HU-20) — ts-20.06, spec frontend HU-20 §4 test 10: panel «Acceso del
  * artista». `conPrecarga` responde a su GET con una lista vacía.
+ *
+ * TS-32 (HU-21) — enmienda de HU-08, spec frontend HU-21 §3.3 test 10: el borrado
+ * sale de la edición y pasa al menú del listado (ProductionListPage.test.tsx).
  *
  * TS-71 (épica TS-67) — ts-42.03, spec frontend TS-71 §4 tests 2 y 3: etiqueta
  * del formato guardado sobre el título. Se consulta por `span` para no confundirla
@@ -116,7 +118,6 @@ function renderEdicion() {
       <MemoryRouter initialEntries={[`/producciones/${ID}/editar`]}>
         <Routes>
           <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
-          <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
           <Route
             path="/producciones/:productionId/canciones/nueva"
             element={<p>Alta de canción simulada</p>}
@@ -146,11 +147,7 @@ async function esperarPrecarga() {
   await waitFor(() => expect(nombre().value).toBe('Sesiones del álbum'))
 }
 
-async function abrirDialogo(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Eliminar producción' }))
-  return screen.findByRole('alertdialog')
-}
-
+/** Botón que confirma el borrado de una canción desde el listado (HU-12). */
 function confirmar() {
   return screen.getByRole<HTMLButtonElement>('button', { name: 'Eliminar' })
 }
@@ -236,145 +233,13 @@ describe('ProductionEditPage', () => {
     expect(screen.queryByRole('button', { name: 'Eliminar producción' })).toBeNull()
   })
 
-  it('pide confirmación y cancelar no elimina', async () => {
-    const peticiones = simularApi(conPrecarga(() => ({ status: 204 })))
-    const user = renderEdicion()
-    await esperarPrecarga()
-
-    const dialogo = await abrirDialogo(user)
-    expect(dialogo.textContent).toContain('¿Eliminar producción?')
-    expect(borrados(peticiones)).toHaveLength(0)
-
-    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
-
-    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
-    expect(borrados(peticiones)).toHaveLength(0)
-    expect(nombre().value).toBe('Sesiones del álbum')
-  })
-
-  it('avisa de la cascada antes de eliminar la producción', async () => {
+  it('ya no ofrece borrar', async () => {
     simularApi(conPrecarga(() => ({ status: 204 })))
-    const user = renderEdicion()
-    await esperarPrecarga()
-
-    const dialogo = await abrirDialogo(user)
-
-    expect(dialogo.textContent).toContain(
-      'La producción, sus canciones y todas sus versiones dejarán de estar disponibles.',
-    )
-  })
-
-  it('elimina tras confirmar y vuelve al artista', async () => {
-    const peticiones = simularApi(conPrecarga(() => ({ status: 204 })))
-    const user = renderEdicion()
-    await esperarPrecarga()
-
-    await abrirDialogo(user)
-    await user.click(confirmar())
-
-    expect(await screen.findByRole('heading', { name: 'Editar artista' })).toBeTruthy()
-    await waitFor(() => expect(textoEnRol('status', 'Producción eliminada.')).toBe(true))
-    expect(borrados(peticiones)).toEqual([
-      { method: 'DELETE', url: URL_PRODUCCION, body: undefined },
-    ])
-    expect(peticiones.at(-1)).toMatchObject({
-      method: 'GET',
-      url: `/api/v1/artists/${ARTIST_ID}`,
-    })
-  })
-
-  it('no elimina dos veces ni cierra el diálogo mientras borra', async () => {
-    let completar: (respuesta: RespuestaSimulada) => void = () => undefined
-    const peticiones = simularApi(
-      conPrecarga(
-        () =>
-          new Promise<RespuestaSimulada>((resolve) => {
-            completar = resolve
-          }),
-      ),
-    )
-    const user = renderEdicion()
-    await esperarPrecarga()
-
-    await abrirDialogo(user)
-    await user.click(confirmar())
-    await waitFor(() => expect(borrados(peticiones)).toHaveLength(1))
-
-    expect(confirmar().disabled).toBe(true)
-    await user.click(confirmar())
-    expect(borrados(peticiones)).toHaveLength(1)
-
-    await user.keyboard('{Escape}')
-    expect(screen.getByRole('alertdialog')).toBeTruthy()
-
-    completar(problema(500, 'INTERNAL_ERROR'))
-    await waitFor(() =>
-      expect(textoEnRol('alert', 'No se pudo eliminar la producción. Inténtalo de nuevo.')).toBe(
-        true,
-      ),
-    )
-  })
-
-  it.each([
-    { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
-    { caso: 'error de red', respuesta: 'error de red' as const },
-    { caso: '404 RESOURCE_NOT_FOUND', respuesta: problema(404, 'RESOURCE_NOT_FOUND') },
-  ])(
-    'un error al eliminar cierra el diálogo, avisa y conserva la pantalla: $caso',
-    async ({ respuesta }) => {
-      simularApi(conPrecarga(() => respuesta))
-      const user = renderEdicion()
-      await esperarPrecarga()
-
-      await abrirDialogo(user)
-      await user.click(confirmar())
-
-      await waitFor(() =>
-        expect(textoEnRol('alert', 'No se pudo eliminar la producción. Inténtalo de nuevo.')).toBe(
-          true,
-        ),
-      )
-      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
-      expect(screen.getByRole('heading', { name: 'Editar producción' })).toBeTruthy()
-      expect(nombre().value).toBe('Sesiones del álbum')
-    },
-  )
-
-  it('ofrece registrar una canción en la producción', async () => {
-    simularApi(conPrecarga(() => ({ status: 500 })))
-    const user = renderEdicion()
-    await esperarPrecarga()
-
-    const enlace = screen.getByRole('link', { name: 'Nueva canción' })
-    expect(enlace.getAttribute('href')).toBe(`/producciones/${ID}/canciones/nueva`)
-
-    await user.click(enlace)
-
-    expect(await screen.findByText('Alta de canción simulada')).toBeTruthy()
-  })
-
-  it('muestra las canciones de la producción', async () => {
-    const peticiones = simularApi(conPrecarga(() => ({ status: 500 })))
     renderEdicion()
     await esperarPrecarga()
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'Canciones' })).toBeTruthy()
-    expect((await screen.findByRole('link', { name: 'Intro' })).getAttribute('href')).toBe(
-      `/canciones/${cancion().id}/editar`,
-    )
-    expect(peticiones.filter((p) => p.url.endsWith('/songs'))).toEqual([
-      { method: 'GET', url: URL_CANCIONES, body: undefined, params: { page: 1 } },
-    ])
-    expect(nombre().value).toBe('Sesiones del álbum')
-  })
-
-  it('no pide el listado si la producción no carga', async () => {
-    const peticiones = simularApi(() => problema(404, 'RESOURCE_NOT_FOUND'))
-    renderEdicion()
-
-    expect(await screen.findByRole('heading', { name: 'Producción no encontrada' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Canciones' })).toBeNull()
-    expect(peticiones.filter((p) => p.url.endsWith('/songs'))).toEqual([])
+    expect(screen.queryByRole('button', { name: 'Eliminar producción' })).toBeNull()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
   })
 
   it('un error del listado no tapa la producción', async () => {
@@ -387,7 +252,6 @@ describe('ProductionEditPage', () => {
     )
     expect(nombre().value).toBe('Sesiones del álbum')
     expect(screen.getByRole('link', { name: 'Nueva canción' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Eliminar producción' })).toBeTruthy()
   })
 
   it('muestra el aviso con el formato guardado y el total del listado', async () => {
