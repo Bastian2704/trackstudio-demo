@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Pencil, Plus, UserPlus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pencil, UserPlus } from 'lucide-react'
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import { noticeFrom } from '@/lib/notice'
 import { cn } from '@/lib/utils'
-import { FORMAT_LABELS } from '../productions/productionSchema'
 import ArtistStatusBadge from './ArtistStatusBadge'
 import { fetchArtists } from './artistApi'
 import type { ArtistPage } from './artistSchema'
@@ -45,9 +44,6 @@ function ArtistTable({ data, meta }: ArtistPage) {
                 Contacto
               </th>
               <th role="columnheader" className={HEADER_CELL}>
-                Producciones
-              </th>
-              <th role="columnheader" className={HEADER_CELL}>
                 Estado
               </th>
               <th role="columnheader" className={cn(HEADER_CELL, 'text-right')}>
@@ -78,28 +74,6 @@ function ArtistTable({ data, meta }: ArtistPage) {
                 >
                   {artist.email}
                 </td>
-                <td
-                  role="cell"
-                  data-label="Producciones"
-                  className={cn(CELL, COLUMN_LABEL, 'text-sm/5')}
-                >
-                  {artist.productions.length === 0 ? (
-                    <span className="text-muted-foreground">Sin producciones</span>
-                  ) : (
-                    <ul>
-                      {artist.productions.map((p) => (
-                        <li key={p.id}>
-                          <Link
-                            to={`/producciones/${p.id}/editar`}
-                            className="text-accent-foreground underline-offset-4 hover:underline"
-                          >
-                            {`${p.name} · ${FORMAT_LABELS[p.format]}`}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </td>
                 <td role="cell" className={cn(CELL, 'max-lg:col-span-2 max-lg:-order-1')}>
                   <ArtistStatusBadge status={artist.status} />
                 </td>
@@ -113,15 +87,6 @@ function ArtistTable({ data, meta }: ArtistPage) {
                     >
                       <Pencil aria-hidden="true" />
                       <span className="lg:hidden">Editar</span>
-                    </Link>
-                    <Link
-                      to={`/artistas/${artist.id}/producciones/nueva`}
-                      aria-label={`Nueva producción para ${artist.name}`}
-                      title={`Nueva producción para ${artist.name}`}
-                      className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), ROW_ACTION)}
-                    >
-                      <Plus aria-hidden="true" />
-                      <span className="lg:hidden">Nueva producción</span>
                     </Link>
                   </div>
                 </td>

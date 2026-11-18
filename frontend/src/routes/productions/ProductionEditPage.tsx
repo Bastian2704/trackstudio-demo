@@ -1,20 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -28,7 +17,7 @@ import SongList from '@/routes/songs/SongList'
 import ProductionAccessPanel from '@/routes/access/ProductionAccessPanel'
 import ProductionForm from './ProductionForm'
 import ProductionFormatNotice from './ProductionFormatNotice'
-import { deleteProduction, fetchProduction, updateProduction } from './productionApi'
+import { fetchProduction, updateProduction } from './productionApi'
 import { FORMAT_RULES, type Production, type ProductionInput } from './productionSchema'
 import ErrorAlert from '@/components/ErrorAlert'
 
@@ -37,8 +26,6 @@ export default function ProductionEditPage() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const [notice, setNotice] = useState(() => noticeFrom(location.state))
-  const navigate = useNavigate()
-  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const query = useQuery<Production, AxiosError<ApiErrorBody>>({
     queryKey: ['productions', id],
@@ -60,17 +47,6 @@ export default function ProductionEditPage() {
       queryClient.setQueryData(['productions', id], production)
       setNotice('Cambios guardados.')
     },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: async (artistId: string) => {
-      await deleteProduction(id)
-      return artistId
-    },
-    onSuccess: (artistId) => {
-      void navigate(`/artistas/${artistId}/editar`, { state: { notice: 'Producción eliminada.' } })
-    },
-    onError: () => setConfirmOpen(false),
   })
 
   if (query.isError) {
@@ -111,9 +87,6 @@ export default function ProductionEditPage() {
           {notice}
         </p>
       )}
-      {deleteMutation.isError && (
-        <ErrorAlert>No se pudo eliminar la producción. Inténtalo de nuevo.</ErrorAlert>
-      )}
       {query.isPending ? (
         <p>Cargando…</p>
       ) : (
@@ -130,34 +103,6 @@ export default function ProductionEditPage() {
           )}
           <ProductionAccessPanel productionId={id} artistId={query.data.artist_id} />
           <SongList productionId={id} />
-          <AlertDialog
-            open={confirmOpen}
-            onOpenChange={(open) => {
-              if (!deleteMutation.isPending) setConfirmOpen(open)
-            }}
-          >
-            <AlertDialogTrigger render={<Button variant="destructive" />}>
-              Eliminar producción
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Eliminar producción?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  La producción, sus canciones y todas sus versiones dejarán de estar disponibles.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleteMutation.isPending}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  disabled={deleteMutation.isPending}
-                  onClick={() => deleteMutation.mutate(query.data.artist_id)}
-                >
-                  Eliminar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </>
       )}
     </main>
