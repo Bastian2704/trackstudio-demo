@@ -38,6 +38,9 @@ import {
  * TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 tests 2 y 9: texto de la
  * cascada y borrado desde el listado, que actualiza el límite del formato.
  *
+ * TS-31 (HU-20) — ts-20.06, spec frontend HU-20 §4 test 10: panel «Acceso del
+ * artista». `conPrecarga` responde a su GET con una lista vacía.
+ *
  * TS-71 (épica TS-67) — ts-42.03, spec frontend TS-71 §4 tests 2 y 3: etiqueta
  * del formato guardado sobre el título. Se consulta por `span` para no confundirla
  * con las `option` del selector.
@@ -46,6 +49,7 @@ const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const URL_PRODUCCION = `/api/v1/productions/${ID}`
 const URL_CANCIONES = `${URL_PRODUCCION}/songs`
+const URL_ACCESOS = `${URL_PRODUCCION}/access`
 
 function produccion(cambios: Record<string, unknown> = {}) {
   return {
@@ -97,6 +101,7 @@ function conPrecarga(
     if (peticion.method !== 'GET') return alResto(peticion)
     if (peticion.url === URL_PRODUCCION) return { status: 200, data: { data: datosProduccion } }
     if (peticion.url === URL_CANCIONES) return canciones
+    if (peticion.url === URL_ACCESOS) return { status: 200, data: { data: [] } }
     return { status: 200, data: { data: artista() } }
   }
 }
@@ -604,5 +609,41 @@ describe('ProductionEditPage — borrado desde el listado', () => {
     expect(borrados(peticiones)).toEqual([
       { method: 'DELETE', url: `/api/v1/songs/${canciones[15].id}`, body: undefined },
     ])
+  })
+})
+
+describe('ProductionEditPage — acceso del artista', () => {
+  it('monta el panel de acceso con el artista de la producción', async () => {
+    const peticiones = simularApi(
+      conPrecarga((p) =>
+        p.method === 'POST' && p.url === URL_ACCESOS
+          ? {
+              status: 201,
+              data: {
+                data: {
+                  id: '9d3e0000-0000-4000-8000-000000000001',
+                  production_id: ID,
+                  artist_id: ARTIST_ID,
+                  granted_at: '2026-11-20T20:00:00+00:00',
+                  revoked_at: null,
+                  is_active: true,
+                },
+              },
+            }
+          : { status: 500 },
+      ),
+    )
+    const user = renderEdicion()
+    await esperarPrecarga()
+
+    expect(await screen.findByRole('heading', { name: 'Acceso del artista' })).toBeTruthy()
+
+    await user.click(await screen.findByRole('button', { name: 'Dar acceso al artista' }))
+
+    await waitFor(() =>
+      expect(peticiones.filter((p) => p.method === 'POST')).toEqual([
+        { method: 'POST', url: URL_ACCESOS, body: { artist_id: ARTIST_ID } },
+      ]),
+    )
   })
 })

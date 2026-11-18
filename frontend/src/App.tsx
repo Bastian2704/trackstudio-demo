@@ -19,6 +19,7 @@ import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
 import ProductionEditPage from './routes/productions/ProductionEditPage.tsx'
 import SongCreatePage from './routes/songs/SongCreatePage.tsx'
 import SongEditPage from './routes/songs/SongEditPage.tsx'
+import InvitationPage from './routes/invitations/InvitationPage.tsx'
 
 function App() {
   const { isLoading, error, getAccessTokenSilently, loginWithRedirect } = useAuth0()
@@ -62,6 +63,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/403" element={<Forbidden />} />
+      <Route path="/invitacion/:token" element={<InvitationPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route element={<RequireRole allowed={['productor', 'artista']} />}>

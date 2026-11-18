@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Http\Controllers\ArtistController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MeController;
+use App\Http\Controllers\ProductionAccessController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\RbacCheckController;
 use App\Http\Controllers\SongController;
@@ -92,6 +94,28 @@ Route::delete('/productions/{production}', [ProductionController::class, 'destro
         'can:delete,production',
     ]);
 
+Route::post('/productions/{production}/access', [ProductionAccessController::class, 'store'])
+    ->whereUuid('production')
+    ->middleware([
+        'auth:auth0-api',
+        'can:perform-producer-action',
+    ]);
+
+Route::get('/productions/{production}/access', [ProductionAccessController::class, 'index'])
+    ->whereUuid('production')
+    ->middleware([
+        'auth:auth0-api',
+        'can:perform-producer-action',
+    ]);
+
+Route::delete('/productions/{production}/access/{access}', [ProductionAccessController::class, 'destroy'])
+    ->whereUuid(['production', 'access'])
+    ->scopeBindings()
+    ->middleware([
+        'auth:auth0-api',
+        'can:perform-producer-action',
+    ]);
+
 Route::post('/productions/{production}/songs', [SongController::class, 'store'])
     ->whereUuid('production')
     ->middleware([
@@ -153,4 +177,11 @@ Route::get('/versions/{version}/playback-url', [VersionController::class, 'playb
     ->middleware([
         'auth:auth0-api',
         'can:play,version',
+    ]);
+
+Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])
+    ->where('token', '[A-Za-z0-9]{64}')
+    ->middleware([
+        'auth:auth0-api',
+        'can:perform-artist-action',
     ]);
