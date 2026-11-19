@@ -6,14 +6,38 @@ namespace App\Services;
 
 use App\Enums\ArtistStatus;
 use App\Enums\ProductionFormat;
+use App\Enums\Role;
 use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Version;
+use Auth0\Laravel\Users\StatelessUserContract;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class ProductionService
 {
+    /**
+     * Listado por rol donde el productor ve todas y el artista, solo las
+     * de acceso efectivo.
+     *
+     * @return LengthAwarePaginator<int, Production>
+     */
+    public function listFor(StatelessUserContract $user): LengthAwarePaginator
+    {
+        $query = Production::query();
+
+        if ($user->getAttribute('role') !== Role::Productor) {
+            $query->accessibleBy((string) $user->getAuthIdentifier());
+        }
+
+        return $query
+            ->with(['artist' => fn ($artista) => $artista->withTrashed()])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate();
+    }
+
     /**
      * @param  array{artist_id: string, name: string, format: string}  $datos
      */

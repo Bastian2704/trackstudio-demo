@@ -60,21 +60,33 @@ describe('AppShell', () => {
   /*
    * TS-85 — ts-85.06, spec frontend TS-85 §4 test 6.
    */
-  it('el productor ve el enlace a Dashboard antes de Artistas', () => {
+  it('el productor ve Dashboard, Artistas y Producciones, en ese orden', () => {
     renderShell(productor)
 
     const nav = screen.getByRole('navigation', { name: 'Principal' })
     const enlaces = within(nav).getAllByRole('link')
-    expect(enlaces.map((enlace) => enlace.textContent)).toEqual(['Dashboard', 'Artistas'])
+    expect(enlaces.map((enlace) => enlace.textContent)).toEqual([
+      'Dashboard',
+      'Artistas',
+      'Producciones',
+    ])
+    expect(enlaces[2].getAttribute('href')).toBe('/producciones')
     expect(enlaces[0].getAttribute('href')).toBe('/dashboard')
   })
 
-  it('el artista no ve navegación', () => {
+  /*
+   * TS-32 (HU-21) — spec frontend HU-21 §3.8 y §4 test 17.
+   */
+  it('el artista solo ve Producciones', () => {
     renderShell(artista, '/me')
 
-    expect(screen.queryByRole('navigation')).toBeNull()
+    const nav = screen.getByRole('navigation', { name: 'Principal' })
+    const enlaces = within(nav).getAllByRole('link')
+    expect(enlaces.map((enlace) => enlace.textContent)).toEqual(['Producciones'])
+    expect(enlaces[0].getAttribute('href')).toBe('/producciones')
     expect(screen.queryByRole('link', { name: 'Artistas' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Abrir menú' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Dashboard' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Abrir menú' })).toBeTruthy()
   })
 
   it('Artistas queda activo en sus subrutas', () => {

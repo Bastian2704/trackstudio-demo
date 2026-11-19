@@ -67,6 +67,12 @@ Route::put('/artists/{artist}/status', [ArtistController::class, 'changeStatus']
         'can:changeStatus,artist',
     ]);
 
+Route::get('/productions', [ProductionController::class, 'index'])
+    ->middleware([
+        'auth:auth0-api',
+        'can:viewAny,'.Production::class,
+    ]);
+
 Route::post('/productions', [ProductionController::class, 'store'])
     ->middleware([
         'auth:auth0-api',
@@ -127,7 +133,7 @@ Route::get('/productions/{production}/songs', [SongController::class, 'index'])
     ->whereUuid('production')
     ->middleware([
         'auth:auth0-api',
-        'can:viewAny,'.Song::class,
+        'can:viewAny,'.Song::class.',production',
     ]);
 
 Route::get('/songs/{song}', [SongController::class, 'show'])
@@ -162,7 +168,7 @@ Route::get('/songs/{song}/versions', [VersionController::class, 'index'])
     ->whereUuid('song')
     ->middleware([
         'auth:auth0-api',
-        'can:viewAny,'.Version::class,
+        'can:viewAny,'.Version::class.',song',
     ]);
 
 Route::post('/versions/{version}/confirm', [VersionController::class, 'confirm'])

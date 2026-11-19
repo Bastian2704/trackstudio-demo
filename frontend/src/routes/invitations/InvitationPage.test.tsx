@@ -105,7 +105,10 @@ describe('InvitationPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Invitación aceptada' })).toBeTruthy()
     expect(screen.getByText('Tu cuenta ya está vinculada.')).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Continuar' }).getAttribute('href')).toBe('/me')
+    // TS-32 (HU-21) — spec frontend HU-21 §3.8 y §4 test 19.
+    expect(screen.getByRole('link', { name: 'Ver mis producciones' }).getAttribute('href')).toBe(
+      '/producciones',
+    )
     expect(posts(peticiones)).toEqual([{ method: 'POST', url: URL_ACEPTAR, body: undefined }])
   })
 

@@ -25,6 +25,12 @@ export const productionInputSchema = z.object({
 export type ProductionFormValues = z.input<typeof productionInputSchema>
 export type ProductionInput = z.output<typeof productionInputSchema>
 
+export const productionCreateSchema = productionInputSchema.extend({
+  artist_id: z.string().min(1, 'Selecciona un artista.'),
+})
+
+export type ProductionCreateInput = z.output<typeof productionCreateSchema>
+
 export const productionSchema = z.object({
   id: z.string(),
   artist_id: z.string(),
@@ -35,3 +41,16 @@ export const productionSchema = z.object({
 })
 
 export type Production = z.infer<typeof productionSchema>
+
+export type ProductionListItem = Production & { artist: { id: string; name: string } }
+
+export interface ProductionListPage {
+  data: ProductionListItem[]
+  meta: {
+    current_page: number
+    last_page: number
+    from: number | null
+    to: number | null
+    total: number
+  }
+}

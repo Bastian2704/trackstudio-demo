@@ -141,6 +141,8 @@ Los criterios de aceptación y las checklists `.01`..`.09` viven en Jira. La com
 
 Checklist estándar `.01`..`.09` de `backlog-format.md`. HU-20 monta el envío de correos con Resend (invitación, D6.4), que `TS-94` reutiliza en S6. HU-21 cierra las filas «✅ con acceso vigente desde HU-21» de D8.1 para canciones, versiones y comentarios.
 
+> **2026-11-18 (decisión del equipo):** HU-21 se parte en dos. La parte A (listado `/producciones` para los dos roles, lectura del artista de producción, canciones e historial, D8.1 de `productions`) queda implementada sobre la rama de TS-31. La parte B (comentarios del artista) espera a HU-19 (`TS-30`), así que `TS-32` no cierra hasta entonces y `TS-92` se retrasa en la misma medida.
+
 ### Ampliación de alcance en S5 (TS-90, TS-91, TS-92, TS-96)
 
 Cada Story lleva en Jira sus AC y su checklist `ts-amp-*.01`..`.09`. Resumen:

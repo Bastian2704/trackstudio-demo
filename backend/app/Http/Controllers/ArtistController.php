@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ArtistStatus;
 use App\Http\Requests\ChangeArtistStatusRequest;
+use App\Http\Requests\IndexArtistRequest;
 use App\Http\Requests\StoreArtistRequest;
 use App\Http\Requests\UpdateArtistRequest;
 use App\Http\Resources\ArtistResource;
@@ -38,19 +39,16 @@ final class ArtistController extends Controller
             ->setStatusCode(201);
     }
 
-    public function index(): AnonymousResourceCollection
+    public function index(IndexArtistRequest $request): AnonymousResourceCollection
     {
         $artistas = Artist::query()
-            ->with(['productions' => fn ($query) => $query
-                ->orderByDesc('created_at')
-                ->orderByDesc('id')])
             ->orderByRaw(
                 'CASE status WHEN ? THEN 0 WHEN ? THEN 1 WHEN ? THEN 2 END',
                 [ArtistStatus::Activo->value, ArtistStatus::Invitado->value, ArtistStatus::Inactivo->value],
             )
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->paginate();
+            ->paginate($request->integer('per_page', 15));
 
         return ArtistResource::collection($artistas);
     }

@@ -7,8 +7,9 @@ export async function fetchArtist(id: string): Promise<Artist> {
   return res.data.data
 }
 
-export async function fetchArtists(page: number): Promise<ArtistPage> {
-  const res = await api.get<ArtistPage>('/api/v1/artists', { params: { page } })
+export async function fetchArtists(page: number, perPage?: number): Promise<ArtistPage> {
+  const params = perPage === undefined ? { page } : { page, per_page: perPage }
+  const res = await api.get<ArtistPage>('/api/v1/artists', { params })
   return res.data
 }
 

@@ -1,4 +1,9 @@
-import type { Production, ProductionInput } from './productionSchema'
+import type {
+  Production,
+  ProductionCreateInput,
+  ProductionInput,
+  ProductionListPage,
+} from './productionSchema'
 
 import { api } from '@/lib/api'
 
@@ -7,14 +12,13 @@ export async function fetchProduction(id: string): Promise<Production> {
   return res.data.data
 }
 
-export async function createProduction(
-  artistId: string,
-  input: ProductionInput,
-): Promise<Production> {
-  const res = await api.post<{ data: Production }>('/api/v1/productions', {
-    ...input,
-    artist_id: artistId,
-  })
+export async function fetchProductions(page: number): Promise<ProductionListPage> {
+  const res = await api.get<ProductionListPage>('/api/v1/productions', { params: { page } })
+  return res.data
+}
+
+export async function createProduction(input: ProductionCreateInput): Promise<Production> {
+  const res = await api.post<{ data: Production }>('/api/v1/productions', input)
   return res.data.data
 }
 

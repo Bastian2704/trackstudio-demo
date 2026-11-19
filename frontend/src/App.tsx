@@ -16,7 +16,10 @@ import DashboardPage from './routes/dashboard/DashboardPage.tsx'
 import ArtistEditPage from './routes/artists/ArtistEditPage.tsx'
 import ArtistListPage from './routes/artists/ArtistListPage.tsx'
 import ProductionCreatePage from './routes/productions/ProductionCreatePage.tsx'
+import ProductionDetailPage from './routes/productions/ProductionDetailPage.tsx'
 import ProductionEditPage from './routes/productions/ProductionEditPage.tsx'
+import ProductionListPage from './routes/productions/ProductionListPage.tsx'
+import SongDetailPage from './routes/songs/SongDetailPage.tsx'
 import SongCreatePage from './routes/songs/SongCreatePage.tsx'
 import SongEditPage from './routes/songs/SongEditPage.tsx'
 import InvitationPage from './routes/invitations/InvitationPage.tsx'
@@ -68,6 +71,9 @@ function App() {
         <Route element={<AppShell />}>
           <Route element={<RequireRole allowed={['productor', 'artista']} />}>
             <Route path="/me" element={<MePage />} />
+            <Route path="/producciones" element={<ProductionListPage />} />
+            <Route path="/producciones/:id" element={<ProductionDetailPage />} />
+            <Route path="/canciones/:id" element={<SongDetailPage />} />
           </Route>
           <Route element={<RequireRole allowed={['productor']} />}>
             <Route path="/productor" element={<ProducerOnly />} />
@@ -76,10 +82,7 @@ function App() {
               <Route path="nuevo" element={<ArtistCreatePage />} />
             </Route>
             <Route path="/artistas/:id/editar" element={<ArtistEditPage />} />
-            <Route
-              path="/artistas/:artistId/producciones/nueva"
-              element={<ProductionCreatePage />}
-            />
+            <Route path="/producciones/nueva" element={<ProductionCreatePage />} />
             <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
             <Route
               path="/producciones/:productionId/canciones/nueva"

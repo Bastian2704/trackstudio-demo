@@ -30,7 +30,12 @@ import { SONG_DELETE_DESCRIPTION, type Song } from './songSchema'
 
 const STATE_CLASS = 'p-6 text-sm text-muted-foreground'
 
-export default function SongList({ productionId }: { productionId: string }) {
+interface SongListProps {
+  productionId: string
+  readOnly?: boolean
+}
+
+export default function SongList({ productionId, readOnly = false }: SongListProps) {
   const [page, setPage] = useState(1)
   const [pending, setPending] = useState<Song | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -89,9 +94,11 @@ export default function SongList({ productionId }: { productionId: string }) {
                 <th role="columnheader" className={HEADER_CELL}>
                   Estado
                 </th>
-                <th role="columnheader" className={cn(HEADER_CELL, 'text-right')}>
-                  Acciones
-                </th>
+                {!readOnly && (
+                  <th role="columnheader" className={cn(HEADER_CELL, 'text-right')}>
+                    Acciones
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody role="rowgroup" className="max-lg:block">
@@ -114,7 +121,7 @@ export default function SongList({ productionId }: { productionId: string }) {
                   </td>
                   <td role="cell" className={cn(CELL, 'max-lg:-order-2')}>
                     <Link
-                      to={`/canciones/${song.id}/editar`}
+                      to={readOnly ? `/canciones/${song.id}` : `/canciones/${song.id}/editar`}
                       className="text-base/6 font-semibold underline-offset-4 hover:text-accent-foreground"
                     >
                       {song.name}
@@ -123,33 +130,35 @@ export default function SongList({ productionId }: { productionId: string }) {
                   <td role="cell" className={cn(CELL, 'max-lg:-order-1 max-lg:justify-self-end')}>
                     <SongStatusBadge status={song.status} />
                   </td>
-                  <td role="cell" className={cn(CELL, 'max-lg:col-span-2')}>
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        to={`/canciones/${song.id}/editar`}
-                        aria-label={`Editar ${song.name}`}
-                        title={`Editar ${song.name}`}
-                        className={cn(
-                          buttonVariants({ variant: 'ghost', size: 'icon' }),
-                          ROW_ACTION,
-                        )}
-                      >
-                        <Pencil aria-hidden="true" />
-                        <span className="lg:hidden">Editar</span>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Eliminar ${song.name}`}
-                        title={`Eliminar ${song.name}`}
-                        className={cn(ROW_ACTION, 'text-destructive')}
-                        onClick={() => confirmDelete(song)}
-                      >
-                        <Trash2 aria-hidden="true" />
-                        <span className="lg:hidden">Eliminar</span>
-                      </Button>
-                    </div>
-                  </td>
+                  {!readOnly && (
+                    <td role="cell" className={cn(CELL, 'max-lg:col-span-2')}>
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/canciones/${song.id}/editar`}
+                          aria-label={`Editar ${song.name}`}
+                          title={`Editar ${song.name}`}
+                          className={cn(
+                            buttonVariants({ variant: 'ghost', size: 'icon' }),
+                            ROW_ACTION,
+                          )}
+                        >
+                          <Pencil aria-hidden="true" />
+                          <span className="lg:hidden">Editar</span>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Eliminar ${song.name}`}
+                          title={`Eliminar ${song.name}`}
+                          className={cn(ROW_ACTION, 'text-destructive')}
+                          onClick={() => confirmDelete(song)}
+                        >
+                          <Trash2 aria-hidden="true" />
+                          <span className="lg:hidden">Eliminar</span>
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
