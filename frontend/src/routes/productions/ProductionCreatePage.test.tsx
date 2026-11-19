@@ -6,7 +6,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import ProductionCreatePage from '@/routes/productions/ProductionCreatePage'
 import ProductionEditPage from '@/routes/productions/ProductionEditPage'
-import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import {
+  pagina,
+  problema,
+  restaurarApi,
+  simularApi,
+  type PeticionRegistrada,
+  type RespuestaSimulada,
+} from '@/test/api'
 
 /*
  * TS-19 (HU-08) — ts-08.06, spec frontend §4 tests 1 a 9.
@@ -17,8 +24,32 @@ import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } fr
  *
  * TS-22 (HU-11): la edición monta el listado de canciones; su GET recibe una
  * página vacía (spec frontend HU-11 §4, nota de fixtures).
+ *
+ * TS-32 (HU-21) — enmienda de HU-08, spec frontend HU-21 §3.4 tests 8, 8b y 9:
+ * el alta vive en /producciones/nueva y el artista se elige en un combobox con
+ * búsqueda (GET /api/v1/artists?page=1&per_page=100), sin los inactivos. Un 422
+ * en artist_id se pinta en ese campo.
  */
 const ARTIST_ID = '9d3b1a40-2e3f-4a5b-8c6d-7e8f9a0b1c2d'
+const OTRO_ID = '9d3b1a40-2e3f-4a5b-8c6d-000000000002'
+const INACTIVO_ID = '9d3b1a40-2e3f-4a5b-8c6d-000000000003'
+
+function artista(id: string, name: string, status: string) {
+  return {
+    id,
+    name,
+    email: `${id}@ejemplo.test`,
+    status,
+    created_at: '2026-10-06T14:03:11+00:00',
+    updated_at: '2026-10-06T14:03:11+00:00',
+  }
+}
+
+const ARTISTAS = [
+  artista(ARTIST_ID, 'Luna Rivera', 'activo'),
+  artista(OTRO_ID, 'Sol Vega', 'invitado'),
+  artista(INACTIVO_ID, 'Lucía Paz', 'inactivo'),
+]
 const ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 
 function produccion(cambios: Record<string, unknown> = {}) {
@@ -45,9 +76,9 @@ function renderAlta() {
 
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/artistas/${ARTIST_ID}/producciones/nueva`]}>
+      <MemoryRouter initialEntries={['/producciones/nueva']}>
         <Routes>
-          <Route path="/artistas/:artistId/producciones/nueva" element={<ProductionCreatePage />} />
+          <Route path="/producciones/nueva" element={<ProductionCreatePage />} />
           <Route path="/producciones/:id/editar" element={<ProductionEditPage />} />
         </Routes>
       </MemoryRouter>
@@ -65,7 +96,27 @@ function formato() {
   return screen.getByLabelText<HTMLSelectElement>('Formato')
 }
 
-async function rellenar(user: ReturnType<typeof userEvent.setup>, texto: string, opcion: string) {
+function selectorArtista() {
+  return screen.getByRole<HTMLInputElement>('combobox', { name: 'Artista' })
+}
+
+/** Busca por texto en el combobox y elige la opción con ese nombre. */
+async function elegirArtista(
+  user: ReturnType<typeof userEvent.setup>,
+  busqueda: string,
+  nombreArtista: string,
+) {
+  await user.type(await screen.findByRole('combobox', { name: 'Artista' }), busqueda)
+  await user.click(await screen.findByRole('option', { name: nombreArtista }))
+}
+
+async function rellenar(
+  user: ReturnType<typeof userEvent.setup>,
+  texto: string,
+  opcion: string,
+  conArtista = true,
+) {
+  if (conArtista) await elegirArtista(user, 'luna', 'Luna Rivera')
   if (texto) await user.type(nombre(), texto)
   if (opcion) await user.selectOptions(formato(), opcion)
 }
@@ -78,13 +129,27 @@ function textoEnRol(rol: 'alert' | 'status', texto: string) {
   return screen.queryAllByRole(rol).some((el) => el.textContent?.includes(texto))
 }
 
+/** GET de artistas para el combobox, o lo que decida `alResto`. */
+function conArtistas(
+  alResto: (p: PeticionRegistrada) => RespuestaSimulada | Promise<RespuestaSimulada>,
+) {
+  return (p: PeticionRegistrada) =>
+    p.method === 'GET' && p.url === '/api/v1/artists'
+      ? pagina(ARTISTAS, { per_page: 100 })
+      : alResto(p)
+}
+
+function posts(peticiones: PeticionRegistrada[]) {
+  return peticiones.filter((p) => p.method === 'POST')
+}
+
 /** El alta responde 201; la precarga posterior de la edición, 200, y su listado de canciones, vacío. */
 function altaCorrecta(datos = produccion()) {
-  return ({ method, url }: { method: string; url: string }): RespuestaSimulada => {
+  return conArtistas(({ method, url }): RespuestaSimulada => {
     if (method === 'POST') return { status: 201, data: { data: datos } }
     if (url.endsWith('/access')) return { status: 200, data: { data: [] } }
     return url.endsWith('/songs') ? pagina([]) : { status: 200, data: { data: datos } }
-  }
+  })
 }
 
 describe('ProductionCreatePage', () => {
@@ -95,15 +160,22 @@ describe('ProductionCreatePage', () => {
     await rellenar(user, 'Sesiones del álbum', 'Álbum')
     await user.click(boton())
 
-    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
-    expect(peticiones[0]).toEqual({
+    // TS-32 (HU-21 §3.3b): la gestión titula con el nombre y edita en un modal.
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sesiones del álbum' }),
+    ).toBeTruthy()
+    expect(peticiones[0]).toMatchObject({
+      method: 'GET',
+      url: '/api/v1/artists',
+      params: { page: 1, per_page: 100 },
+    })
+    expect(posts(peticiones)[0]).toEqual({
       method: 'POST',
       url: '/api/v1/productions',
       body: { artist_id: ARTIST_ID, name: 'Sesiones del álbum', format: 'album' },
     })
     await waitFor(() => expect(textoEnRol('status', 'Producción registrada.')).toBe(true))
-    await waitFor(() => expect(nombre().value).toBe('Sesiones del álbum'))
-    expect(formato().value).toBe('album')
+    expect(screen.getByText('Álbum', { selector: 'span' })).toBeTruthy()
   })
 
   it.each([
@@ -117,8 +189,8 @@ describe('ProductionCreatePage', () => {
     await rellenar(user, 'Sesiones del álbum', opcion)
     await user.click(boton())
 
-    await waitFor(() => expect(peticiones.filter((p) => p.method === 'POST')).toHaveLength(1))
-    expect(peticiones[0].body).toMatchObject({ format: valor })
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
+    expect(posts(peticiones)[0].body).toMatchObject({ format: valor })
   })
 
   it.each<{
@@ -143,9 +215,10 @@ describe('ProductionCreatePage', () => {
     const peticiones = simularApi(altaCorrecta())
     const user = renderAlta()
 
-    await rellenar(user, texto, opcion)
+    await rellenar(user, texto, opcion, false)
     await user.click(boton())
 
+    expect(await screen.findByText('Selecciona un artista.')).toBeTruthy()
     if (errores.nombre) {
       expect(await screen.findByText(errores.nombre)).toBeTruthy()
       expect(nombre().getAttribute('aria-invalid')).toBe('true')
@@ -156,7 +229,7 @@ describe('ProductionCreatePage', () => {
     } else {
       expect(formato().getAttribute('aria-invalid')).not.toBe('true')
     }
-    expect(peticiones).toHaveLength(0)
+    expect(posts(peticiones)).toHaveLength(0)
   })
 
   it('deja al servidor el máximo de longitud', async () => {
@@ -164,13 +237,14 @@ describe('ProductionCreatePage', () => {
     const user = renderAlta()
     const nombreLargo = 'a'.repeat(256)
 
+    await elegirArtista(user, 'luna', 'Luna Rivera')
     await user.click(nombre())
     await user.paste(nombreLargo)
     await user.selectOptions(formato(), 'Sencillo')
     await user.click(boton())
 
-    await waitFor(() => expect(peticiones.filter((p) => p.method === 'POST')).toHaveLength(1))
-    expect(peticiones[0].body).toEqual({
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
+    expect(posts(peticiones)[0].body).toEqual({
       artist_id: ARTIST_ID,
       name: nombreLargo,
       format: 'sencillo',
@@ -195,7 +269,7 @@ describe('ProductionCreatePage', () => {
   ])(
     'muestra en su campo el 422 del servidor: $caso',
     async ({ mensaje, errors, conError, sinError }) => {
-      simularApi(() => problema(422, 'VALIDATION_ERROR', { errors }))
+      simularApi(conArtistas(() => problema(422, 'VALIDATION_ERROR', { errors })))
       const user = renderAlta()
 
       await rellenar(user, 'Sesiones del álbum', 'EP')
@@ -209,22 +283,29 @@ describe('ProductionCreatePage', () => {
     },
   )
 
-  it('muestra el motivo del servidor si el artista no admite la producción', async () => {
+  it('pinta en el campo Artista el 422 de artist_id', async () => {
     const motivo = 'No se puede registrar una producción para un artista inactivo.'
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { artist_id: [motivo] } }))
+    simularApi(
+      conArtistas(() => problema(422, 'VALIDATION_ERROR', { errors: { artist_id: [motivo] } })),
+    )
     const user = renderAlta()
 
     await rellenar(user, 'Sesiones del álbum', 'EP')
     await user.click(boton())
 
-    await waitFor(() => expect(textoEnRol('alert', motivo)).toBe(true))
+    expect(await screen.findByText(motivo)).toBeTruthy()
+    expect(selectorArtista().getAttribute('aria-invalid')).toBe('true')
     expect(textoEnRol('alert', 'Revisa los datos del formulario.')).toBe(false)
     expect(nombre().value).toBe('Sesiones del álbum')
     expect(formato().value).toBe('ep')
   })
 
   it('un 422 sin campos conocidos da un aviso general', async () => {
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { otro: ['Campo inesperado.'] } }))
+    simularApi(
+      conArtistas(() =>
+        problema(422, 'VALIDATION_ERROR', { errors: { otro: ['Campo inesperado.'] } }),
+      ),
+    )
     const user = renderAlta()
 
     await rellenar(user, 'Sesiones del álbum', 'EP')
@@ -236,20 +317,22 @@ describe('ProductionCreatePage', () => {
   it('no envía dos veces mientras guarda', async () => {
     let completar: (respuesta: RespuestaSimulada) => void = () => undefined
     const peticiones = simularApi(
-      () =>
-        new Promise<RespuestaSimulada>((resolve) => {
-          completar = resolve
-        }),
+      conArtistas(
+        () =>
+          new Promise<RespuestaSimulada>((resolve) => {
+            completar = resolve
+          }),
+      ),
     )
     const user = renderAlta()
 
     await rellenar(user, 'Sesiones del álbum', 'EP')
     await user.click(boton())
-    await waitFor(() => expect(peticiones).toHaveLength(1))
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
 
     expect(boton().disabled).toBe(true)
     await user.click(boton())
-    expect(peticiones).toHaveLength(1)
+    expect(posts(peticiones)).toHaveLength(1)
 
     completar(problema(500, 'INTERNAL_ERROR'))
     await waitFor(() => expect(boton().disabled).toBe(false))
@@ -259,7 +342,7 @@ describe('ProductionCreatePage', () => {
     { caso: '500 INTERNAL_ERROR', respuesta: problema(500, 'INTERNAL_ERROR') },
     { caso: 'error de red', respuesta: 'error de red' as const },
   ])('un error del servidor o de red conserva lo escrito: $caso', async ({ respuesta }) => {
-    simularApi(() => respuesta)
+    simularApi(conArtistas(() => respuesta))
     const user = renderAlta()
 
     await rellenar(user, 'Sesiones del álbum', 'EP')
@@ -272,5 +355,56 @@ describe('ProductionCreatePage', () => {
     )
     expect(nombre().value).toBe('Sesiones del álbum')
     expect(formato().value).toBe('ep')
+  })
+
+  it('busca sin distinguir mayúsculas y no ofrece artistas inactivos', async () => {
+    simularApi(altaCorrecta())
+    const user = renderAlta()
+
+    await user.type(await screen.findByRole('combobox', { name: 'Artista' }), 'LU')
+
+    const opciones = (await screen.findAllByRole('option')).map((o) => o.textContent?.trim())
+    expect(opciones).toEqual(['Luna Rivera'])
+  })
+
+  it('registra con el artista elegido, no con el primero', async () => {
+    const peticiones = simularApi(altaCorrecta(produccion({ artist_id: OTRO_ID })))
+    const user = renderAlta()
+
+    await elegirArtista(user, 'sol', 'Sol Vega')
+    await user.type(nombre(), 'Marea')
+    await user.selectOptions(formato(), 'EP')
+    await user.click(boton())
+
+    await waitFor(() => expect(posts(peticiones)).toHaveLength(1))
+    expect(posts(peticiones)[0].body).toEqual({ artist_id: OTRO_ID, name: 'Marea', format: 'ep' })
+  })
+
+  it('avisa cuando ningún artista coincide', async () => {
+    simularApi(altaCorrecta())
+    const user = renderAlta()
+
+    await user.type(await screen.findByRole('combobox', { name: 'Artista' }), 'zzz')
+
+    expect(await screen.findByText('Ningún artista coincide.')).toBeTruthy()
+    expect(screen.queryAllByRole('option')).toHaveLength(0)
+  })
+
+  it('avisa si no se pudo cargar la lista de artistas', async () => {
+    simularApi(() => problema(500, 'INTERNAL_ERROR'))
+    renderAlta()
+
+    await waitFor(() =>
+      expect(textoEnRol('alert', 'No se pudo cargar la lista de artistas.')).toBe(true),
+    )
+  })
+
+  it('enlaza de vuelta al listado de producciones', async () => {
+    simularApi(altaCorrecta())
+    renderAlta()
+
+    expect(
+      (await screen.findByRole('link', { name: 'Volver a producciones' })).getAttribute('href'),
+    ).toBe('/producciones')
   })
 })

@@ -58,8 +58,8 @@ export default function InvitationPage() {
   if (mutation.isSuccess) {
     return (
       <AuthCard title="Invitación aceptada" subtitle="Tu cuenta ya está vinculada.">
-        <Link to="/me" className={buttonVariants()}>
-          Continuar
+        <Link to="/producciones" className={buttonVariants()}>
+          Ver mis producciones
         </Link>
       </AuthCard>
     )

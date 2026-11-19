@@ -24,6 +24,10 @@ import {
  * TS-23 (HU-12) — ts-12.06, spec frontend HU-12 §4 tests 3 a 8: borrado por
  * fila con confirmación. El test 1 de HU-11 incluye ahora el encabezado
  * «Acciones», solo para lectores de pantalla (HU-12 §3.2).
+ *
+ * TS-32 (HU-21) — spec frontend HU-21 §3.5 y §4 test 12: modo `readOnly` de
+ * las vistas de lectura. Sin el prop, los tests anteriores fijan que el
+ * productor no cambia.
  */
 const PRODUCTION_ID = '9d3c6a52-1f2b-4c3d-8e4f-5a6b7c8d9e0f'
 const URL_LISTADO = `/api/v1/productions/${PRODUCTION_ID}/songs`
@@ -49,14 +53,14 @@ afterEach(() => {
   restaurarApi()
 })
 
-function renderListado() {
+function renderListado(readOnly = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/']}>
         <Routes>
-          <Route path="/" element={<SongList productionId={PRODUCTION_ID} />} />
+          <Route path="/" element={<SongList productionId={PRODUCTION_ID} readOnly={readOnly} />} />
           <Route path="/canciones/:id/editar" element={<p>Edición de canción simulada</p>} />
         </Routes>
       </MemoryRouter>
@@ -454,5 +458,44 @@ describe('SongList — borrado por fila', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
 
     expect(textoEnRol('status', 'Canción eliminada.')).toBe(false)
+  })
+})
+
+describe('SongList — modo lectura', () => {
+  it('enlaza a la vista de lectura y no ofrece acciones', async () => {
+    const intro = cancion({ name: 'Intro' })
+    simularApi(() => pagina([intro]))
+    renderListado(true)
+
+    expect((await screen.findByRole('link', { name: 'Intro' })).getAttribute('href')).toBe(
+      `/canciones/${intro.id}`,
+    )
+    expect(screen.queryByRole('columnheader', { name: 'Acciones' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Editar Intro' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Eliminar Intro' })).toBeNull()
+  })
+
+  it('pagina igual que el productor', async () => {
+    const primeras = Array.from({ length: 15 }, (_, i) =>
+      cancion({ name: `Pista ${i + 1}`, position: i + 1 }),
+    )
+    const peticiones = simularApi((p) =>
+      paginaPedida(p) === 2
+        ? pagina([cancion({ name: 'Pista 16', position: 16 })], {
+            current_page: 2,
+            last_page: 2,
+            from: 16,
+            to: 16,
+            total: 16,
+          })
+        : pagina(primeras, { last_page: 2, from: 1, to: 15, total: 16 }),
+    )
+    const user = renderListado(true)
+
+    expect(await screen.findByText('Mostrando 1–15 de 16 canciones')).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Siguiente' }))
+
+    expect(await screen.findByRole('link', { name: 'Pista 16' })).toBeTruthy()
+    expect(peticiones.map(paginaPedida)).toEqual([1, 2])
   })
 })

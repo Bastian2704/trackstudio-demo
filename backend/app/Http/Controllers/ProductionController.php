@@ -9,12 +9,27 @@ use App\Http\Requests\UpdateProductionRequest;
 use App\Http\Resources\ProductionResource;
 use App\Models\Production;
 use App\Services\ProductionService;
+use Auth0\Laravel\Users\StatelessUserContract;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 final class ProductionController extends Controller
 {
     public function __construct(private ProductionService $productions) {}
+
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $usuario = $request->user();
+
+        if (! $usuario instanceof StatelessUserContract) {
+            throw new AuthenticationException;
+        }
+
+        return ProductionResource::collection($this->productions->listFor($usuario));
+    }
 
     public function store(StoreProductionRequest $request): JsonResponse
     {

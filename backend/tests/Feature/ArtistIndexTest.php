@@ -18,6 +18,8 @@ uses(RefreshDatabase::class);
 |--------------------------------------------------------------------------
 |
 | Spec: docs/specs/backend/HU-06.md §3 y §4 (#1–#12). Solo productor.
+| Enmienda de HU-21 (docs/specs/backend/HU-21.md §3.4, #15–#16): sin
+| `productions` en la respuesta y con `per_page` de 1 a 100.
 |
 | Los tests de orden fijan los `id` a mano: Laravel genera UUID ordenados por
 | tiempo, y sin fijarlos el desempate por `id` podría dar el orden esperado
@@ -60,7 +62,7 @@ it('lista los artistas con la forma del Resource', function () {
         ->assertJsonPath('data.0.status', 'activo')
         ->assertJsonPath('meta.total', 1);
 
-    expect(array_keys($respuesta->json('data.0')))->toEqualCanonicalizing([...CAMPOS_DE_ARTISTA, 'productions'])
+    expect(array_keys($respuesta->json('data.0')))->toEqualCanonicalizing(CAMPOS_DE_ARTISTA)
         ->and($respuesta->json('data.0.created_at'))->toMatch(FORMATO_ISO_8601_CON_OFFSET)
         ->and($respuesta->json('data.0.updated_at'))->toMatch(FORMATO_ISO_8601_CON_OFFSET)
         ->and($respuesta->json())->toHaveKeys(['data', 'links', 'meta'])
@@ -111,48 +113,6 @@ it('desempata por id cuando coinciden estado y fecha', function () {
     $respuesta = $this->getJson('/api/v1/artists')->assertOk();
 
     expect(idsDelListado($respuesta->json('data')))->toBe(array_reverse($ids));
-});
-
-it('incluye las producciones vigentes de cada artista', function () {
-    $artista = Artist::factory()->create(['status' => ArtistStatus::Activo, 'created_at' => now()]);
-    $otroArtista = Artist::factory()->create(['status' => ArtistStatus::Activo, 'created_at' => now()->subDay()]);
-
-    // Mismo patrón que los artistas: la reciente tiene el `id` menor y las
-    // empatadas se insertan en orden ascendente de `id`, el contrario al esperado.
-    // Con solo dos empatadas la base acertaba el orden por casualidad (C3, M7).
-    $ids = uuidsAscendentes(7);
-    [$idReciente, $idBorrada] = $ids;
-    $idsEmpatados = array_slice($ids, 2);
-    $mismaFecha = now()->subDays(3)->toImmutable();
-    $empatadas = collect($idsEmpatados)
-        ->map(fn (string $id): Production => Production::factory()->ep()->for($artista)->create(['id' => $id, 'created_at' => $mismaFecha]))
-        ->reverse();
-    $reciente = Production::factory()->sencillo()->for($artista)->create(['id' => $idReciente, 'created_at' => now()->subHour()]);
-    Production::factory()->for($artista)->create(['id' => $idBorrada, 'created_at' => now()])->delete();
-    $ajena = Production::factory()->ep()->for($otroArtista)->create();
-    impersonarToken(claimsDeToken('productor'));
-
-    $respuesta = $this->getJson('/api/v1/artists')->assertOk();
-
-    $forma = fn (Production $produccion): array => [
-        'id' => $produccion->id,
-        'name' => $produccion->name,
-        'format' => $produccion->format->value,
-    ];
-
-    expect(idsDelListado($respuesta->json('data')))->toBe([$artista->id, $otroArtista->id])
-        ->and($respuesta->json('data.0.productions'))->toEqual([$forma($reciente), ...$empatadas->map($forma)->all()])
-        ->and($respuesta->json('data.1.productions'))->toEqual([$forma($ajena)]);
-});
-
-it('devuelve una lista vacía para un artista sin producciones', function () {
-    Artist::factory()->create();
-    impersonarToken(claimsDeToken('productor'));
-
-    $respuesta = $this->getJson('/api/v1/artists')->assertOk();
-
-    expect($respuesta->json('data.0'))->toHaveKey('productions')
-        ->and($respuesta->json('data.0.productions'))->toBe([]);
 });
 
 it('excluye a los artistas con soft delete', function () {
@@ -246,4 +206,40 @@ it('rechaza al rol artista con 403 FORBIDDEN', function (string $rol) {
 })->with([
     'rol artista' => ['artista'],
     'rol desconocido' => ['desconocido'],
+]);
+
+it('no devuelve producciones en el listado', function () {
+    $artista = Artist::factory()->create();
+    Production::factory()->create(['artist_id' => $artista->id]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $respuesta = $this->getJson('/api/v1/artists')->assertOk();
+
+    expect($respuesta->json('data.0'))->not->toHaveKey('productions');
+});
+
+it('acepta per_page entre 1 y 100', function (int $porPagina, int $esperados) {
+    Artist::factory()->count(3)->create();
+    impersonarToken(claimsDeToken('productor'));
+
+    $respuesta = $this->getJson("/api/v1/artists?per_page={$porPagina}")->assertOk();
+
+    expect($respuesta->json('data'))->toHaveCount($esperados)
+        ->and($respuesta->json('meta.per_page'))->toBe($porPagina);
+})->with([
+    'mínimo' => [1, 1],
+    'máximo' => [100, 3],
+]);
+
+it('rechaza un per_page fuera de rango', function (mixed $porPagina) {
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->getJson("/api/v1/artists?per_page={$porPagina}")
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonValidationErrors('per_page', 'errors');
+})->with([
+    'cero' => [0],
+    'más de 100' => [101],
+    'no numérico' => ['abc'],
 ]);

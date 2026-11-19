@@ -88,6 +88,8 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 
 ## 5. Qué NO hacer todavía (alcance vigente de Sprint 5)
 
+> **Actualizado el 2026-11-18 (`TS-32`, decisión del equipo):** se levanta el veto del menú «⋮» **solo para las tarjetas de `/producciones`**, con dos acciones especificadas (editar y eliminar, HU-08). Los motivos están en `docs/specs/frontend/HU-21.md` §3.2-§3.3. Siguen fuera el «⋮» de Artistas, el buscador, las métricas, la portada y el avance del prototipo. La viñeta de fidelidad visual de S3, más abajo, se lee con esta nota.
+
 > **Actualizado el 2026-11-16 (Sprint 5 replanificado, `docs/backlog/sprints/sprint-05.md` y `docs/backlog/ampliacion-alcance-2026-11.md`):**
 >
 > - Se levanta el veto de `comments` **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6.

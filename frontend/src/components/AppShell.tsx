@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { AudioWaveform, LayoutDashboard, Menu, Users } from 'lucide-react'
+import { AudioWaveform, Disc3, LayoutDashboard, Menu, Users } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
@@ -9,14 +9,19 @@ import { cn } from '@/lib/utils'
 
 const NAV_ID = 'nav-principal'
 const foco = 'focus-visible:outline-2 focus-visible:outline-ring'
-const ENLACES = [
+const PRODUCCIONES = { to: '/producciones', label: 'Producciones', Icon: Disc3 }
+const ENLACES_PRODUCTOR = [
   { to: '/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
   { to: '/artistas', label: 'Artistas', Icon: Users },
+  PRODUCCIONES,
 ]
+const ENLACES_ARTISTA = [PRODUCCIONES]
 
 export default function AppShell() {
   const { user } = useAuth0()
-  const esProductor = useRoles().includes('productor')
+  const roles = useRoles()
+  const esProductor = roles.includes('productor')
+  const enlaces = esProductor ? ENLACES_PRODUCTOR : roles.includes('artista') ? ENLACES_ARTISTA : []
   const nombre = user?.name ?? user?.email
   const [abierto, setAbierto] = useState(false)
 
@@ -39,9 +44,9 @@ export default function AppShell() {
           </div>
         </div>
 
-        {esProductor && (
+        {enlaces.length > 0 && (
           <nav id={NAV_ID} aria-label="Principal" className="flex flex-col gap-1">
-            {ENLACES.map(({ to, label, Icon }) => (
+            {enlaces.map(({ to, label, Icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -75,7 +80,7 @@ export default function AppShell() {
             Bienvenido, {nombre}
           </span>
           <LogoutButton />
-          {esProductor && (
+          {enlaces.length > 0 && (
             <button
               type="button"
               aria-label="Abrir menú"

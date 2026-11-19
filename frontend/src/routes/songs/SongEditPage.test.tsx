@@ -341,7 +341,9 @@ describe('SongEditPage', () => {
     await abrirDialogo(user)
     await user.click(confirmar())
 
-    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sesiones del álbum' }),
+    ).toBeTruthy()
     await waitFor(() => expect(textoEnRol('status', 'Canción eliminada.')).toBe(true))
     expect(borrados(peticiones)).toEqual([{ method: 'DELETE', url: URL_CANCION, body: undefined }])
     // La producción solo la pide la página de destino; su listado sale después.
@@ -367,7 +369,9 @@ describe('SongEditPage', () => {
     await abrirDialogo(user)
     await user.click(confirmar())
 
-    expect(await screen.findByRole('heading', { name: 'Editar producción' })).toBeTruthy()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Sesiones del álbum' }),
+    ).toBeTruthy()
     // Sin invalidar, la caché fresca (30 s) no se vuelve a pedir y el listado no llega.
     await waitFor(() => {
       const borrado = peticiones.findIndex((p) => p.method === 'DELETE')
