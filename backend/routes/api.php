@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ArtistController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InvitationController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\RbacCheckController;
 use App\Http\Controllers\SongController;
 use App\Http\Controllers\VersionController;
 use App\Models\Artist;
+use App\Models\Comment;
 use App\Models\Production;
 use App\Models\Song;
 use App\Models\Version;
@@ -183,6 +185,13 @@ Route::get('/versions/{version}/playback-url', [VersionController::class, 'playb
     ->middleware([
         'auth:auth0-api',
         'can:play,version',
+    ]);
+
+Route::post('/versions/{version}/comments', [CommentController::class, 'store'])
+    ->whereUuid('version')
+    ->middleware([
+        'auth:auth0-api',
+        'can:create,'.Comment::class.',version',
     ]);
 
 Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])
