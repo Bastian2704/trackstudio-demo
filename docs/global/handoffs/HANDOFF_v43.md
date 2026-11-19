@@ -76,6 +76,10 @@ La parte B (comentarios del artista) espera a HU-19 (`TS-30`). Por eso `TS-32` n
 - **Combobox de Base UI en jsdom:** funciona con `user.type` sobre `getByRole('combobox', { name })` y `findByRole('option')`, sin trucos.
 - **Pest:** el aviso `fopen(... test-run-history): Permission denied` es inofensivo.
 
+- **Auth0: la Action que asigna `artista` no existía en el tenant.** El handoff v42 la daba por configurada, pero en el login solo corría «Add roles to tokens», y toda cuenta nueva quedaba sin rol (403 incluso en `/me`). El equipo creó **Assign artista role** (post-login, `auth0@4.37.2`, Secrets `DOMAIN`, `CLIENT_ID`, `CLIENT_SECRET` y `ARTIST_ROLE_ID`) y la colocó **después** de «Add roles to tokens». Asigna el rol y además escribe el claim en ese mismo login: si no, el primer login sale sin rol y aceptar la invitación da 403 (`can:perform-artist-action`). Con una cuenta nueva quedó probado el flujo completo: otorgar → registrarse → aceptar → `/producciones`.
+- **El token de la invitación no se puede sacar de la base:** solo se guarda su SHA-256, y se emite al **otorgar acceso**, no al registrar al artista. En local, para obtener el enlace sin correo: `MAIL_MAILER=log` y buscar `/invitacion/` en `storage/logs/laravel.log`.
+- **`sail psql -c` no ejecuta la consulta:** siempre abre la consola interactiva. Para una consulta suelta: `sail exec pgsql psql -U sail -d laravel -c "…"`.
+
 ## 5. Drift detectado
 
 - Ninguno nuevo. Sigue pendiente arrastrar al documento de tesis las correcciones de D4.8 y D2.1.
@@ -84,6 +88,7 @@ La parte B (comentarios del artista) espera a HU-19 (`TS-30`). Por eso `TS-32` n
 
 - **Parte B de HU-21:** espera a `TS-30` (HU-19).
 - **Git:** todo está sin commitear sobre la rama de TS-31. Hay que crear `feature/TS-32-…` desde `develop` después del merge de TS-31 (comandos en el cierre de la sesión).
+- **`TS-97`:** con el registro abierto, cualquier cuenta nueva recibe `artista`. No expone datos, porque la cuenta queda sin enlazar. El equipo lo deja así por ahora; la propuesta es asignar el rol solo a quien viene de una invitación y añadir «Cerrar sesión» al 403.
 - `graphify` no está instalado, así que no se corrió `graphify update .`.
 
 ## 7. Próximos pasos
