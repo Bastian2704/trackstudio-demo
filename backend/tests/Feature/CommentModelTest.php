@@ -61,6 +61,7 @@ it('relaciona versiones, autores y comentarios sin updated_at', function () {
     expect(Schema::getColumnListing('comments'))->toEqualCanonicalizing([
         'id', 'version_id', 'author_id', 'body', 'timestamp_ms', 'created_at',
     ])
+        ->and(Schema::getColumnType('comments', 'created_at'))->toBe('timestamptz')
         ->and($comment->refresh()->version->is($version))->toBeTrue()
         ->and($comment->author->is($autor))->toBeTrue()
         ->and($version->comments()->pluck('comments.id')->all())->toBe([$comment->id]);
