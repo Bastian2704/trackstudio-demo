@@ -6,6 +6,7 @@ use App\Contracts\MailerContract;
 use App\Mail\ProductionAccessGrantedMail;
 use App\Mail\SmtpMailer;
 use App\Models\Production;
+use Illuminate\Mail\Transport\ResendTransport;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -17,6 +18,8 @@ use Illuminate\Support\Str;
 | Spec: docs/specs/backend/HU-20.md §3.7 y §4 (#24, #25). Los feature tests
 | usan un doble del contrato; aquí se prueba que la implementación registrada
 | envía de verdad por el mailer de Laravel, sin cola, y que no se traga fallos.
+| #31: Railway no deja salir SMTP desde staging; el transporte es la API HTTP
+| de Resend (enmienda del 2026-11-18).
 |
 */
 
@@ -45,4 +48,10 @@ it('propaga el fallo del transporte', function () {
 
     expect(fn () => app(MailerContract::class)->send('artista@ejemplo.test', correoDeAcceso()))
         ->toThrow(InvalidArgumentException::class);
+});
+
+it('el transporte resend de la API HTTP está disponible', function () {
+    config(['services.resend.key' => 're_clave_de_prueba']);
+
+    expect(Mail::mailer('resend')->getSymfonyTransport())->toBeInstanceOf(ResendTransport::class);
 });
