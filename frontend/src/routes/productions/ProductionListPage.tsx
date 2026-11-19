@@ -54,7 +54,8 @@ export default function ProductionListPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (production: ProductionListItem) => deleteProduction(production.id),
-    onSuccess: () => {
+    onSuccess: (_, production) => {
+      queryClient.removeQueries({ queryKey: ['productions', production.id] })
       void queryClient.invalidateQueries({ queryKey: ['productions', 'list'] })
       if (query.data?.data.length === 1 && page > 1) goTo(page - 1)
       setPending(null)

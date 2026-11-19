@@ -18,29 +18,39 @@ export default function SongDetailPage() {
     queryFn: () => fetchSong(id),
   })
 
-  if (query.isPending) return <p className="text-sm text-muted-foreground">Cargando canción…</p>
-
-  if (query.isError) {
+  let body
+  if (query.isPending) {
+    body = <p className="text-sm text-muted-foreground">Cargando canción…</p>
+  } else if (query.isError) {
     const code = query.error.response?.data?.code
-    if (code === 'FORBIDDEN') return null
-    return code === 'RESOURCE_NOT_FOUND' ? (
-      <h1 className={TITLE_CLASS}>Canción no encontrada</h1>
-    ) : (
-      <ErrorAlert>No se pudo cargar la canción.</ErrorAlert>
+    if (code === 'FORBIDDEN') body = null
+    else if (code === 'RESOURCE_NOT_FOUND')
+      body = <h1 className={TITLE_CLASS}>Canción no encontrada</h1>
+    else body = <ErrorAlert>No se pudo cargar la canción.</ErrorAlert>
+  } else {
+    body = (
+      <>
+        <div className="space-y-3">
+          <SongStatusBadge status={query.data.status} />
+          <h1 className={TITLE_CLASS}>{query.data.name}</h1>
+        </div>
+        <VersionHistory songId={id} />
+      </>
     )
   }
 
+  // Sin datos no se conoce la producción: se vuelve al listado.
+  const back = query.data
+    ? { to: `/producciones/${query.data.production_id}`, label: 'Volver a la producción' }
+    : { to: '/producciones', label: 'Volver a producciones' }
+
   return (
     <main className="mx-auto max-w-lg space-y-6">
-      <Link to={`/producciones/${query.data.production_id}`} className={BACK_LINK_CLASS}>
+      <Link to={back.to} className={BACK_LINK_CLASS}>
         <ChevronLeft aria-hidden="true" className="size-4" />
-        Volver a la producción
+        {back.label}
       </Link>
-      <div className="space-y-3">
-        <SongStatusBadge status={query.data.status} />
-        <h1 className={TITLE_CLASS}>{query.data.name}</h1>
-      </div>
-      <VersionHistory songId={id} />
+      {body}
     </main>
   )
 }

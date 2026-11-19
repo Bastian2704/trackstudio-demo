@@ -34,7 +34,7 @@ final class VersionPolicy
         Version $version
     ): bool {
         return $this->isProducer($user)
-            || $this->artistCanRead($user, (string) $version->song?->production_id);
+            || $this->artistCanRead($user, $version->song->production_id);
     }
 
     private function artistCanRead(StatelessUserContract $user, string $productionId): bool
