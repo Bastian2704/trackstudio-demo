@@ -13,4 +13,9 @@ final class RbacPolicy
     {
         return $user->getAttribute('role') === Role::Productor;
     }
+
+    public function performArtistAction(StatelessUserContract $user): bool
+    {
+        return $user->getAttribute('role') === Role::Artista;
+    }
 }

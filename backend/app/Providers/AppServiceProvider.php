@@ -6,6 +6,8 @@ namespace App\Providers;
 
 use App\Contracts\AudioStorageContract;
 use App\Contracts\HashVerifierContract;
+use App\Contracts\MailerContract;
+use App\Mail\SmtpMailer;
 use App\Policies\RbacPolicy;
 use App\Storage\S3AudioStorage;
 use App\Storage\S3HashVerifier;
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(AudioStorageContract::class, S3AudioStorage::class);
+        $this->app->bind(MailerContract::class, SmtpMailer::class);
 
         // HeadObject corre dentro de un lockForUpdate (HU-14 §3.4): sin timeout,
         // un S3 lento retiene la transacción y la conexión a PostgreSQL.
@@ -46,6 +49,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::define(
             'perform-producer-action',
             [RbacPolicy::class, 'performProducerAction'],
+        );
+
+        Gate::define(
+            'perform-artist-action',
+            [RbacPolicy::class, 'performArtistAction'],
         );
     }
 }

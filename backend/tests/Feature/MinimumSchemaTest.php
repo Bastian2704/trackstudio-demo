@@ -176,8 +176,9 @@ it('protege las relaciones e invariantes de artists en PostgreSQL', function () 
     ))->toBeTrue();
 });
 
+// production_access sale de esta lista con TS-31 (HU-20, S5); studio_sessions sigue diferida hasta HU-22 (S6).
 it('mantiene fuera las tablas diferidas y de autenticación local', function () {
-    expect(Schema::hasTable('production_access'))->toBeFalse()
+    expect(Schema::hasTable('studio_sessions'))->toBeFalse()
         ->and(Schema::hasTable('password_reset_tokens'))->toBeFalse()
         ->and(Schema::hasTable('sessions'))->toBeFalse();
 });

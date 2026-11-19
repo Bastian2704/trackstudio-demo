@@ -92,7 +92,7 @@ Monorepo, dos carpetas hermanas: `backend/` (Laravel) y `frontend/` (React + TS 
 >
 > - Se levanta el veto de `comments` **solo para `TS-28`..`TS-30`** (HU-17..HU-19), según `docs/erd/modelo-completo.md` §3.6.
 > - Se levanta el veto de `production_access` y del acceso del artista **solo para `TS-31` y `TS-32`** (HU-20, HU-21), que pasan de S6 a S5. Hasta que HU-21 esté Done, solo actúa el productor.
-> - Se aprueba la **ampliación de alcance**, repartida entre S5 y S6. En S5: motivo de la versión (`TS-90`), análisis técnico en el cliente (`TS-91`), flujo de revisión (`TS-92`) y autoría con varios productores (`TS-96`). En S6: comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`). Sus migraciones y contratos esperan al slice del ERD y al ADR de `TS-87`. Ninguna pantalla nueva se especifica sin su marco aprobado en `TS-88` (Figma).
+> - Se aprueba la **ampliación de alcance**, repartida entre S5 y S6. En S5: motivo de la versión (`TS-90`), análisis técnico en el cliente (`TS-91`), flujo de revisión (`TS-92`) y autoría con varios productores (`TS-96`). En S6: comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`). Sus migraciones y contratos siguen el slice del ERD (`modelo-completo.md` §3.3, §3.5 y §3.9) y el ADR (D6.4, D7.9, D7.10, D8.1) de `TS-87`, aprobados por el equipo el 2026-11-18; los umbrales de D7.10 siguen PARCIAL y no bloquean. Ninguna pantalla nueva se especifica sin su marco aprobado en `TS-88` (Figma).
 > - Fidelidad visual en S5: `TS-73` (sobre los marcos rediseñados de `TS-88`) y `TS-74` (comentarios).
 > - Siguen fuera: `studio_sessions` hasta HU-22/HU-23 (S6), resumen con IA, aislamiento por productor, notificaciones dentro de la aplicación (`TS-82`) y `TS-81`.
 >

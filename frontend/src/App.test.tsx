@@ -132,6 +132,31 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeTruthy()
   })
 
+  /*
+   * TS-31 (HU-20) — ts-20.06, spec frontend HU-20 §4 test 16: la invitación
+   * es pública para poder ofrecer el registro (§3.3).
+   */
+  it('/invitacion/:token es pública', async () => {
+    const loginWithRedirect = vi.fn().mockResolvedValue(undefined)
+    const contexto = contextoAuth0({
+      isLoading: false,
+      isAuthenticated: false,
+      error: undefined,
+      user: undefined,
+      getAccessTokenSilently: vi.fn().mockResolvedValue('token-de-prueba'),
+      loginWithRedirect,
+    })
+
+    renderApp(
+      contexto,
+      '/invitacion/Ab3dEf6hIj9lMn2pQr5tUv8xYz1bCd4fGh7jKl0nOp3rSt6vWx9zAb2dEf5hIj8l',
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Te invitaron a Track Studio' })).toBeTruthy()
+    expect(screen.queryByText('Redirigiendo al inicio de sesión…')).toBeNull()
+    expect(loginWithRedirect).not.toHaveBeenCalled()
+  })
+
   it('las rutas de artistas son solo del productor: productor en /artistas/nuevo', async () => {
     renderApp(contextoConRol('productor'), '/artistas/nuevo')
 

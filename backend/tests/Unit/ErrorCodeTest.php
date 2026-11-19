@@ -82,6 +82,11 @@ it('mantiene cada código del catálogo D3.1 con su status y type', function (
         429,
         'https://trackstudio.site/errors/rate-limited',
     ],
+    'fallo al enviar correo' => [
+        'MAIL_DELIVERY_FAILED',
+        502,
+        'https://trackstudio.site/errors/mail-delivery-failed',
+    ],
     'error interno' => [
         'INTERNAL_ERROR',
         500,

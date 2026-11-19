@@ -84,6 +84,7 @@ function conPrecarga(
     if (peticion.method !== 'GET') return alResto(peticion)
     if (peticion.url === URL_CANCION) return { status: 200, data: { data: cancion() } }
     if (peticion.url === `${URL_PRODUCCION}/songs`) return pagina([])
+    if (peticion.url === `${URL_PRODUCCION}/access`) return { status: 200, data: { data: [] } }
     if (peticion.url === `${URL_CANCION}/versions`) return pagina([])
     return { status: 200, data: { data: produccion() } }
   }

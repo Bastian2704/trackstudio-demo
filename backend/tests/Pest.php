@@ -5,18 +5,22 @@ declare(strict_types=1);
 use App\Auth\UserRepository;
 use App\Contracts\AudioStorageContract;
 use App\Contracts\HashVerifierContract;
+use App\Contracts\MailerContract;
 use App\Enums\AudioContentType;
 use App\Models\Production;
 use App\Models\Song;
+use App\Models\User;
 use Auth0\Laravel\Entities\CredentialEntity;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Mailable;
 use Illuminate\Routing\Route as DefinicionDeRuta;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -610,4 +614,91 @@ function falsearLecturaDeAudio(): ArrayObject
     });
 
     return $firmadas;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-20 (docs/specs/backend/HU-20.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `ProductionAccessResource` (spec §3.3). */
+const CAMPOS_DE_ACCESO = ['id', 'production_id', 'artist_id', 'granted_at', 'revoked_at', 'is_active'];
+
+/** Base del frontend que los tests fijan para comprobar los enlaces de los correos. */
+const FRONTEND_DE_PRUEBA = 'https://app.trackstudio.test';
+
+/**
+ * Sustituye `MailerContract` por un doble y devuelve los envíos.
+ *
+ * Con `$falla`, registra el intento y lanza esa excepción, como haría el
+ * transporte SMTP caído. La clase anónima se declara al ejecutarse, así que
+ * este archivo no exige que el contrato exista hasta que un test la use.
+ *
+ * @return ArrayObject<int, array{to: string, mail: Mailable}>
+ */
+function falsearCorreo(?Throwable $falla = null): ArrayObject
+{
+    /** @var ArrayObject<int, array{to: string, mail: Mailable}> $envios */
+    $envios = new ArrayObject;
+
+    app()->instance(MailerContract::class, new class($envios, $falla) implements MailerContract
+    {
+        /** @param ArrayObject<int, array{to: string, mail: Mailable}> $envios */
+        public function __construct(private ArrayObject $envios, private ?Throwable $falla) {}
+
+        public function send(string $to, Mailable $mail): void
+        {
+            $this->envios->append(['to' => $to, 'mail' => $mail]);
+
+            if ($this->falla !== null) {
+                throw $this->falla;
+            }
+        }
+    });
+
+    return $envios;
+}
+
+/**
+ * Inserta una fila de `production_access` para el artista dueño de la
+ * producción, sin pasar por el modelo ni por factories (que crearían padres
+ * en cascada, trampa de v40). Devuelve el id.
+ *
+ * @param  array<string, mixed>  $cambios
+ */
+function crearAcceso(Production $production, array $cambios = []): string
+{
+    $id = (string) Str::uuid();
+
+    DB::table('production_access')->insert(array_merge([
+        'id' => $id,
+        'production_id' => $production->id,
+        'artist_id' => $production->artist_id,
+        'granted_by' => User::factory()->create()->id,
+        'granted_at' => now(),
+        'revoked_at' => null,
+    ], $cambios));
+
+    return $id;
+}
+
+/** Usuario local del `sub` que usa `claimsDeToken()`, o null si aún no existe. */
+function usuarioDelToken(): ?User
+{
+    return User::query()->where('auth0_sub', claimsDeToken()['sub'])->first();
+}
+
+/**
+ * Extrae el token en claro del enlace `{FRONTEND_DE_PRUEBA}/invitacion/{token}`
+ * que trae el Mailable renderizado. Falla si el enlace no está.
+ */
+function tokenDelCorreo(Mailable $mail): string
+{
+    $patron = '#'.preg_quote(FRONTEND_DE_PRUEBA, '#').'/invitacion/([A-Za-z0-9]{64})#';
+
+    expect(preg_match($patron, $mail->render(), $coincidencia))
+        ->toBe(1, 'El correo no trae el enlace de invitación al frontend.');
+
+    return $coincidencia[1];
 }

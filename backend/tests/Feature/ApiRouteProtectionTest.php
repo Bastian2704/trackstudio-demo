@@ -36,6 +36,7 @@ it('clasifica y protege todas las rutas de la API', function () {
     // Inventario exacto: ninguna ruta PUT/PATCH/DELETE sobre versions/{version} (HU-14 §3.1).
     expect($inventario)->toBe([
         'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
+        'DELETE api/v1/productions/{production}/access/{access}' => ['auth:auth0-api', 'can:perform-producer-action'],
         'DELETE api/v1/songs/{song}' => ['auth:auth0-api', 'can:delete,song'],
         'GET api/v1/artists' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Artist'],
         'GET api/v1/artists/{artist}' => ['auth:auth0-api', 'can:view,artist'],
@@ -43,12 +44,15 @@ it('clasifica y protege todas las rutas de la API', function () {
         'GET api/v1/health' => [],
         'GET api/v1/me' => ['auth:auth0-api'],
         'GET api/v1/productions/{production}' => ['auth:auth0-api', 'can:view,production'],
+        'GET api/v1/productions/{production}/access' => ['auth:auth0-api', 'can:perform-producer-action'],
         'GET api/v1/productions/{production}/songs' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Song'],
         'GET api/v1/songs/{song}' => ['auth:auth0-api', 'can:view,song'],
         'GET api/v1/songs/{song}/versions' => ['auth:auth0-api', 'can:viewAny,App\\Models\\Version'],
         'GET api/v1/versions/{version}/playback-url' => ['auth:auth0-api', 'can:play,version'],
         'POST api/v1/artists' => ['auth:auth0-api', 'can:create,App\\Models\\Artist'],
+        'POST api/v1/invitations/{token}/accept' => ['auth:auth0-api', 'can:perform-artist-action'],
         'POST api/v1/productions' => ['auth:auth0-api', 'can:create,App\\Models\\Production'],
+        'POST api/v1/productions/{production}/access' => ['auth:auth0-api', 'can:perform-producer-action'],
         'POST api/v1/productions/{production}/songs' => ['auth:auth0-api', 'can:create,App\\Models\\Song'],
         'POST api/v1/rbac-check' => ['auth:auth0-api', 'can:perform-producer-action'],
         'POST api/v1/songs/{song}/versions' => ['auth:auth0-api', 'can:create,App\\Models\\Version'],
@@ -92,4 +96,9 @@ it('restringe a UUID las rutas parametrizadas de canciones', function (string $m
     'historial' => ['GET', 'api/v1/songs/{song}/versions', 'song'],
     'confirmación' => ['POST', 'api/v1/versions/{version}/confirm', 'version'],
     'reproducción' => ['GET', 'api/v1/versions/{version}/playback-url', 'version'],
+    'otorgar acceso' => ['POST', 'api/v1/productions/{production}/access', 'production'],
+    'historial de accesos' => ['GET', 'api/v1/productions/{production}/access', 'production'],
+    'revocar acceso (producción)' => ['DELETE', 'api/v1/productions/{production}/access/{access}', 'production'],
+    'revocar acceso (acceso)' => ['DELETE', 'api/v1/productions/{production}/access/{access}', 'access'],
+    'aceptar invitación' => ['POST', 'api/v1/invitations/{token}/accept', 'token'],
 ]);

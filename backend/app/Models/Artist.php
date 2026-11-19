@@ -65,4 +65,10 @@ class Artist extends Model
     {
         return $this->hasMany(Production::class);
     }
+
+    /** @return HasMany<ProductionAccess, $this> */
+    public function accesses(): HasMany
+    {
+        return $this->hasMany(ProductionAccess::class);
+    }
 }
