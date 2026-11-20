@@ -586,7 +586,7 @@ Mientras no se confirmen, `TS-91` se implementa con estos valores. Cambiarlos de
 
 | # | Punto | Estado | Decisión |
 |---|---|---|---|
-| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11), `versions` el 2026-10-20 (HU-13) y `version_reviews` el 2026-11-18 (`TS-87`); `productions` el 2026-11-18 (HU-21); faltan filas de `comments`/`studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
+| 8.1 | Matriz RBAC (rol × recurso × acción) | **PARCIAL** | Iniciada con lo ya decidido, ver D8.1 — `songs` cerrada el 2026-10-19 (HU-11), `versions` el 2026-10-20 (HU-13) y `version_reviews` el 2026-11-18 (`TS-87`); `productions` el 2026-11-18 (HU-21) y `comments` el 2026-11-19 (HU-17); faltan filas de `studio_sessions`; el ERD ya está cerrado (2026-10-06) y la sección «Autorización» de cada entidad en `modelo-completo.md` es su insumo |
 | 8.2 | Aclaración bcrypt/argon2id | DECIDIDO | Credenciales residen en Auth0; se documenta, no se implementa (D4.8) |
 | 8.3 | CORS del backend | DECIDIDO | Ver D8.3 |
 | 8.4 | Secretos | DECIDIDO | GitHub Secrets + variables Railway/Vercel; ningún `.env` en el repo |
@@ -622,6 +622,10 @@ Documentación formal de las reglas de autorización que ya implican D4.2 (API R
 | `version_reviews` | Decidir: aprobar o pedir cambios (`TS-92`; `TS-87`) | ❌ (403) | ❌ hoy; ✅ con acceso vigente desde HU-21, artista no `inactivo`, solo sobre la versión `en_revision` |
 | `version_reviews` | Ver el estado y las decisiones | ✅ | ❌ hoy; ✅ con acceso vigente desde HU-21 |
 | `version_reviews` | Editar o borrar una decisión | ❌ | ❌ |
+| `comments` | Crear | ✅ desde HU-17 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
+| `comments` | Ver (listar por versión) | ✅ desde HU-18 | ❌ hoy; ✅ con acceso vigente desde HU-21 |
+| `comments` | Borrar | ✅ solo los suyos, desde HU-19 | ❌ hoy; ✅ solo los suyos, con acceso vigente desde HU-21 |
+| `comments` | Editar | ❌ | ❌ |
 | Endpoint de humo (`/api/v1/me`) | Ver | ✅ | ✅ |
 
 **Evidencia auditable (D3.1):** el 403 que recibe un `artista` al intentar una acción marcada ❌ arriba es la prueba end-to-end de que esta matriz se cumple en código, no solo en documentación — es el entregable de HU-04 y de la Definition of Done del Sprint 1.
@@ -762,7 +766,7 @@ Vitest como runner de pruebas del frontend, ejecutado con `npm test` en local y 
 
 1. ~~**9.2 — Migraciones en deploy.**~~ — **cerrado 2026-10-15**: automáticas en cada despliegue de Railway con `--force` (ver D9.2).
 2. ~~**9.4 — Rollback.**~~ — **cerrado 2026-10-15**: rollback de plataforma, migraciones expand/contract, corrección hacia adelante y copia de BD antes de producción (ver D9.4).
-3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `comments`/`studio_sessions` (`productions` cerrada el 2026-11-18 en HU-21, `songs` cerrada el 2026-10-19 en HU-11 y `versions` el 2026-10-20 en HU-13; «reordenar» entra cuando exista su HU). El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
+3. ⚠️ **8.1 — Matriz RBAC, filas restantes.** Completar `studio_sessions` (`comments` cerrada el 2026-11-19 en HU-17, `productions` el 2026-11-18 en HU-21, `songs` cerrada el 2026-10-19 en HU-11 y `versions` el 2026-10-20 en HU-13; «reordenar» entra cuando exista su HU). El ERD ya cerró (2026-10-06); la sección «Autorización» de cada entidad en `modelo-completo.md` es el insumo (D8.1 ya cubre lo que se podía llenar antes).
 4. ⚠️ **1.6 — Definition of Ready, certificación completa.** Confirmar si el prototipo de Figma existe para todas las pantallas (criterio 6), y cerrar 11.5 (criterio 7) para que deje de ser `PARCIAL`.
 5. ⚠️ **11.5 — Plan de medición de RNF, resto de RNF.** RNF-04 ya tiene instrumento (D9.3); falta confirmar el redactado exacto de RNF-03 en la tesis (ver D7.1) y definir instrumento para RNF-01, RNF-02, RNF-05, RNF-06, RNF-07.
 6. ~~**3.6 — Nivel de adhesión a RFC 9457.**~~ — **cerrado 2026-09-17**: completo, con `type` derivado del `code` sobre `trackstudio.site` (ver D3.1).
