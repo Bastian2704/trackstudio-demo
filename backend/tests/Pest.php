@@ -736,3 +736,27 @@ function artistaConAcceso(array $artista = [], array $acceso = []): Production
 
     return $production;
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-17 (docs/specs/backend/HU-17.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de `CommentResource` (spec §3.6). */
+const CAMPOS_DE_COMENTARIO = ['id', 'version_id', 'author_id', 'body', 'timestamp_ms', 'created_at'];
+
+/**
+ * Cuerpo válido de un comentario. La versión viaja en la URL; la marca cabe
+ * en cualquier versión de `duration_ms >= 83500`.
+ *
+ * @param  array<string, mixed>  $cambios
+ * @return array<string, mixed>
+ */
+function datosDeComentario(array $cambios = []): array
+{
+    return array_merge([
+        'body' => 'Sube la voz en el coro',
+        'timestamp_ms' => 83500,
+    ], $cambios);
+}

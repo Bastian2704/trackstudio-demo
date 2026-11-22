@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 
 import ErrorAlert from '@/components/ErrorAlert'
+import { useHasRole } from '@/hooks/useRole'
 import type { ApiErrorBody } from '@/lib/api'
+import CommentForm from '@/routes/comments/CommentForm'
 
 import { fetchPlaybackUrl } from './versionApi'
 import { type Version, versionTitle } from './versionSchema'
@@ -27,6 +29,10 @@ export default function VersionPlayer({ version }: { version: Version }) {
   const renewing = useRef(false)
   const [failed, setFailed] = useState(false)
 
+  // HU-17: solo el productor comenta; la parte B de HU-21 sumará al artista.
+  const canComment = useHasRole('productor')
+  const audioRef = useRef<HTMLAudioElement>(null)
+
   let body
 
   if (failed) {
@@ -45,44 +51,55 @@ export default function VersionPlayer({ version }: { version: Version }) {
     body = <p role="status">Cargando audio…</p>
   } else {
     body = (
-      <audio
-        // Una URL renovada puede ser idéntica (S3 firma por segundos): la key
-        // monta otro <audio> para que el navegador vuelva a cargar (§3.5).
-        key={query.dataUpdatedAt}
-        controls
-        src={query.data.url}
-        controlsList="nodownload"
-        preload="metadata"
-        aria-label={`Audio de ${title}`}
-        onContextMenu={(event) => event.preventDefault()}
-        onPlay={() => {
-          wantsToPlay.current = true
-        }}
-        onPause={() => {
-          wantsToPlay.current = false
-        }}
-        onLoadedMetadata={(event) => {
-          const audio = event.currentTarget
-          renewing.current = false
+      <>
+        <audio
+          // Una URL renovada puede ser idéntica (S3 firma por segundos): la key
+          // monta otro <audio> para que el navegador vuelva a cargar.
+          key={query.dataUpdatedAt}
+          ref={audioRef}
+          controls
+          src={query.data.url}
+          controlsList="nodownload"
+          preload="metadata"
+          aria-label={`Audio de ${title}`}
+          onContextMenu={(event) => event.preventDefault()}
+          onPlay={() => {
+            wantsToPlay.current = true
+          }}
+          onPause={() => {
+            wantsToPlay.current = false
+          }}
+          onLoadedMetadata={(event) => {
+            const audio = event.currentTarget
+            renewing.current = false
 
-          if (resumeAt.current !== null) {
-            audio.currentTime = resumeAt.current
-            resumeAt.current = null
-          }
+            if (resumeAt.current !== null) {
+              audio.currentTime = resumeAt.current
+              resumeAt.current = null
+            }
 
-          if (wantsToPlay.current) audio.play().catch(() => {})
-        }}
-        onError={(event) => {
-          if (renewing.current) {
-            setFailed(true)
-            return
-          }
+            if (wantsToPlay.current) audio.play().catch(() => {})
+          }}
+          onError={(event) => {
+            if (renewing.current) {
+              setFailed(true)
+              return
+            }
 
-          renewing.current = true
-          resumeAt.current = event.currentTarget.currentTime
-          void query.refetch()
-        }}
-      />
+            renewing.current = true
+            resumeAt.current = event.currentTarget.currentTime
+            void query.refetch()
+          }}
+        />
+
+        {/* Fuera de la key del <audio>: al renovar la URL se conserva lo escrito. */}
+        {canComment && (
+          <CommentForm
+            version={version}
+            getCurrentTime={() => resumeAt.current ?? audioRef.current?.currentTime ?? 0}
+          />
+        )}
+      </>
     )
   }
 
