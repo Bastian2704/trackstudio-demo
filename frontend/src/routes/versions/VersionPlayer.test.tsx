@@ -15,7 +15,8 @@ import { comentarioCreado } from '@/test/comentarios'
  * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12, 14 (review C3)
  * y 15-16 (review del merge).
  * TS-28 (HU-17) — ts-17.06, spec frontend HU-17 §4 tests 1 a 4 (formulario de
- * comentario dentro del reproductor).
+ * comentario dentro del reproductor) y test 15 (review del PR #68: marca
+ * durante la renovación de la URL).
  *
  * Contrato de GET /api/v1/versions/{version}/playback-url: spec backend HU-16
  * §3.5 y §3.6. jsdom no carga audio: los eventos del <audio> se disparan a mano
@@ -411,5 +412,38 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     expect(renovado).not.toBe(elemento)
     expect(campo().value).toBe('Sube la voz')
     expect(screen.getByText('Marca: 0:10')).toBeTruthy()
+  })
+
+  it('toma la posición guardada si se escribe durante la renovación', async () => {
+    const user = userEvent.setup()
+    comoRol(['productor'])
+    simularReproduccion()
+    const peticiones = simularReproduccionYComentarios()
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+    elemento.currentTime = 83.5
+
+    fireEvent.error(elemento)
+    const renovado = await audioConUrl(2)
+    expect(renovado.currentTime).toBe(0)
+
+    // Antes de loadedMetadata: el <audio> nuevo aún no tiene la posición.
+    await user.type(campo(), 'Sube la voz')
+    expect(screen.getByText('Marca: 1:23')).toBeTruthy()
+
+    cargarMetadatos(renovado)
+    await user.click(screen.getByRole('button', { name: 'Comentar' }))
+    expect((await screen.findByRole('status')).textContent).toBe('Comentario guardado en 1:23.')
+
+    // Ya cargado, la posición vuelve a ser la del <audio>.
+    renovado.currentTime = 100
+    await user.type(campo(), 'Otra')
+    expect(screen.getByText('Marca: 1:40')).toBeTruthy()
+
+    expect(peticiones.filter((p) => p.method === 'POST').map((p) => p.body)).toEqual([
+      { body: 'Sube la voz', timestamp_ms: 83500 },
+    ])
   })
 })
