@@ -54,7 +54,7 @@ export default function VersionPlayer({ version }: { version: Version }) {
       <>
         <audio
           // Una URL renovada puede ser idéntica (S3 firma por segundos): la key
-          // monta otro <audio> para que el navegador vuelva a cargar (§3.5).
+          // monta otro <audio> para que el navegador vuelva a cargar.
           key={query.dataUpdatedAt}
           ref={audioRef}
           controls
@@ -96,7 +96,7 @@ export default function VersionPlayer({ version }: { version: Version }) {
         {canComment && (
           <CommentForm
             version={version}
-            getCurrentTime={() => audioRef.current?.currentTime ?? 0}
+            getCurrentTime={() => resumeAt.current ?? audioRef.current?.currentTime ?? 0}
           />
         )}
       </>
