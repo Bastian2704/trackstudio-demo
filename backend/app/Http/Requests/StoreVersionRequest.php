@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\AudioContentType;
+use App\Enums\ChangeCategory;
 use App\Models\Version;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,8 @@ final class StoreVersionRequest extends FormRequest
                 'max:'.Version::MAX_SIZE_BYTES,
             ],
             'label' => ['nullable', 'string', 'max:100'],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'description' => ['nullable', 'string', 'max:1000', 'required_with:change_category'],
+            'change_category' => ['nullable', 'string', Rule::enum(ChangeCategory::class)],
         ];
     }
 }

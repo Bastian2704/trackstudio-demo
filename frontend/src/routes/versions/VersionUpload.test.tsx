@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -48,14 +48,14 @@ afterEach(() => {
   restaurarApi()
 })
 
-function renderSubida() {
+function renderSubida(requiresReason?: boolean) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
 
   render(
     <QueryClientProvider client={queryClient}>
-      <VersionUpload songId={SONG_ID} />
+      <VersionUpload songId={SONG_ID} {...(requiresReason !== undefined && { requiresReason })} />
     </QueryClientProvider>,
   )
 
@@ -712,17 +712,247 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     ])
   })
 
+  // Enmendado por TS-90 §3.5: el 422 de `description` va a su campo (test 8 de TS-90).
+  it.each([['label', 'La etiqueta no puede superar 100 caracteres.']])(
+    'muestra los errores de %s de la firma',
+    async (clave, mensaje) => {
+      const s3 = simularS3()
+      simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { [clave]: [mensaje] } }))
+      const user = renderSubida()
+
+      await subir(user, wav())
+
+      await waitFor(() => expect(textoEnRol('alert', mensaje)).toBe(true))
+      expect(s3).toHaveLength(0)
+    },
+  )
+})
+
+/*
+ * TS-90 — ts-amp-motivo.06, spec frontend TS-90 §4 tests 1, 2 y 4 a 12.
+ *
+ * Contrato de la firma con `change_category` y `description`: spec backend
+ * TS-90 §3.3 y §3.5. `requiresReason` lo decide SongEditPage (§3.2; test 3 en
+ * SongEditPage.test.tsx).
+ */
+const CATEGORIAS = ['Voz', 'Instrumentos', 'Mezcla', 'Master', 'Arreglo', 'Otro']
+const FALTA_CATEGORIA = 'Elige qué cambió en esta versión.'
+const FALTA_MOTIVO = 'Explica qué cambió y por qué.'
+
+function grupo(nombre: '¿Qué cambió?' | 'Categoría (opcional)') {
+  return screen.getByRole('radiogroup', { name: nombre })
+}
+
+function motivo() {
+  return screen.getByRole<HTMLTextAreaElement>('textbox', { name: '¿Qué cambió y por qué?' })
+}
+
+function radios() {
+  return screen.getAllByRole<HTMLInputElement>('radio')
+}
+
+/** Texto de los elementos a los que apunta `aria-describedby`. */
+function descritoPor(el: HTMLElement) {
+  return (el.getAttribute('aria-describedby') ?? '')
+    .split(/\s+/)
+    .map((id) => (id ? (document.getElementById(id)?.textContent ?? '') : ''))
+    .join(' ')
+}
+
+describe('VersionUpload — motivo (TS-90)', () => {
+  it('pide categoría y motivo obligatorios', async () => {
+    simularApi(firmando())
+    const user = renderSubida(true)
+
+    const g = grupo('¿Qué cambió?')
+    expect(g.getAttribute('aria-required')).toBe('true')
+    expect(
+      within(g)
+        .getAllByRole<HTMLInputElement>('radio')
+        .map((r) => r.labels?.[0]?.textContent?.trim()),
+    ).toEqual(CATEGORIAS)
+    expect(motivo().getAttribute('aria-required')).toBe('true')
+
+    // En modo obligatorio no se puede quitar la categoría (§3.3).
+    await user.click(within(g).getByRole('radio', { name: 'Voz' }))
+    expect(screen.queryByRole('button', { name: 'Quitar categoría' })).toBeNull()
+  })
+
+  it('ofrece el motivo como opcional en la primera versión', () => {
+    simularApi(firmando())
+    renderSubida()
+
+    const g = grupo('Categoría (opcional)')
+    expect(g.getAttribute('aria-required')).not.toBe('true')
+    expect(within(g).getAllByRole('radio')).toHaveLength(6)
+    expect(
+      screen.getByText(
+        'La primera versión no necesita motivo. Si eliges una categoría, describe el cambio.',
+      ),
+    ).toBeTruthy()
+    expect(descripcion().getAttribute('aria-required')).not.toBe('true')
+    expect(screen.queryByRole('textbox', { name: '¿Qué cambió y por qué?' })).toBeNull()
+  })
+
+  it('firma con la categoría y el motivo', async () => {
+    simularS3()
+    const peticiones = simularApi(firmando())
+    const user = renderSubida(true)
+
+    await user.click(screen.getByRole('radio', { name: 'Mezcla' }))
+    await user.type(motivo(), '  Subí la voz en el estribillo.  ')
+    await subir(user, wav())
+
+    await waitFor(() => expect(peticiones).toHaveLength(1))
+    expect(peticiones[0].body).toEqual({
+      content_type: 'audio/wav',
+      size_bytes: 64,
+      change_category: 'mezcla',
+      description: 'Subí la voz en el estribillo.',
+    })
+  })
+
   it.each([
-    ['label', 'La etiqueta no puede superar 100 caracteres.'],
-    ['description', 'La descripción no puede superar 1000 caracteres.'],
-  ])('muestra los errores de %s de la firma', async (clave, mensaje) => {
+    ['sin texto', ''],
+    ['con solo espacios', '   '],
+  ])('no firma sin categoría ni motivo cuando son obligatorios (%s)', async (_caso, texto) => {
     const s3 = simularS3()
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { [clave]: [mensaje] } }))
+    const peticiones = simularApi(firmando())
+    const user = renderSubida(true)
+
+    if (texto) await user.type(motivo(), texto)
+    await subir(user, wav())
+
+    await waitFor(() => expect(descritoPor(grupo('¿Qué cambió?'))).toContain(FALTA_CATEGORIA))
+    expect(grupo('¿Qué cambió?').getAttribute('aria-invalid')).toBe('true')
+    expect(descritoPor(motivo())).toContain(FALTA_MOTIVO)
+    expect(motivo().getAttribute('aria-invalid')).toBe('true')
+    expect(peticiones).toHaveLength(0)
+    expect(s3).toHaveLength(0)
+  })
+
+  it('exige el texto si la primera versión trae categoría', async () => {
+    const peticiones = simularApi(firmando())
+    const user = renderSubida()
+
+    await user.click(screen.getByRole('radio', { name: 'Voz' }))
+    await subir(user, wav())
+
+    await waitFor(() => expect(descritoPor(motivo())).toContain(FALTA_MOTIVO))
+    expect(peticiones).toHaveLength(0)
+  })
+
+  it('firma la primera versión sin motivo', async () => {
+    simularS3()
+    const peticiones = simularApi(firmando())
     const user = renderSubida()
 
     await subir(user, wav())
 
-    await waitFor(() => expect(textoEnRol('alert', mensaje)).toBe(true))
-    expect(s3).toHaveLength(0)
+    await waitFor(() => expect(peticiones).toHaveLength(1))
+    expect(peticiones[0].body).toEqual({ content_type: 'audio/wav', size_bytes: 64 })
+  })
+
+  it.each([
+    ['change_category', () => grupo('¿Qué cambió?')],
+    ['description', () => motivo()],
+  ] as const)('pinta el 422 del motivo en su campo (%s)', async (clave, elemento) => {
+    simularS3()
+    simularApi(() =>
+      problema(422, 'VALIDATION_ERROR', { errors: { [clave]: ['Mensaje del servidor.'] } }),
+    )
+    const user = renderSubida(true)
+
+    await user.click(screen.getByRole('radio', { name: 'Mezcla' }))
+    await user.type(motivo(), 'Subí la voz.')
+    await subir(user, wav())
+
+    await waitFor(() => expect(descritoPor(elemento())).toContain('Mensaje del servidor.'))
+    expect(elemento().getAttribute('aria-invalid')).toBe('true')
+    expect(textoEnRol('alert', 'Mensaje del servidor.')).toBe(false)
+  })
+
+  it('no lleva a un campo un 422 con otro código', async () => {
+    // Un 422 no implica VALIDATION_ERROR (trampa de v44): se decide por `code`.
+    simularS3()
+    simularApi(() =>
+      problema(422, 'AUDIO_HASH_MISMATCH', { errors: { description: ['Mensaje del servidor.'] } }),
+    )
+    const user = renderSubida(true)
+
+    await user.click(screen.getByRole('radio', { name: 'Mezcla' }))
+    await user.type(motivo(), 'Subí la voz.')
+    await subir(user, wav())
+
+    await waitFor(() => expect(screen.queryAllByRole('alert')).not.toHaveLength(0))
+    expect(motivo().getAttribute('aria-invalid')).not.toBe('true')
+    expect(descritoPor(motivo())).not.toContain('Mensaje del servidor.')
+  })
+
+  it('borra el error de un campo al corregirlo', async () => {
+    simularApi(firmando())
+    const user = renderSubida(true)
+
+    await subir(user, wav())
+    await waitFor(() => expect(descritoPor(grupo('¿Qué cambió?'))).toContain(FALTA_CATEGORIA))
+
+    await user.click(screen.getByRole('radio', { name: 'Mezcla' }))
+
+    expect(descritoPor(grupo('¿Qué cambió?'))).not.toContain(FALTA_CATEGORIA)
+    expect(grupo('¿Qué cambió?').getAttribute('aria-invalid')).not.toBe('true')
+    expect(descritoPor(motivo())).toContain(FALTA_MOTIVO)
+
+    await user.type(motivo(), 'S')
+
+    expect(descritoPor(motivo())).not.toContain(FALTA_MOTIVO)
+    expect(motivo().getAttribute('aria-invalid')).not.toBe('true')
+  })
+
+  it('permite quitar la categoría en la primera versión', async () => {
+    simularS3()
+    const peticiones = simularApi(firmando())
+    const user = renderSubida()
+
+    await user.click(screen.getByRole('radio', { name: 'Voz' }))
+
+    // Con categoría, el texto pasa a ser obligatorio (§3.3).
+    expect(motivo().getAttribute('aria-required')).toBe('true')
+
+    await user.click(screen.getByRole('button', { name: 'Quitar categoría' }))
+
+    expect(radios().some((r) => r.checked)).toBe(false)
+    expect(descripcion()).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Quitar categoría' })).toBeNull()
+
+    await subir(user, wav())
+
+    await waitFor(() => expect(peticiones).toHaveLength(1))
+    expect(peticiones[0].body).toEqual({ content_type: 'audio/wav', size_bytes: 64 })
+  })
+
+  it('cuenta los caracteres del motivo', async () => {
+    simularApi(firmando())
+    const user = renderSubida(true)
+
+    expect(screen.getByText('0 / 1000')).toBeTruthy()
+
+    await user.type(motivo(), 'Subí la voz en el estribillo y bajé la reverb del puente.12')
+
+    expect(screen.getByText('59 / 1000')).toBeTruthy()
+  })
+
+  it('vacía la categoría tras subir', async () => {
+    const s3 = simularS3()
+    const peticiones = simularApi(firmando())
+    const user = renderSubida(true)
+
+    await user.click(screen.getByRole('radio', { name: 'Mezcla' }))
+    await user.type(motivo(), 'Subí la voz.')
+    await subir(user, wav())
+    await subirHastaConfirmar(s3, peticiones)
+
+    await waitFor(() => expect(textoEnRol('status', 'Versión v1 verificada.')).toBe(true))
+    expect(radios().some((r) => r.checked)).toBe(false)
+    expect(motivo().value).toBe('')
   })
 })

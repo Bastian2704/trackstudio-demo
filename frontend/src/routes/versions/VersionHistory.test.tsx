@@ -31,6 +31,7 @@ function version(n: number, cambios: Record<string, unknown> = {}) {
     version_number: n,
     label: null,
     description: null,
+    change_category: null,
     content_type: 'audio/wav',
     size_bytes: 48211200,
     duration_ms: 213450,
@@ -304,5 +305,27 @@ describe('VersionHistory', () => {
       expect(screen.queryByRole('alert')).toBeNull()
       expect(peticiones.filter((p) => p.url.endsWith('/playback-url'))).toHaveLength(4)
     })
+  })
+})
+
+/* TS-90 — ts-amp-motivo.06, spec frontend TS-90 §4 test 13 (§3.6). */
+describe('VersionHistory — motivo (TS-90)', () => {
+  it('muestra la categoría junto al título', async () => {
+    simularApi(() =>
+      pagina([
+        version(2, { change_category: 'master', description: 'Master para streaming.' }),
+        version(1),
+      ]),
+    )
+    renderHistorial()
+
+    const items = await screen.findAllByRole('listitem')
+
+    expect(within(items[0]).getByText('Master')).toBeTruthy()
+    expect(within(items[0]).queryByText('master')).toBeNull()
+    expect(within(items[0]).getByText('Master para streaming.')).toBeTruthy()
+    for (const categoria of ['Voz', 'Instrumentos', 'Mezcla', 'Master', 'Arreglo', 'Otro']) {
+      expect(within(items[1]).queryByText(categoria)).toBeNull()
+    }
   })
 })
