@@ -22,6 +22,7 @@ final class VersionResource extends JsonResource
             'version_number' => $this->resource->version_number,
             'label' => $this->resource->label,
             'description' => $this->resource->description,
+            'change_category' => $this->resource->change_category?->value,
             'content_type' => $this->resource->content_type->value,
             'size_bytes' => $this->resource->size_bytes,
             'duration_ms' => $this->resource->duration_ms,
