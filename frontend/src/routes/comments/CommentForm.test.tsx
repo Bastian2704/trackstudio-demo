@@ -16,10 +16,14 @@ import { comentarioCreado } from '@/test/comentarios'
 
 /*
  * TS-28 (HU-17) — ts-17.06, spec frontend HU-17 §4 tests 5 a 13.
+ * TS-29 (HU-18) — ts-18.06, spec frontend HU-18 §4.2: la marca se fija al
+ * pulsar «Comentar en {marca}» (§3.5). Reescritos #5-#7, #10, #12 y #13;
+ * nuevos #17-#19. #8, #9 y #11 solo abren el formulario antes de escribir.
  *
  * Contrato de POST /api/v1/versions/{version}/comments: spec backend HU-17
  * §3.3-§3.7. La posición del audio la da `getCurrentTime`, que aquí devuelve
- * `segundos`: cada caso la mueve a mano.
+ * `segundos`: cada caso la mueve a mano. `positionMs` solo pinta la etiqueta
+ * del botón.
  */
 const VERSION: Version = {
   id: '9d3e0000-0000-4000-8000-000000000003',
@@ -49,14 +53,14 @@ afterEach(() => {
   restaurarApi()
 })
 
-function renderFormulario(version: Version = VERSION) {
+function renderFormulario(version: Version = VERSION, positionMs = 0) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
 
   render(
     <QueryClientProvider client={queryClient}>
-      <CommentForm version={version} getCurrentTime={() => segundos} />
+      <CommentForm version={version} getCurrentTime={() => segundos} positionMs={positionMs} />
     </QueryClientProvider>,
   )
 }
@@ -66,27 +70,39 @@ function simularComentarios(): PeticionRegistrada[] {
   return simularApi((peticion) => comentarioCreado(peticion))
 }
 
-const campo = () => screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Comentario' })
-const comentar = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Comentar' })
-const marca = () => screen.queryByText(/^Marca:/)
+const abrir = () => screen.getByRole<HTMLButtonElement>('button', { name: /^Comentar en / })
+const campo = () =>
+  screen.getByRole<HTMLTextAreaElement>('textbox', { name: /^Nuevo comentario en / })
+/** El campo con la marca dada en su etiqueta (falla si la etiqueta es otra). */
+const campoEn = (marca: string) =>
+  screen.getByRole<HTMLTextAreaElement>('textbox', { name: `Nuevo comentario en ${marca}` })
+const guardar = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Guardar comentario' })
+const cancelar = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Cancelar' })
+const formulario = () => screen.queryByRole('form', { name: 'Nuevo comentario' })
 
 describe('CommentForm', () => {
-  it('fija la marca al empezar a escribir', async () => {
+  it('fija la marca al pulsar', async () => {
     const user = userEvent.setup()
     const peticiones = simularComentarios()
     renderFormulario()
 
+    expect(formulario()).toBeNull()
+
     segundos = 10
-    await user.type(campo(), 'S')
-    expect(marca()?.textContent).toBe('Marca: 0:10')
+    await user.click(abrir())
+    expect(campoEn('0:10')).toBeTruthy()
 
     segundos = 20
+    await user.type(campo(), 'abc')
+    await user.clear(campo())
+    expect(campoEn('0:10')).toBeTruthy()
+
+    await user.type(campo(), 'Sube la voz')
     await user.tab()
     await user.click(campo())
-    await user.type(campo(), 'ube la voz')
-    expect(marca()?.textContent).toBe('Marca: 0:10')
+    expect(campoEn('0:10')).toBeTruthy()
 
-    await user.click(comentar())
+    await user.click(guardar())
 
     await waitFor(() => expect(peticiones).toHaveLength(1))
     expect(peticiones[0]).toEqual({
@@ -96,29 +112,28 @@ describe('CommentForm', () => {
     })
   })
 
-  it('vuelve a tomar la marca con el campo vacío', async () => {
+  it('vuelve a tomar la marca al reabrir', async () => {
     const user = userEvent.setup()
     const peticiones = simularComentarios()
     renderFormulario()
 
     segundos = 10
-    await user.type(campo(), 'abc')
-    expect(marca()?.textContent).toBe('Marca: 0:10')
-
-    await user.clear(campo())
-    expect(marca()).toBeNull()
+    await user.click(abrir())
+    expect(campoEn('0:10')).toBeTruthy()
+    await user.click(cancelar())
 
     segundos = 20
-    await user.type(campo(), 'Sube la voz')
-    expect(marca()?.textContent).toBe('Marca: 0:20')
+    await user.click(abrir())
+    expect(campoEn('0:20')).toBeTruthy()
 
-    await user.click(comentar())
+    await user.type(campo(), 'Sube la voz')
+    await user.click(guardar())
     await screen.findByRole('status')
     expect(peticiones[0].body).toEqual({ body: 'Sube la voz', timestamp_ms: 20000 })
 
     segundos = 30
-    await user.type(campo(), 'Baja el bajo')
-    expect(marca()?.textContent).toBe('Marca: 0:30')
+    await user.click(abrir())
+    expect(campoEn('0:30')).toBeTruthy()
   })
 
   it.each([
@@ -134,8 +149,10 @@ describe('CommentForm', () => {
       renderFormulario({ ...VERSION, duration_ms: duracion })
 
       segundos = posicion
+      await user.click(abrir())
+      segundos = 0
       await user.type(campo(), 'Sube la voz')
-      await user.click(comentar())
+      await user.click(guardar())
 
       await waitFor(() => expect(peticiones).toHaveLength(1))
       expect(peticiones[0].body).toEqual({ body: 'Sube la voz', timestamp_ms: esperado })
@@ -151,11 +168,12 @@ describe('CommentForm', () => {
     const peticiones = simularComentarios()
     renderFormulario()
 
+    await user.click(abrir())
     if (texto !== '') {
       await user.click(campo())
       await user.paste(texto)
     }
-    await user.click(comentar())
+    await user.click(guardar())
 
     expect(await screen.findByText(mensaje)).toBeTruthy()
     expect(campo().getAttribute('aria-invalid')).toBe('true')
@@ -167,38 +185,38 @@ describe('CommentForm', () => {
     const peticiones = simularComentarios()
     renderFormulario()
 
-    await user.click(campo())
+    await user.click(abrir())
     await user.paste('  Sube la voz  ')
-    await user.click(comentar())
+    await user.click(guardar())
 
     await waitFor(() => expect(peticiones).toHaveLength(1))
     expect(peticiones[0].body).toEqual({ body: 'Sube la voz', timestamp_ms: 0 })
 
     await screen.findByRole('status')
     const largo = 'a'.repeat(2000)
-    await user.click(campo())
+    await user.click(abrir())
     await user.paste(largo)
-    await user.click(comentar())
+    await user.click(guardar())
 
     await waitFor(() => expect(peticiones).toHaveLength(2))
     expect(peticiones[1].body).toEqual({ body: largo, timestamp_ms: 0 })
   })
 
-  it('tras guardar vacía el campo y deja el foco', async () => {
+  it('tras guardar cierra y devuelve el foco', async () => {
     const user = userEvent.setup()
     simularComentarios()
     renderFormulario()
 
     segundos = 10
+    await user.click(abrir())
     await user.type(campo(), 'Sube la voz')
-    await user.click(comentar())
+    await user.click(guardar())
 
     expect((await screen.findByRole('status')).textContent).toBe('Comentario guardado en 0:10.')
-    expect(campo().value).toBe('')
-    expect(marca()).toBeNull()
-    expect(document.activeElement).toBe(campo())
+    expect(formulario()).toBeNull()
+    await waitFor(() => expect(document.activeElement).toBe(abrir()))
 
-    await user.type(campo(), 'B')
+    await user.click(abrir())
     expect(screen.queryByRole('status')).toBeNull()
   })
 
@@ -253,8 +271,9 @@ describe('CommentForm', () => {
     renderFormulario()
 
     segundos = 10
+    await user.click(abrir())
     await user.type(campo(), 'Sube la voz')
-    await user.click(comentar())
+    await user.click(guardar())
 
     if (esperado.campo) {
       expect(await screen.findByText(esperado.campo)).toBeTruthy()
@@ -263,8 +282,7 @@ describe('CommentForm', () => {
       await waitFor(() => expect(screen.getByRole('alert').textContent).toContain(esperado.alerta))
     }
 
-    expect(campo().value).toBe('Sube la voz')
-    expect(marca()?.textContent).toBe('Marca: 0:10')
+    expect(campoEn('0:10').value).toBe('Sube la voz')
     expect(screen.queryByRole('status')).toBeNull()
   })
 
@@ -279,18 +297,21 @@ describe('CommentForm', () => {
     )
     renderFormulario()
 
+    await user.click(abrir())
     await user.type(campo(), 'Sube la voz')
-    await user.click(comentar())
+    await user.click(guardar())
 
     await waitFor(() => expect(peticiones).toHaveLength(1))
-    expect(comentar().disabled).toBe(true)
+    expect(guardar().disabled).toBe(true)
+    expect(cancelar().disabled).toBe(true)
 
-    await user.click(comentar())
+    await user.click(guardar())
+    await user.click(cancelar())
     expect(peticiones).toHaveLength(1)
+    expect(formulario()).not.toBeNull()
 
     responder({ status: 201 })
     await screen.findByRole('status')
-    expect(comentar().disabled).toBe(false)
     expect(peticiones).toHaveLength(1)
   })
 
@@ -301,22 +322,76 @@ describe('CommentForm', () => {
 
     segundos = 10
     await user.tab()
-    expect(document.activeElement).toBe(campo())
+    expect(document.activeElement).toBe(abrir())
+
+    await user.keyboard('{Enter}')
+    expect(
+      screen.getByRole('textbox', { name: 'Nuevo comentario en 0:10', description: '0 / 2000' }),
+    ).toBe(document.activeElement)
 
     await user.keyboard('Sube la voz')
-    expect(screen.getByRole('textbox', { name: 'Comentario', description: 'Marca: 0:10' })).toBe(
-      campo(),
-    )
-
     await user.keyboard('{Enter}')
     expect(campo().value).toBe('Sube la voz\n')
     expect(peticiones).toHaveLength(0)
 
     await user.tab()
-    expect(document.activeElement).toBe(comentar())
+    expect(document.activeElement).toBe(cancelar())
+    await user.tab()
+    expect(document.activeElement).toBe(guardar())
     await user.keyboard('{Enter}')
 
     await waitFor(() => expect(peticiones).toHaveLength(1))
     expect(peticiones[0].body).toEqual({ body: 'Sube la voz', timestamp_ms: 10000 })
+    await waitFor(() => expect(document.activeElement).toBe(abrir()))
+
+    await user.keyboard('{Enter}')
+    expect(document.activeElement).toBe(campo())
+    await user.tab()
+    await user.keyboard('{Enter}')
+
+    expect(formulario()).toBeNull()
+    await waitFor(() => expect(document.activeElement).toBe(abrir()))
+    expect(peticiones).toHaveLength(1)
+  })
+
+  it('cancelar descarta y no envía', async () => {
+    const user = userEvent.setup()
+    const peticiones = simularComentarios()
+    renderFormulario()
+
+    await user.click(abrir())
+    await user.type(campo(), 'Sube la voz')
+    await user.click(cancelar())
+
+    expect(formulario()).toBeNull()
+    await waitFor(() => expect(document.activeElement).toBe(abrir()))
+    expect(peticiones).toHaveLength(0)
+
+    await user.click(abrir())
+    expect(campo().value).toBe('')
+  })
+
+  it('cuenta los caracteres', async () => {
+    const user = userEvent.setup()
+    simularComentarios()
+    renderFormulario()
+
+    await user.click(abrir())
+    expect(screen.getByText('0 / 2000')).toBeTruthy()
+
+    // '🎵' es un punto de código y dos unidades UTF-16: con .length serían 4.
+    await user.paste('🎵ab')
+    expect(screen.getByText('3 / 2000')).toBeTruthy()
+  })
+
+  it.each([
+    ['sin tope necesario', 213450, 83500, 'Comentar en 1:23'],
+    ['con tope en la duración', 213450, 300000, 'Comentar en 3:33'],
+    ['sin duración no hay tope', null, 300000, 'Comentar en 5:00'],
+  ])('la etiqueta del botón sigue la posición (%s)', (_caso, duracion, posicion, etiqueta) => {
+    simularComentarios()
+    renderFormulario({ ...VERSION, duration_ms: duracion }, posicion)
+
+    expect(screen.getByRole('button', { name: etiqueta })).toBeTruthy()
   })
 })
