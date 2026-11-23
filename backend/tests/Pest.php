@@ -406,7 +406,7 @@ function datosDeEdicionDeCancion(array $cambios = []): array
 
 /** Claves exactas de `VersionResource` (spec §3.7). */
 /** Ampliadas en HU-14 §3.8: label, description, duration_ms y verified_at. */
-const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
+const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'change_category', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
 
 /**
  * Cuerpo válido de la firma: un WAV de ~46 MB. El archivo no viaja (D7.1).
@@ -420,6 +420,19 @@ function datosDeVersion(array $cambios = []): array
         'content_type' => 'audio/wav',
         'size_bytes' => 48211200,
     ], $cambios);
+}
+
+/**
+ * Motivo válido de una versión nueva (TS-90 §4): categoría y texto.
+ *
+ * @return array{change_category: string, description: string}
+ */
+function datosDeMotivo(): array
+{
+    return [
+        'change_category' => 'mezcla',
+        'description' => 'Subí la voz en el estribillo.',
+    ];
 }
 
 /**

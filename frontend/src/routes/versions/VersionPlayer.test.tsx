@@ -43,6 +43,7 @@ const VERSION: Version = {
   version_number: 3,
   label: 'Master final',
   description: null,
+  change_category: null,
   content_type: 'audio/wav',
   size_bytes: 48211200,
   duration_ms: 213450,
