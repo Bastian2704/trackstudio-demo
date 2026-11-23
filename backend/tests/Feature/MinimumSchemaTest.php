@@ -478,6 +478,8 @@ it('crea versions con el contrato exacto aprobado', function () {
         ['column_name' => 'created_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
         ['column_name' => 'updated_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'NO', 'character_maximum_length' => null],
         ['column_name' => 'deleted_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
+        // TS-90: add_change_category_to_versions_table la añade al final.
+        ['column_name' => 'change_category', 'data_type' => 'character varying', 'is_nullable' => 'YES', 'character_maximum_length' => 20],
     ]);
 
     $uploadStatusDefault = DB::scalar(
@@ -507,14 +509,19 @@ it('protege relaciones, únicos, checks e índices de versions', function () {
     // `upload_status` también aparecen en el CHECK de evidencia.
     $check = fn (string $condicion): ?string => $checks->first(fn (string $definicion): bool => str_contains($definicion, $condicion));
 
-    expect($checks)->toHaveCount(6)
+    expect($checks)->toHaveCount(8)
         ->and($check('version_number > 0'))->toBeString()
         ->and($check('audio/mpeg'))->toBeString()->toContain('audio/wav')
         ->and($check('size_bytes <= 524288000'))->toBeString()->toContain('size_bytes > 0')
         ->and($check('duration_ms > 0'))->toBeString()
         ->and($check('fallida'))->toBeString()->toContain('pendiente')->toContain('verificada')
         ->and($check('etag IS NOT NULL'))->toBeString()
-        ->toContain('verified_at IS NOT NULL')->toContain('duration_ms IS NOT NULL');
+        ->toContain('verified_at IS NOT NULL')->toContain('duration_ms IS NOT NULL')
+        // TS-90: catálogo de categorías y «si hay categoría, hay texto».
+        ->and($check("'instrumentos'"))->toBeString()
+        ->toContain("'voz'")->toContain("'mezcla'")->toContain("'master'")->toContain("'arreglo'")->toContain("'otro'")
+        ->and($check('btrim(description)'))->toBeString()
+        ->toContain('change_category IS NULL')->toContain('description IS NOT NULL');
 
     $indices = collect(DB::select(
         <<<'SQL'
@@ -568,3 +575,35 @@ it('rechaza una versión verificada sin evidencia de integridad', function (stri
     'sin verified_at' => ['verified_at'],
     'sin duration_ms' => ['duration_ms'],
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| TS-90 — versions.change_category (modelo-completo.md §3.5)
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/TS-90.md §3.1 y §4 (#3–#4). SQL, sin clases nuevas.
+|
+*/
+
+it('rechaza una categoría sin texto del motivo', function (?string $description) {
+    // El caso nulo exige el IS NOT NULL explícito: length(btrim(NULL)) da NULL.
+    expect(fn () => DB::transaction(fn () => DB::table('versions')->insert(filaDeVersion([
+        'change_category' => 'mezcla',
+        'description' => $description,
+    ]))))->toThrow(QueryException::class, 'versions_change_reason_check');
+
+    expect(DB::table('versions')->count())->toBe(0);
+})->with([
+    'nulo' => [null],
+    'vacío' => [''],
+    'en blanco' => ['   '],
+]);
+
+it('rechaza una categoría fuera del catálogo', function () {
+    expect(fn () => DB::transaction(fn () => DB::table('versions')->insert(filaDeVersion([
+        'change_category' => 'mastering',
+        'description' => 'Subí el volumen.',
+    ]))))->toThrow(QueryException::class, 'check constraint');
+
+    expect(DB::table('versions')->count())->toBe(0);
+});

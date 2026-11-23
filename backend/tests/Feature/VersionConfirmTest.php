@@ -319,3 +319,27 @@ it('rechaza sin identidad o sin rol productor', function (?string $role, int $st
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
 ]);
+
+// TS-90 §4 (#11): el motivo no se edita después de la firma.
+it('no cambia el motivo al confirmar', function () {
+    test()->travelTo(CarbonImmutable::parse(INSTANTE_DE_FIRMA));
+    $version = Version::factory()->create([
+        'size_bytes' => 48211200,
+        'change_category' => 'mezcla',
+        'description' => 'Subí la voz en el estribillo.',
+    ]);
+    falsearVerificadorDeHash(['etag' => ETAG_DE_PRUEBA, 'size_bytes' => 48211200]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $this->postJson("/api/v1/versions/{$version->id}/confirm", datosDeConfirmacion([
+        'change_category' => 'otro',
+        'description' => 'cambiado',
+    ]))->assertOk()
+        ->assertJsonPath('data.change_category', 'mezcla')
+        ->assertJsonPath('data.description', 'Subí la voz en el estribillo.');
+
+    $version->refresh();
+
+    expect($version->getRawOriginal('change_category'))->toBe('mezcla')
+        ->and($version->description)->toBe('Subí la voz en el estribillo.');
+});
