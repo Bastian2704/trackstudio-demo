@@ -18,4 +18,13 @@ final class CommentPolicy
     {
         return $user->getAttribute('role') === Role::Productor;
     }
+
+    /**
+     * Listar los comentarios de $version (HU-18). Mismo criterio y misma
+     * firma que create: la parte B de HU-21 suma el artista en los dos.
+     */
+    public function viewAny(StatelessUserContract $user, Version $version): bool
+    {
+        return $user->getAttribute('role') === Role::Productor;
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Models\Version;
 use Auth0\Laravel\Users\StatelessUserContract;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 final class CommentService
@@ -33,5 +34,21 @@ final class CommentService
             'body' => $datos['body'],
             'timestamp_ms' => $datos['timestamp_ms'],
         ]);
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function listComments(Version $version): Collection
+    {
+        abort_unless($version->upload_status === UploadStatus::Verificada, 404);
+
+        // sin tope; con miles de comentarios por versión, paginar por cursor sobre (version_id, timestamp_ms).
+        return $version->comments()
+            ->with(['author.artist' => fn ($artista) => $artista->withTrashed()])
+            ->orderBy('timestamp_ms')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
     }
 }
