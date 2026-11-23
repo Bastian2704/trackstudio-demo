@@ -712,19 +712,20 @@ describe('VersionUpload — confirmación (HU-14)', () => {
     ])
   })
 
-  it.each([
-    ['label', 'La etiqueta no puede superar 100 caracteres.'],
-    ['description', 'La descripción no puede superar 1000 caracteres.'],
-  ])('muestra los errores de %s de la firma', async (clave, mensaje) => {
-    const s3 = simularS3()
-    simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { [clave]: [mensaje] } }))
-    const user = renderSubida()
+  // Enmendado por TS-90 §3.5: el 422 de `description` va a su campo (test 8 de TS-90).
+  it.each([['label', 'La etiqueta no puede superar 100 caracteres.']])(
+    'muestra los errores de %s de la firma',
+    async (clave, mensaje) => {
+      const s3 = simularS3()
+      simularApi(() => problema(422, 'VALIDATION_ERROR', { errors: { [clave]: [mensaje] } }))
+      const user = renderSubida()
 
-    await subir(user, wav())
+      await subir(user, wav())
 
-    await waitFor(() => expect(textoEnRol('alert', mensaje)).toBe(true))
-    expect(s3).toHaveLength(0)
-  })
+      await waitFor(() => expect(textoEnRol('alert', mensaje)).toBe(true))
+      expect(s3).toHaveLength(0)
+    },
+  )
 })
 
 /*

@@ -20,6 +20,7 @@ import { noticeFrom } from '@/lib/notice'
 import type { ApiErrorBody } from '@/lib/api'
 import VersionUpload from '@/routes/versions/VersionUpload'
 import VersionHistory from '@/routes/versions/VersionHistory'
+import { fetchVersions } from '@/routes/versions/versionApi'
 import SongForm from './SongForm'
 import { deleteSong, fetchSong, updateSong } from './songApi'
 import { SONG_DELETE_DESCRIPTION, type Song, type SongInput } from './songSchema'
@@ -40,6 +41,12 @@ export default function SongEditPage() {
   const query = useQuery<Song, AxiosError<ApiErrorBody>>({
     queryKey: ['songs', id],
     queryFn: () => fetchSong(id),
+  })
+
+  const versionsQuery = useQuery({
+    queryKey: ['versions', 'list', id, 1],
+    queryFn: () => fetchVersions(id, 1),
+    enabled: query.isSuccess,
   })
 
   const updateMutation = useMutation({
@@ -100,7 +107,7 @@ export default function SongEditPage() {
               onSubmit={(input) => updateMutation.mutateAsync(input)}
             />
           </section>
-          <VersionUpload songId={id} />
+          <VersionUpload songId={id} requiresReason={(versionsQuery.data?.meta.total ?? 0) > 0} />
           <VersionHistory songId={id} />
           <AlertDialog
             open={confirmOpen}
