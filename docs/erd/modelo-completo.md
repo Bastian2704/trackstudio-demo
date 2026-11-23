@@ -246,7 +246,7 @@ No hay `updated_at` (los comentarios no se editan, HU-19; en el modelo, `UPDATED
 | --- | --- | --- |
 | Sujeto `artist_id` | `user_id` (D6.5 original) | HU-20 otorga e invita en el mismo paso, cuando el artista puede no tener todavía una cuenta en Auth0. Con `user_id` haría falta un usuario ficticio o una FK nullable. |
 | Pivote con historial | Columna `is_shared` en `productions` | RNF-01 necesita un historial auditable de quién tuvo acceso y cuándo. |
-| Sin `revoked_by` | Registrar quién revoca | Hay un único productor (D8.1), que es quien otorga. Se puede añadir sin romper nada si aparece un segundo productor. Diferido por decisión del equipo del 2026-11-17; los cambios pendientes están en `docs/specs/backend/HU-20.md` §1, «Pendiente si se agregan varios productores». |
+| Sin `revoked_by` | Registrar quién revoca | Hay un único productor (D8.1), que es quien otorga. Se puede añadir sin romper nada si aparece un segundo productor. Diferido por decisión del equipo del 2026-11-17; fuera de alcance desde el 2026-11-23, cuando se descartó tener varios productores (`TS-96`). Los cambios, por si se reabre, están en `docs/specs/backend/HU-20.md` §1, «Pendiente si se agregan varios productores». |
 
 La regla del dueño se aplica en el Service y no con una FK compuesta `(production_id, artist_id) → productions(id, artist_id)`. Así, si en el futuro se admiten colaboraciones (featurings), basta con cambiar el Service, sin migración.
 

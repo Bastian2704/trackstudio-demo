@@ -127,7 +127,9 @@ Extiende `TS-85` (`GET /api/v1/dashboard`):
 - Tiempo de respuesta del artista (de «en revisión» a la decisión).
 - Versiones por producción y chequeos técnicos con advertencias.
 
-### 5.7 Varios productores
+### 5.7 Varios productores — DESCARTADO (2026-11-23)
+
+> **Decisión del equipo del 2026-11-23**, acordada con el productor de Millenium Sound: el estudio no necesita varios productores. `TS-96` y `TS-89` se descartan. No hay nada que revertir en el modelo; `created_by` y `uploaded_by` se quedan. El texto siguiente se conserva como referencia.
 
 - Los permisos ya son por rol (`perform-producer-action`), y `artists.created_by` y `versions.uploaded_by` ya guardan el autor. Varios productores comparten todo el estudio sin cambios de modelo.
 - **Trabajo:** el equipo crea otra cuenta con rol de productor en Auth0; la interfaz muestra «creado por» y «subido por».
@@ -157,12 +159,12 @@ Reparto equitativo entre los dos sprints restantes (decisión del equipo del 202
 
 | Sprint | Principal | Ampliación | Figma | SP |
 | --- | --- | --- | --- | --: |
-| S5 · 16–29 nov | HU-17..HU-21 (18) | Motivo (2), análisis y chequeo (5), flujo de revisión (3), autoría (1) | TS-88 (diseño), TS-73, TS-74 | 29 |
+| S5 · 16–29 nov | HU-17..HU-21 (18) | Motivo (2), análisis y chequeo (5), flujo de revisión (3), ~~autoría (1)~~ | TS-88 (diseño), TS-73, TS-74 | 28 |
 | S6 · 30 nov–11 dic | HU-22, HU-23, HU-27, HU-28 (11) y cierre de HU-24..HU-26 | A/B con curvas y decisión (8), correos (3), dashboard del proceso (5) | TS-75, TS-76 | 27 + 8 de cierre |
 
 Los 8 SP de HU-24..HU-26 se cierran en S6, pero su trabajo ya se hace en cada sprint con la reserva de 2 SP equivalentes; no son esfuerzo nuevo del S6. La semana del 7 al 11 de diciembre incluye HU-28, los diagramas de §5.8 y el ensayo de la defensa.
 
-**Estimaciones de la ampliación** (gruesas, a validar por el equipo): motivo 2, análisis y chequeo técnico 5, flujo de revisión 3, A/B con curvas y decisión 8, correos 3, dashboard del proceso 5 y autoría 1. Total: 27 SP sobre los 92 de la baseline (más los 3 de `TS-85`).
+**Estimaciones de la ampliación** (gruesas, a validar por el equipo): motivo 2, análisis y chequeo técnico 5, flujo de revisión 3, A/B con curvas y decisión 8, correos 3, dashboard del proceso 5 y autoría 1 (descartada el 2026-11-23). Total: 26 SP (27 antes del descarte) sobre los 92 de la baseline (más los 3 de `TS-85`).
 
 **Diseño previo en Figma:** las pantallas nuevas y las que se reforman se prototipan en Figma antes de su spec frontend (ver §11), todas durante S5: primero las que se construyen en S5 (historial y reproductor, motivo, chequeo, revisión) y después el A/B y el dashboard, que se construyen en S6.
 
@@ -174,16 +176,16 @@ Los 8 SP de HU-24..HU-26 se cierran en S6, pero su trabajo ya se hace en cada sp
 | --- | --- | --- | --: | --- |
 | `TS-87` | Task de `TS-1` | ERD y ADR de la ampliación (gate de datos) | — | S5, primeros días |
 | `TS-88` | Task de `TS-67` | Diseño en Figma de las pantallas nuevas y rediseñadas | — | S5 |
-| `TS-89` | Task de `TS-1` | Segunda cuenta de productor en Auth0 (equipo) | — | S5 |
+| `TS-89` | Task de `TS-1` | ~~Segunda cuenta de productor en Auth0 (equipo)~~ Descartada el 2026-11-23 | — | — |
 | `TS-90` | Story de `TS-6` | Motivo de la versión | 2 | S5 |
 | `TS-91` | Story de `TS-6` | Análisis técnico al subir | 5 | S5 |
 | `TS-92` | Story de `TS-6` | Flujo de revisión y aprobación | 3 | S5 |
 | `TS-93` | Story de `TS-6` | Comparación A/B con curvas y decisión | 8 | S6 |
 | `TS-94` | Story de `TS-6` | Correos del flujo de revisión | 3 | S6 |
 | `TS-95` | Story de `TS-4` | Dashboard del proceso | 5 | S6 |
-| `TS-96` | Story de `TS-2` | Varios productores: autoría visible | 1 | S5 |
+| `TS-96` | Story de `TS-2` | ~~Varios productores: autoría visible~~ Descartada el 2026-11-23 | ~~1~~ | — |
 
-Total de la ampliación: **27 SP**. HU-20 y HU-21 (`TS-31`, `TS-32`) pasan de S6 a S5, porque el flujo de revisión necesita que el artista pueda entrar. `TS-74` (UI de comentarios) entra en S5. `TS Sprint 6` se creó en Jira (id 74) con HU-22, HU-23, HU-27, HU-28, TS-93, TS-94, TS-95, TS-75 y TS-76. Los diagramas de §5.8 quedan comentados en `TS-39` (HU-28).
+Total de la ampliación: **26 SP** (27 antes de descartar `TS-96` el 2026-11-23). HU-20 y HU-21 (`TS-31`, `TS-32`) pasan de S6 a S5, porque el flujo de revisión necesita que el artista pueda entrar. `TS-74` (UI de comentarios) entra en S5. `TS Sprint 6` se creó en Jira (id 74) con HU-22, HU-23, HU-27, HU-28, TS-93, TS-94, TS-95, TS-75 y TS-76. Los diagramas de §5.8 quedan comentados en `TS-39` (HU-28).
 
 Decisión registrada en `roadmap.md` («Reglas de alcance»); vetos actualizados en `CLAUDE.md` §5; plan del sprint en `sprints/sprint-05.md`.
 
