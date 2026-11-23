@@ -901,6 +901,11 @@ describe('VersionUpload — motivo (TS-90)', () => {
     expect(descritoPor(grupo('¿Qué cambió?'))).not.toContain(FALTA_CATEGORIA)
     expect(grupo('¿Qué cambió?').getAttribute('aria-invalid')).not.toBe('true')
     expect(descritoPor(motivo())).toContain(FALTA_MOTIVO)
+
+    await user.type(motivo(), 'S')
+
+    expect(descritoPor(motivo())).not.toContain(FALTA_MOTIVO)
+    expect(motivo().getAttribute('aria-invalid')).not.toBe('true')
   })
 
   it('permite quitar la categoría en la primera versión', async () => {
