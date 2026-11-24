@@ -14,6 +14,7 @@ import {
   type RespuestaSimulada,
 } from '@/test/api'
 import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
+import { analisisGuardado, chequeo } from '@/test/analisis'
 import { contextoAuth0 } from '@/test/auth0'
 import { comentarioCreado, comentarioListado, listaDeComentarios } from '@/test/comentarios'
 
@@ -26,6 +27,8 @@ import { comentarioCreado, comentarioListado, listaDeComentarios } from '@/test/
  * TS-29 (HU-18) — ts-18.06, spec frontend HU-18 §4.1 tests 1 a 3 (barra,
  * listado y comentario nuevo sin recargar) y §4.2 (HU-17 #1-#4 y #15 con el
  * botón «Comentar en {marca}»).
+ * TS-91 — ts-amp-analisis.06, spec frontend TS-91 §4.5 test 28 (chequeo técnico
+ * en el reproductor, al final).
  *
  * Contrato de GET /api/v1/versions/{version}/playback-url: spec backend HU-16
  * §3.5 y §3.6. jsdom no carga audio: los eventos del <audio> se disparan a mano
@@ -60,6 +63,8 @@ const VERSION: Version = {
   verified_at: '2026-11-03T14:05:02+00:00',
   created_at: '2026-11-03T14:03:11+00:00',
   updated_at: '2026-11-03T14:05:02+00:00',
+  analysis: null,
+  technical_check: null,
 }
 const URL_REPRODUCCION = `/api/v1/versions/${VERSION.id}/playback-url`
 
@@ -76,14 +81,14 @@ function simularUrls() {
 }
 
 /** `retry` imita el del queryClient global (1) cuando un test lo necesita. */
-function renderReproductor(retry: number | false = false) {
+function renderReproductor(retry: number | false = false, version: Version = VERSION) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry }, mutations: { retry: false } },
   })
 
   const vista = render(
     <QueryClientProvider client={queryClient}>
-      <VersionPlayer version={VERSION} />
+      <VersionPlayer version={version} />
     </QueryClientProvider>,
   )
 
@@ -574,5 +579,31 @@ describe('VersionPlayer — comentarios (HU-17 y HU-18)', () => {
     renovado.currentTime = 100
     fireEvent.timeUpdate(renovado)
     expect(screen.getByRole('button', { name: 'Comentar en 1:40' })).toBeTruthy()
+  })
+})
+
+describe('VersionPlayer — chequeo técnico (TS-91)', () => {
+  it('muestra el chequeo técnico de la versión seleccionada', async () => {
+    simularUrls()
+    renderReproductor(false, {
+      ...VERSION,
+      change_category: 'master',
+      analysis: analisisGuardado(),
+      technical_check: chequeo({ integrated_lufs: 'warning', clipping: 'warning' }),
+    })
+    await audioConUrl(1)
+
+    const seccion = screen.getByRole('region', { name: 'Chequeo técnico' })
+    expect(seccion.textContent).toContain('2 advertencias')
+    expect(within(seccion).getAllByRole('listitem')).toHaveLength(4)
+  })
+
+  it('muestra «Sin análisis» en una versión sin análisis', async () => {
+    simularUrls()
+    renderReproductor()
+    await audioConUrl(1)
+
+    const seccion = screen.getByRole('region', { name: 'Chequeo técnico' })
+    expect(seccion.textContent).toContain('Sin análisis')
   })
 })

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# TS-91: juego de demo generado por scripts/audio-demo.sh
+demo-audio

@@ -152,6 +152,8 @@ export function firmaSimulada(intento: number, songId = '9d3d7b63-2a3c-4d4e-9f5a
         verified_at: null,
         created_at: '2026-10-20T14:03:11+00:00',
         updated_at: '2026-10-20T14:03:11+00:00',
+        analysis: null,
+        technical_check: null,
       },
       upload: {
         url: URL_DEL_BUCKET,
