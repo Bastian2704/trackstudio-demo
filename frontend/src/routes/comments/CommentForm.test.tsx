@@ -218,6 +218,9 @@ describe('CommentForm', () => {
 
     await user.click(abrir())
     expect(screen.queryByRole('status')).toBeNull()
+    // Con el formulario abierto el mensaje no se pinta nunca: solo al cancelar se ve si se borró.
+    await user.click(cancelar())
+    expect(screen.queryByRole('status')).toBeNull()
   })
 
   it.each<[string, RespuestaSimulada, { campo?: string; alerta?: string }]>([
@@ -369,6 +372,21 @@ describe('CommentForm', () => {
 
     await user.click(abrir())
     expect(campo().value).toBe('')
+  })
+
+  it('cancelar descarta también el error del guardado', async () => {
+    const user = userEvent.setup()
+    simularApi(() => problema(500, 'INTERNAL_ERROR'))
+    renderFormulario()
+
+    await user.click(abrir())
+    await user.type(campo(), 'Sube la voz')
+    await user.click(guardar())
+    await screen.findByRole('alert')
+
+    await user.click(cancelar())
+    await user.click(abrir())
+    expect(screen.queryByRole('alert')).toBeNull()
   })
 
   it('cuenta los caracteres', async () => {
