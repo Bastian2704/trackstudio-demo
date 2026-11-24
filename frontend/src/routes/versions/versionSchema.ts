@@ -73,7 +73,7 @@ export interface TechnicalCheckResult {
   }
 }
 
-export type NoAnalysisReason = 'duracion' | 'mp3' | 'formato' | 'error'
+export type NoAnalysisReason = 'duracion' | 'mp3' | 'formato' | 'error' | 'cancelado'
 
 export type AnalysisOutcome =
   { analysis: AnalysisPayload } | { analysis: null; reason: NoAnalysisReason }

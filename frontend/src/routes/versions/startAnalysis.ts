@@ -67,5 +67,5 @@ export function startAnalysis(
 
   run().catch(fail)
 
-  return { result, cancel: fail }
+  return { result, cancel: () => settle({ analysis: null, reason: 'cancelado' }) }
 }

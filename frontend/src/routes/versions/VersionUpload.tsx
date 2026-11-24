@@ -129,7 +129,8 @@ function errorMessage(error: unknown): string {
 }
 
 // Aviso cuando la versión se sube sin análisis
-const NO_ANALYSIS: Record<NoAnalysisReason, string> = {
+// 'cancelado' no tiene aviso: la versión no se sube
+const NO_ANALYSIS: Record<Exclude<NoAnalysisReason, 'cancelado'>, string> = {
   duracion: 'Esta versión se subirá sin análisis técnico: dura más de 20 minutos.',
   mp3: 'Esta versión se subirá sin análisis técnico: es un MP3 de más de 10 minutos.',
   formato: 'Esta versión se subirá sin análisis técnico: el formato del WAV no se puede analizar.',
@@ -212,7 +213,9 @@ export default function VersionUpload({
       setAnalyzing(true)
       void job.result.then((outcome) => {
         setAnalyzing(false)
-        if (outcome.analysis === null) setAnalysisNote(NO_ANALYSIS[outcome.reason])
+        if (outcome.analysis === null && outcome.reason !== 'cancelado') {
+          setAnalysisNote(NO_ANALYSIS[outcome.reason])
+        }
       })
 
       let data, etag
@@ -235,7 +238,10 @@ export default function VersionUpload({
 
       const outcome = await waitForAnalysis(job.result)
 
-      if (outcome === null) job.cancel()
+      if (outcome === null) {
+        job.cancel()
+        setAnalysisNote(NO_ANALYSIS.error)
+      }
 
       const analysis = outcome?.analysis ?? undefined
 
