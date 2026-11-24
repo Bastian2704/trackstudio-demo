@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Version;
+use App\Support\TechnicalCheck;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 /**
  * @property Version $resource
@@ -16,6 +18,8 @@ final class VersionResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
+        $analysis = $this->resource->analysis;
+
         return [
             'id' => $this->resource->id,
             'song_id' => $this->resource->song_id,
@@ -30,6 +34,12 @@ final class VersionResource extends JsonResource
             'verified_at' => $this->resource->verified_at?->toIso8601String(),
             'created_at' => $this->resource->created_at?->toIso8601String(),
             'updated_at' => $this->resource->updated_at?->toIso8601String(),
+            // Las series se guardan, pero solo las lee la comparación A/B.
+            'analysis' => $analysis === null ? null : Arr::except($analysis, 'series'),
+            'technical_check' => $analysis === null ? null : [
+                'checks' => TechnicalCheck::evaluate($this->resource),
+                'thresholds' => TechnicalCheck::THRESHOLDS,
+            ],
         ];
     }
 }
