@@ -85,9 +85,9 @@ describe('TechnicalCheck', () => {
     expect(silencios).toContain('1:01 – 1:04 · tramos de 2 s o más')
     expect(silencios).toContain('Advertencia')
 
-    expect(normalizar(seccion.textContent)).toContain(
-      'Advierte, no bloquea: el productor decide. Volumen y pico se juzgan solo en versiones «Master»; saturación y silencios, en todas.',
-    )
+    // Nota al pie retirada por decisión del equipo (spec §3.7, 2026-11-24).
+    expect(seccion.textContent).not.toContain('Advierte, no bloquea')
+    expect(seccion.textContent).not.toContain('se juzgan solo')
   })
 
   it('en una mezcla muestra volumen y pico sin juzgarlos (marco 12)', () => {

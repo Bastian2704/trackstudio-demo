@@ -106,63 +106,56 @@ export function TechnicalCheck({ version }: { version: Version }) {
     )
 
     body = (
-      <>
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Card
-            label="Volumen integrado"
-            state={checks.integrated_lufs}
-            value={
-              analysis.integrated_lufs === null ? '—' : `${formatDb(analysis.integrated_lufs)} LUFS`
-            }
-            reference={levelReference(
-              checks.integrated_lufs,
-              analysis.integrated_lufs,
-              `Referencia: ${formatDb(t.integrated_lufs_target)} ± ${ONE_DECIMAL.format(t.integrated_lufs_tolerance)} LUFS`,
-            )}
-          />
-          <Card
-            label="Pico real"
-            state={checks.true_peak}
-            value={
-              analysis.true_peak_dbtp === null ? '—' : `${formatDb(analysis.true_peak_dbtp)} dBTP`
-            }
-            reference={levelReference(
-              checks.true_peak,
-              analysis.true_peak_dbtp,
-              `Referencia: ≤ ${formatDb(t.true_peak_max_dbtp)} dBTP`,
-            )}
-          />
-          <Card
-            label="Saturación"
-            state={checks.clipping}
-            value={
-              analysis.clip_events === 0
-                ? 'Ninguna'
-                : plural(analysis.clip_events, 'evento', 'eventos')
-            }
-            reference={
-              t.clip_events_min === 1
-                ? 'Referencia: ninguno'
-                : `Referencia: menos de ${t.clip_events_min} eventos`
-            }
-          />
-          <Card
-            label="Silencios"
-            state={checks.silence}
-            value={listed.length === 0 ? 'Ninguno' : plural(listed.length, 'tramo', 'tramos')}
-            reference={
-              ranges.length === 0
-                ? `Tramos de ${minSilence}`
-                : `${ranges.join(' · ')} · tramos de ${minSilence}`
-            }
-          />
-        </ul>
-
-        <p className="text-xs text-muted-foreground">
-          Advierte, no bloquea: el productor decide. Volumen y pico se juzgan solo en versiones
-          «Master»; saturación y silencios, en todas.
-        </p>
-      </>
+      <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Card
+          label="Volumen integrado"
+          state={checks.integrated_lufs}
+          value={
+            analysis.integrated_lufs === null ? '—' : `${formatDb(analysis.integrated_lufs)} LUFS`
+          }
+          reference={levelReference(
+            checks.integrated_lufs,
+            analysis.integrated_lufs,
+            `Referencia: ${formatDb(t.integrated_lufs_target)} ± ${ONE_DECIMAL.format(t.integrated_lufs_tolerance)} LUFS`,
+          )}
+        />
+        <Card
+          label="Pico real"
+          state={checks.true_peak}
+          value={
+            analysis.true_peak_dbtp === null ? '—' : `${formatDb(analysis.true_peak_dbtp)} dBTP`
+          }
+          reference={levelReference(
+            checks.true_peak,
+            analysis.true_peak_dbtp,
+            `Referencia: ≤ ${formatDb(t.true_peak_max_dbtp)} dBTP`,
+          )}
+        />
+        <Card
+          label="Saturación"
+          state={checks.clipping}
+          value={
+            analysis.clip_events === 0
+              ? 'Ninguna'
+              : plural(analysis.clip_events, 'evento', 'eventos')
+          }
+          reference={
+            t.clip_events_min === 1
+              ? 'Referencia: ninguno'
+              : `Referencia: menos de ${t.clip_events_min} eventos`
+          }
+        />
+        <Card
+          label="Silencios"
+          state={checks.silence}
+          value={listed.length === 0 ? 'Ninguno' : plural(listed.length, 'tramo', 'tramos')}
+          reference={
+            ranges.length === 0
+              ? `Tramos de ${minSilence}`
+              : `${ranges.join(' · ')} · tramos de ${minSilence}`
+          }
+        />
+      </ul>
     )
   }
 
