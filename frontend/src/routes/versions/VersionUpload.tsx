@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import ErrorAlert from '@/components/ErrorAlert'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { ApiErrorBody } from '@/lib/api'
 
+import { startAnalysis } from './startAnalysis'
 import { confirmVersion, createVersion, S3UploadError, uploadToS3, VerifyError } from './versionApi'
 import {
+  ANALYSIS_GRACE_MS,
+  type AnalysisOutcome,
+  type NoAnalysisReason,
   CHANGE_CATEGORIES,
   detectContentType,
   hasAudioSignature,
@@ -124,6 +128,37 @@ function errorMessage(error: unknown): string {
   return 'No se pudo preparar la subida. Inténtalo de nuevo.'
 }
 
+// Aviso cuando la versión se sube sin análisis 
+const NO_ANALYSIS: Record<NoAnalysisReason, string> = {
+  duracion: 'Esta versión se subirá sin análisis técnico: dura más de 20 minutos.',
+  mp3: 'Esta versión se subirá sin análisis técnico: es un MP3 de más de 10 minutos.',
+  formato: 'Esta versión se subirá sin análisis técnico: el formato del WAV no se puede analizar.',
+  error: 'No se pudo analizar el audio; la versión se subirá sin análisis técnico.',
+}
+
+// 422 por el análisis: se repite la confirmación sin él
+function rejectsAnalysis(error: unknown): boolean {
+  const body = isAxiosError<ApiErrorBody>(error) ? error.response?.data : undefined
+
+  return (
+    body?.code === 'VALIDATION_ERROR' &&
+    Object.keys(body.errors ?? {}).some((key) => key === 'analysis' || key.startsWith('analysis.'))
+  )
+}
+
+async function waitForAnalysis(result: Promise<AnalysisOutcome>): Promise<AnalysisOutcome | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), ANALYSIS_GRACE_MS)
+  })
+
+  try {
+    return await Promise.race([result, timeout])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 interface UploadInput {
   file: File
   contentType: AudioContentType
@@ -151,7 +186,15 @@ export default function VersionUpload({
   const [fieldErrors, setFieldErrors] = useState<ReasonErrors>({})
   const [inputKey, setInputKey] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [phase, setPhase] = useState<'firmando' | 'subiendo' | 'verificando' | null>(null)
+  const [phase, setPhase] = useState<'firmando' | 'subiendo' | 'analizando' | 'verificando' | null>(
+    null,
+  )
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analysisNote, setAnalysisNote] = useState<string | null>(null)
+  const analysisJob = useRef<{ cancel(): void } | null>(null)
+
+  useEffect(() => () => analysisJob.current?.cancel(), [])
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<number | null>(null)
   const [validating, setValidating] = useState(false)
@@ -160,20 +203,49 @@ export default function VersionUpload({
     mutationFn: async (input: UploadInput) => {
       setPhase('firmando')
 
-      const { data, upload } = await createVersion(
-        songId,
-        input.contentType,
-        input.file.size,
-        input.extras,
+      // En paralelo el análisis no retrasa la firma ni la subida
+      const job = startAnalysis(input.file, input.contentType, input.durationMs, (percent) =>
+        setAnalysisProgress(Math.round(percent)),
       )
+      analysisJob.current = job
+      setAnalysisProgress(0)
+      setAnalyzing(true)
+      void job.result.then((outcome) => {
+        setAnalyzing(false)
+        if (outcome.analysis === null) setAnalysisNote(NO_ANALYSIS[outcome.reason])
+      })
 
-      setPhase('subiendo')
+      let data, etag
 
-      const etag = await uploadToS3(upload, input.file, setProgress)
+      try {
+        const signed = await createVersion(songId, input.contentType, input.file.size, input.extras)
+        data = signed.data
 
-      if (!etag) throw new VerifyError(null)
+        setPhase('subiendo')
+
+        etag = await uploadToS3(signed.upload, input.file, setProgress)
+
+        if (!etag) throw new VerifyError(null)
+      } catch (err) {
+        job.cancel()
+        throw err
+      }
+
+      setPhase('analizando')
+
+      const outcome = await waitForAnalysis(job.result)
+
+      if (outcome === null) job.cancel()
+
+      const analysis = outcome?.analysis ?? undefined
 
       setPhase('verificando')
+
+      try {
+        return await confirmVersion(data.id, etag, input.durationMs, analysis)
+      } catch (err) {
+        if (!analysis || !rejectsAnalysis(err)) throw new VerifyError(err)
+      }
 
       try {
         return await confirmVersion(data.id, etag, input.durationMs)
@@ -184,6 +256,7 @@ export default function VersionUpload({
 
     onSuccess: (version) => {
       setPhase(null)
+      setAnalysisNote(null)
       setDone(version.version_number)
       setFile(null)
       setLabel('')
@@ -216,6 +289,7 @@ export default function VersionUpload({
   const submit = async () => {
     setError(null)
     setDone(null)
+    setAnalysisNote(null)
 
     const missing: ReasonErrors = {
       ...(requiresReason && category === null && { change_category: MISSING_CATEGORY }),
@@ -309,6 +383,28 @@ export default function VersionUpload({
 
           <p className="text-sm">Subiendo… {progress} %</p>
         </div>
+      )}
+
+      {analyzing && (phase === 'firmando' || phase === 'subiendo' || phase === 'analizando') && (
+        <div className="space-y-1">
+          <progress
+            aria-label="Progreso del análisis"
+            max={100}
+            value={analysisProgress}
+            className="w-full"
+          />
+
+          <p className="text-sm">
+            {phase === 'analizando' ? 'Terminando el análisis…' : 'Analizando el audio…'}{' '}
+            {analysisProgress} %
+          </p>
+        </div>
+      )}
+
+      {analysisNote && (
+        <p role="status" className="text-sm text-muted-foreground">
+          {analysisNote}
+        </p>
       )}
 
       {phase === 'verificando' && (

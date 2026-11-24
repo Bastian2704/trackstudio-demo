@@ -20,11 +20,12 @@ class TrabajadorSimulado {
   onmessage: ((evento: MessageEvent) => void) | null = null
   onerror: ((evento: Event) => void) | null = null
   terminate = vi.fn()
+  url: string | URL
+  opciones?: WorkerOptions
 
-  constructor(
-    public url: string | URL,
-    public opciones?: WorkerOptions,
-  ) {
+  constructor(url: string | URL, opciones?: WorkerOptions) {
+    this.url = url
+    this.opciones = opciones
     TrabajadorSimulado.instancias.push(this)
   }
 

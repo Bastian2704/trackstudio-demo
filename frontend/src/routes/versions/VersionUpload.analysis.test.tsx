@@ -141,6 +141,16 @@ const textoEnRol = (rol: 'alert' | 'status', texto: string) =>
 
 const SIN_ANALISIS = { etag: ETAG_DE_S3, duration_ms: DURACION_MS }
 
+/*
+ * Con setTimeout falso no se puede usar waitFor ni findBy: Testing Library
+ * espera un setTimeout(0) al terminar cada uno y se quedaría colgado. Se avanza
+ * el reloj dentro de act y se vuelve a los temporizadores reales antes de esperar.
+ */
+const avanzar = (ms: number) =>
+  act(async () => {
+    await vi.advanceTimersByTimeAsync(ms)
+  })
+
 describe('VersionUpload — análisis técnico (TS-91)', () => {
   it('confirma con el análisis y lo lanza con el archivo, el tipo y la duración', async () => {
     analisisResuelto({ analysis: ANALISIS })
@@ -214,12 +224,14 @@ describe('VersionUpload — análisis técnico (TS-91)', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     s3[0].responder(204, '', { ETag: ETAG_DE_S3 })
 
-    await waitFor(() => expect(screen.getByText('Terminando el análisis… 40 %')).toBeTruthy())
-    await act(() => vi.advanceTimersByTimeAsync(ESPERA_MS - 1))
+    await avanzar(0)
+    expect(screen.getByText('Terminando el análisis… 40 %')).toBeTruthy()
+    await avanzar(ESPERA_MS - 1)
     expect(confirmaciones(peticiones)).toEqual([])
     expect(trabajo.cancel).not.toHaveBeenCalled()
 
-    await act(() => vi.advanceTimersByTimeAsync(1))
+    await avanzar(1)
+    vi.useRealTimers()
 
     await waitFor(() => expect(confirmaciones(peticiones)).toEqual([SIN_ANALISIS]))
     expect(trabajo.cancel).toHaveBeenCalled()
@@ -236,8 +248,9 @@ describe('VersionUpload — análisis técnico (TS-91)', () => {
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     s3[0].responder(204, '', { ETag: ETAG_DE_S3 })
-    await act(() => vi.advanceTimersByTimeAsync(5000))
+    await avanzar(5000)
     trabajo.resolver({ analysis: ANALISIS })
+    vi.useRealTimers()
 
     await waitFor(() =>
       expect(confirmaciones(peticiones)).toEqual([{ ...SIN_ANALISIS, analysis: ANALISIS }]),

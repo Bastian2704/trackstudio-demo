@@ -28,6 +28,8 @@ const VERSION: Version = {
   verified_at: '2026-11-03T14:05:02+00:00',
   created_at: '2026-11-03T14:03:11+00:00',
   updated_at: '2026-11-03T14:05:02+00:00',
+  analysis: null,
+  technical_check: null,
 }
 
 afterEach(() => {

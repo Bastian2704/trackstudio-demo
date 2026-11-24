@@ -1,5 +1,12 @@
 export const MAX_SIZE_BYTES = 524288000
 
+/** TS-91: 20 min = 1200 tramos de 1 s (spec backend TS-91 §3.2). */
+export const MAX_ANALYSIS_MS = 1_200_000
+/** TS-91: un MP3 se decodifica entero en memoria (spec frontend TS-91 §3.3). */
+export const MAX_MP3_ANALYSIS_MS = 600_000
+/** TS-91: espera máxima al análisis una vez que S3 respondió (spec frontend TS-91 §3.5). */
+export const ANALYSIS_GRACE_MS = 15_000
+
 export type AudioContentType = 'audio/wav' | 'audio/mpeg'
 
 export const CHANGE_CATEGORIES = [
@@ -31,6 +38,54 @@ export interface Version {
   verified_at: string | null
   created_at: string
   updated_at: string
+  analysis: VersionAnalysis | null
+  technical_check: TechnicalCheckResult | null
+}
+
+export type CheckState = 'ok' | 'warning' | 'not_applicable'
+
+export interface Silence {
+  start_ms: number
+  end_ms: number
+}
+
+export interface VersionAnalysis {
+  schema_version: 1
+  integrated_lufs: number | null
+  true_peak_dbtp: number | null
+  clipped_samples: number
+  clip_events: number
+  silences: Silence[]
+}
+
+export interface AnalysisPayload extends VersionAnalysis {
+  series: Record<'loudness' | 'low' | 'mid' | 'high', (number | null)[]>
+}
+
+export interface TechnicalCheckResult {
+  checks: Record<'integrated_lufs' | 'true_peak' | 'clipping' | 'silence', CheckState>
+  thresholds: {
+    integrated_lufs_target: number
+    integrated_lufs_tolerance: number
+    true_peak_max_dbtp: number
+    clip_events_min: number
+    silence_min_ms: number
+  }
+}
+
+export type NoAnalysisReason = 'duracion' | 'mp3' | 'formato' | 'error'
+
+export type AnalysisOutcome =
+  { analysis: AnalysisPayload } | { analysis: null; reason: NoAnalysisReason }
+
+const DB_FORMAT = new Intl.NumberFormat('es', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+  signDisplay: 'exceptZero',
+})
+
+export function formatDb(value: number): string {
+  return DB_FORMAT.format(value).replace('-', '−')
 }
 
 export interface VersionPage {
