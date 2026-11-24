@@ -190,10 +190,8 @@ export function createMeter(sampleRate: number, channelCount: number, clipLevel 
         run = 0
       }
 
-      if (taps === 0) {
-        if (abs > peak) peak = abs
-        continue
-      }
+      if (abs > peak) peak = abs
+      if (taps === 0) continue
 
       const newest = pos + TAPS
       history[pos] = v
