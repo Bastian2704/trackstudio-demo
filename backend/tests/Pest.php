@@ -407,7 +407,7 @@ function datosDeEdicionDeCancion(array $cambios = []): array
 
 /** Claves exactas de `VersionResource` (spec §3.7). */
 /** Ampliadas en HU-14 §3.8: label, description, duration_ms y verified_at. */
-const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'change_category', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
+const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'change_category', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at', 'analysis', 'technical_check'];
 
 /**
  * Cuerpo válido de la firma: un WAV de ~46 MB. El archivo no viaja (D7.1).
@@ -806,3 +806,43 @@ function urlDeComentarios(string $versionId): string
 
 /** Claves exactas de cada comentario del listado (spec §3.4): las de HU-17 más `author`. */
 const CAMPOS_DE_COMENTARIO_LISTADO = [...CAMPOS_DE_COMENTARIO, 'author'];
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de TS-91 (docs/specs/backend/TS-91.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Resumen válido del análisis técnico, con las cuatro series de longitud
+ * ceil($durationMs / 1000). Los valores globales disparan las cuatro
+ * advertencias de un master (TS-91 §3.4).
+ *
+ * @param  array<string, mixed>  $cambios  claves con puntos (`series.low`, `silences.0.end_ms`)
+ * @return array<string, mixed>
+ */
+function datosDeAnalisis(int $durationMs = 213450, array $cambios = []): array
+{
+    $tramos = (int) ceil($durationMs / 1000);
+
+    $analisis = [
+        'schema_version' => 1,
+        'integrated_lufs' => -9.8,
+        'true_peak_dbtp' => 0.4,
+        'clipped_samples' => 12,
+        'clip_events' => 2,
+        'silences' => [['start_ms' => 61000, 'end_ms' => 64500]],
+        'series' => [
+            'loudness' => array_fill(0, $tramos, -14.5),
+            'low' => array_fill(0, $tramos, -20.25),
+            'mid' => array_fill(0, $tramos, -18.5),
+            'high' => array_fill(0, $tramos, -26.75),
+        ],
+    ];
+
+    foreach ($cambios as $clave => $valor) {
+        data_set($analisis, $clave, $valor);
+    }
+
+    return $analisis;
+}
