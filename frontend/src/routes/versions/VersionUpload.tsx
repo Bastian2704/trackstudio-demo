@@ -128,7 +128,7 @@ function errorMessage(error: unknown): string {
   return 'No se pudo preparar la subida. Inténtalo de nuevo.'
 }
 
-// Aviso cuando la versión se sube sin análisis 
+// Aviso cuando la versión se sube sin análisis
 const NO_ANALYSIS: Record<NoAnalysisReason, string> = {
   duracion: 'Esta versión se subirá sin análisis técnico: dura más de 20 minutos.',
   mp3: 'Esta versión se subirá sin análisis técnico: es un MP3 de más de 10 minutos.',
