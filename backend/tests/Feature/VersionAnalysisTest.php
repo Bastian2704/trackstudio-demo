@@ -141,6 +141,9 @@ it('rechaza un análisis con forma inválida', function (mixed $analisis) {
     'clave desconocida en un silencio' => [fn () => datosDeAnalisis(cambios: ['silences.0.extra' => 1])],
     'sin series' => [fn () => Arr::except(datosDeAnalisis(), 'series')],
     'sin una serie' => [fn () => Arr::except(datosDeAnalisis(), 'series.high')],
+    // Sin la clave, TechnicalCheck fallaría al leer el historial (review C3, M23).
+    'sin integrated_lufs' => [fn () => Arr::except(datosDeAnalisis(), 'integrated_lufs')],
+    'sin true_peak_dbtp' => [fn () => Arr::except(datosDeAnalisis(), 'true_peak_dbtp')],
     'sin clip_events' => [fn () => Arr::except(datosDeAnalisis(), 'clip_events')],
     'sin silences' => [fn () => Arr::except(datosDeAnalisis(), 'silences')],
 ]);
