@@ -24,7 +24,7 @@ interface CommentFormProps {
   version: Version
   /** Posición actual del audio, en segundos (`HTMLMediaElement.currentTime`). */
   getCurrentTime: () => number
-  /** Posición para la etiqueta del botón, en ms redondeados al segundo (spec HU-18 §3.2). */
+  /** Posición para la etiqueta del botón, en ms redondeados al segundo. */
   positionMs: number
 }
 
@@ -37,7 +37,7 @@ export default function CommentForm({ version, getCurrentTime, positionMs }: Com
   const returnFocus = useRef(false)
   const queryClient = useQueryClient()
 
-  // Marca fijada al pulsar «Comentar en …»; null con el formulario cerrado (spec HU-18 §3.5).
+  // Marca fijada al pulsar «Comentar en …»; null con el formulario cerrado.
   const [mark, setMark] = useState<number | null>(null)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [generalError, setGeneralError] = useState<string | null>(null)
@@ -68,17 +68,19 @@ export default function CommentForm({ version, getCurrentTime, positionMs }: Com
     }
   }, [mark])
 
-  /** floor nunca redondea hacia arriba; el tope evita un 422 en el final exacto (HU-17 §3.4, regla 4). */
-  function currentMark(): number {
-    const ms = Math.floor(getCurrentTime() * 1000)
-
+  /** El tope evita un 422 en el final exacto. */
+  function capToDuration(ms: number): number {
     return version.duration_ms === null ? ms : Math.min(ms, version.duration_ms)
   }
 
+  /** floor nunca redondea hacia arriba. */
+  function currentMark(): number {
+    return capToDuration(Math.floor(getCurrentTime() * 1000))
+  }
+
+  // El texto y el error ya los vacía close(): toda salida del formulario pasa por ahí.
   function open() {
-    reset()
     setSavedAt(null)
-    setGeneralError(null)
     setMark(currentMark())
   }
 
@@ -115,15 +117,14 @@ export default function CommentForm({ version, getCurrentTime, positionMs }: Com
       return
     }
 
-    // Comentario nuevo sin recargar: la barra y el listado vuelven a pedirse (§3.5).
+    // Comentario nuevo sin recargar: la barra y el listado vuelven a pedirse.
     void queryClient.invalidateQueries({ queryKey: commentsQuery(version.id).queryKey })
     setSavedAt(mark)
     close()
   }
 
   if (mark === null) {
-    const labelMs =
-      version.duration_ms === null ? positionMs : Math.min(positionMs, version.duration_ms)
+    const labelMs = capToDuration(positionMs)
 
     return (
       <div className="space-y-2">
@@ -166,7 +167,6 @@ export default function CommentForm({ version, getCurrentTime, positionMs }: Com
       {errors.body && <p className="text-sm text-destructive">{errors.body.message}</p>}
 
       <div className="flex items-center justify-between gap-3">
-        {/* Puntos de código, como el esquema y mb_strlen del backend (HU-17 §3.2). */}
         <p id={counterId} className="text-xs text-muted-foreground">
           {[...body].length} / 2000
         </p>
