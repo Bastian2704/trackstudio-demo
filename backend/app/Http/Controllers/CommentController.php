@@ -10,10 +10,16 @@ use App\Models\Version;
 use App\Services\CommentService;
 use Auth0\Laravel\Users\StatelessUserContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class CommentController extends Controller
 {
     public function __construct(private CommentService $comments) {}
+
+    public function index(Version $version): AnonymousResourceCollection
+    {
+        return CommentResource::collection($this->comments->listComments($version));
+    }
 
     public function store(StoreCommentRequest $request, Version $version): JsonResponse
     {

@@ -12,6 +12,7 @@ use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Song;
 use App\Models\User;
+use App\Models\Version;
 use Auth0\Laravel\Entities\CredentialEntity;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
@@ -773,3 +774,35 @@ function datosDeComentario(array $cambios = []): array
         'timestamp_ms' => 83500,
     ], $cambios);
 }
+
+const INSTANTE_DEL_COMENTARIO = '2026-11-17 15:20:00';
+const DURACION_PARA_COMENTAR = 213450;
+
+/**
+ * Versión verificada de duración conocida, con el reloj fijo en
+ * INSTANTE_DEL_COMENTARIO. La usan HU-17 (crear) y HU-18 (listar).
+ *
+ * @param  array<string, mixed>  $atributos
+ */
+function versionParaComentar(array $atributos = []): Version
+{
+    test()->travelTo(CarbonImmutable::parse(INSTANTE_DEL_COMENTARIO));
+
+    return Version::factory()->verificada()->create(array_merge([
+        'duration_ms' => DURACION_PARA_COMENTAR,
+    ], $atributos));
+}
+
+function urlDeComentarios(string $versionId): string
+{
+    return "/api/v1/versions/{$versionId}/comments";
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-18 (docs/specs/backend/HU-18.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de cada comentario del listado (spec §3.4): las de HU-17 más `author`. */
+const CAMPOS_DE_COMENTARIO_LISTADO = [...CAMPOS_DE_COMENTARIO, 'author'];
