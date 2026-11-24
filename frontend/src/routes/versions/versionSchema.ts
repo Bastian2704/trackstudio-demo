@@ -2,12 +2,28 @@ export const MAX_SIZE_BYTES = 524288000
 
 export type AudioContentType = 'audio/wav' | 'audio/mpeg'
 
+export const CHANGE_CATEGORIES = [
+  { value: 'voz', label: 'Voz' },
+  { value: 'instrumentos', label: 'Instrumentos' },
+  { value: 'mezcla', label: 'Mezcla' },
+  { value: 'master', label: 'Master' },
+  { value: 'arreglo', label: 'Arreglo' },
+  { value: 'otro', label: 'Otro' },
+] as const
+
+export type ChangeCategory = (typeof CHANGE_CATEGORIES)[number]['value']
+
+export function changeCategoryLabel(category: ChangeCategory): string {
+  return CHANGE_CATEGORIES.find((c) => c.value === category)?.label ?? category
+}
+
 export interface Version {
   id: string
   song_id: string
   version_number: number
   label: string | null
   description: string | null
+  change_category: ChangeCategory | null
   content_type: AudioContentType
   size_bytes: number
   duration_ms: number | null

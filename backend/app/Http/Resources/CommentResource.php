@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Enums\Role;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -21,6 +22,10 @@ final class CommentResource extends JsonResource
             'body' => $this->resource->body,
             'timestamp_ms' => $this->resource->timestamp_ms,
             'created_at' => $this->resource->created_at?->toIso8601String(),
+            'author' => $this->whenLoaded('author', fn (): array => [
+                'role' => $this->resource->author->artist === null ? Role::Productor->value : Role::Artista->value,
+                'name' => $this->resource->author->artist?->name,
+            ]),
         ];
     }
 }

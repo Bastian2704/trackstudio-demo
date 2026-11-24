@@ -1,6 +1,8 @@
+import { queryOptions } from '@tanstack/react-query'
+
 import { api } from '@/lib/api'
 
-import type { Comment } from './commentSchema'
+import type { Comment, ListedComment } from './commentSchema'
 
 export async function createComment(
   versionId: string,
@@ -9,4 +11,19 @@ export async function createComment(
   const res = await api.post<{ data: Comment }>(`/api/v1/versions/${versionId}/comments`, input)
 
   return res.data.data
+}
+
+/**
+ * Listado de una versión (spec backend HU-18 §3.4). La barra y la lista usan
+ * la misma clave: TanStack hace una sola petición para las dos.
+ */
+export function commentsQuery(versionId: string) {
+  return queryOptions({
+    queryKey: ['comments', 'list', versionId],
+    queryFn: async () => {
+      const res = await api.get<{ data: ListedComment[] }>(`/api/v1/versions/${versionId}/comments`)
+
+      return res.data.data
+    },
+  })
 }

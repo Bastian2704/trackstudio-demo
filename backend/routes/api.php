@@ -187,6 +187,13 @@ Route::get('/versions/{version}/playback-url', [VersionController::class, 'playb
         'can:play,version',
     ]);
 
+Route::get('/versions/{version}/comments', [CommentController::class, 'index'])
+    ->whereUuid('version')
+    ->middleware([
+        'auth:auth0-api',
+        'can:viewAny,'.Comment::class.',version',
+    ]);
+
 Route::post('/versions/{version}/comments', [CommentController::class, 'store'])
     ->whereUuid('version')
     ->middleware([

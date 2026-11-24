@@ -132,3 +132,24 @@ it('rechaza sin identidad o sin rol productor', function (?string $role, int $st
     'rol artista' => ['artista', 403, 'FORBIDDEN'],
     'rol desconocido' => ['desconocido', 403, 'FORBIDDEN'],
 ]);
+
+// TS-90 §4 (#13): el historial muestra el motivo.
+it('devuelve la categoría del cambio en el historial', function () {
+    $song = Song::factory()->create();
+    Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
+    Version::factory()->for($song)->verificada()->create([
+        'version_number' => 2,
+        'change_category' => 'master',
+        'description' => 'Master para streaming.',
+    ]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->getJson("/api/v1/songs/{$song->id}/versions")
+        ->assertOk()
+        ->assertJsonStructure(['data' => [['change_category']]])
+        ->assertJsonPath('data.0.change_category', 'master')
+        ->assertJsonPath('data.0.description', 'Master para streaming.')
+        ->assertJsonPath('data.1.change_category', null);
+
+    expect(array_keys($response->json('data.0')))->toEqualCanonicalizing(CAMPOS_DE_VERSION);
+});

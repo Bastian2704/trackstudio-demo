@@ -532,3 +532,36 @@ describe('SongEditPage — historial de versiones (HU-14)', () => {
     expect(peticiones.filter((p) => p.url.endsWith('/versions'))).toHaveLength(0)
   })
 })
+
+/*
+ * TS-90 — ts-amp-motivo.06, spec frontend TS-90 §4 test 3 (§3.2). SongEditPage
+ * decide si el motivo es obligatorio con la misma consulta que el historial.
+ */
+describe('SongEditPage — motivo de la versión (TS-90)', () => {
+  it.each([
+    ['con una versión verificada', 'verificada', '¿Qué cambió?'],
+    ['sin versiones verificadas', 'vacío', 'Categoría (opcional)'],
+    ['si el historial no carga', 'error', 'Categoría (opcional)'],
+  ] as const)(
+    'decide el modo del motivo con el historial (%s)',
+    async (_caso, historial, leyenda) => {
+      const peticiones = simularApi((peticion) => {
+        if (peticion.method === 'GET' && peticion.url === `${URL_CANCION}/versions`) {
+          if (historial === 'error') return { status: 500 }
+          return pagina(
+            historial === 'verificada' ? [confirmacionSimulada(1, {}, ID).data.data] : [],
+          )
+        }
+        return conPrecarga(() => ({ status: 500 }))(peticion)
+      })
+      renderEdicion()
+
+      await esperarPrecarga()
+      expect(await screen.findByRole('radiogroup', { name: leyenda })).toBeTruthy()
+      // La consulta se comparte con el historial: un solo GET (§3.2).
+      expect(
+        peticiones.filter((p) => p.method === 'GET' && p.url === `${URL_CANCION}/versions`),
+      ).toHaveLength(1)
+    },
+  )
+})

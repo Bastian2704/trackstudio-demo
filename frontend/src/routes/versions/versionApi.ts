@@ -1,6 +1,7 @@
 import { api } from '@/lib/api'
 import type {
   AudioContentType,
+  ChangeCategory,
   SignedUpload,
   Version,
   VersionPage,
@@ -11,7 +12,7 @@ export async function createVersion(
   songId: string,
   contentType: AudioContentType,
   sizeBytes: number,
-  extras: { label?: string; description?: string } = {},
+  extras: { label?: string; description?: string; change_category?: ChangeCategory } = {},
 ) {
   const res = await api.post<{ data: Version; upload: SignedUpload }>(
     `/api/v1/songs/${songId}/versions`,

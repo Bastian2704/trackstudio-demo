@@ -12,6 +12,7 @@ use App\Models\Artist;
 use App\Models\Production;
 use App\Models\Song;
 use App\Models\User;
+use App\Models\Version;
 use Auth0\Laravel\Entities\CredentialEntity;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
@@ -406,7 +407,7 @@ function datosDeEdicionDeCancion(array $cambios = []): array
 
 /** Claves exactas de `VersionResource` (spec §3.7). */
 /** Ampliadas en HU-14 §3.8: label, description, duration_ms y verified_at. */
-const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
+const CAMPOS_DE_VERSION = ['id', 'song_id', 'version_number', 'label', 'description', 'change_category', 'content_type', 'size_bytes', 'duration_ms', 'upload_status', 'verified_at', 'created_at', 'updated_at'];
 
 /**
  * Cuerpo válido de la firma: un WAV de ~46 MB. El archivo no viaja (D7.1).
@@ -420,6 +421,19 @@ function datosDeVersion(array $cambios = []): array
         'content_type' => 'audio/wav',
         'size_bytes' => 48211200,
     ], $cambios);
+}
+
+/**
+ * Motivo válido de una versión nueva (TS-90 §4): categoría y texto.
+ *
+ * @return array{change_category: string, description: string}
+ */
+function datosDeMotivo(): array
+{
+    return [
+        'change_category' => 'mezcla',
+        'description' => 'Subí la voz en el estribillo.',
+    ];
 }
 
 /**
@@ -760,3 +774,35 @@ function datosDeComentario(array $cambios = []): array
         'timestamp_ms' => 83500,
     ], $cambios);
 }
+
+const INSTANTE_DEL_COMENTARIO = '2026-11-17 15:20:00';
+const DURACION_PARA_COMENTAR = 213450;
+
+/**
+ * Versión verificada de duración conocida, con el reloj fijo en
+ * INSTANTE_DEL_COMENTARIO. La usan HU-17 (crear) y HU-18 (listar).
+ *
+ * @param  array<string, mixed>  $atributos
+ */
+function versionParaComentar(array $atributos = []): Version
+{
+    test()->travelTo(CarbonImmutable::parse(INSTANTE_DEL_COMENTARIO));
+
+    return Version::factory()->verificada()->create(array_merge([
+        'duration_ms' => DURACION_PARA_COMENTAR,
+    ], $atributos));
+}
+
+function urlDeComentarios(string $versionId): string
+{
+    return "/api/v1/versions/{$versionId}/comments";
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-18 (docs/specs/backend/HU-18.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/** Claves exactas de cada comentario del listado (spec §3.4): las de HU-17 más `author`. */
+const CAMPOS_DE_COMENTARIO_LISTADO = [...CAMPOS_DE_COMENTARIO, 'author'];

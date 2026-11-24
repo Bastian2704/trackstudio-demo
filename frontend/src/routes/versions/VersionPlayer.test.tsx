@@ -1,15 +1,21 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
 
 import VersionPlayer from '@/routes/versions/VersionPlayer'
 import type { Version } from '@/routes/versions/versionSchema'
-import { problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import {
+  problema,
+  restaurarApi,
+  simularApi,
+  type PeticionRegistrada,
+  type RespuestaSimulada,
+} from '@/test/api'
 import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
 import { contextoAuth0 } from '@/test/auth0'
-import { comentarioCreado } from '@/test/comentarios'
+import { comentarioCreado, comentarioListado, listaDeComentarios } from '@/test/comentarios'
 
 /*
  * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 5 a 12, 14 (review C3)
@@ -17,6 +23,9 @@ import { comentarioCreado } from '@/test/comentarios'
  * TS-28 (HU-17) — ts-17.06, spec frontend HU-17 §4 tests 1 a 4 (formulario de
  * comentario dentro del reproductor) y test 15 (review del PR #68: marca
  * durante la renovación de la URL).
+ * TS-29 (HU-18) — ts-18.06, spec frontend HU-18 §4.1 tests 1 a 3 (barra,
+ * listado y comentario nuevo sin recargar) y §4.2 (HU-17 #1-#4 y #15 con el
+ * botón «Comentar en {marca}»).
  *
  * Contrato de GET /api/v1/versions/{version}/playback-url: spec backend HU-16
  * §3.5 y §3.6. jsdom no carga audio: los eventos del <audio> se disparan a mano
@@ -43,6 +52,7 @@ const VERSION: Version = {
   version_number: 3,
   label: 'Master final',
   description: null,
+  change_category: null,
   content_type: 'audio/wav',
   size_bytes: 48211200,
   duration_ms: 213450,
@@ -302,10 +312,18 @@ describe('VersionPlayer', () => {
   })
 })
 
-describe('VersionPlayer — comentar (HU-17)', () => {
+describe('VersionPlayer — comentarios (HU-17 y HU-18)', () => {
   const URL_COMENTARIOS = `/api/v1/versions/${VERSION.id}/comments`
-  const formulario = () => screen.queryByRole('form', { name: 'Nuevo comentario' })
-  const campo = () => screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Comentario' })
+  const abrir = () => screen.getByRole('button', { name: /^Comentar en / })
+  const botonComentar = () => screen.queryByRole('button', { name: /^Comentar en / })
+  const campo = () =>
+    screen.getByRole<HTMLTextAreaElement>('textbox', { name: /^Nuevo comentario en / })
+  const campoEn = (marca: string) =>
+    screen.getByRole<HTMLTextAreaElement>('textbox', { name: `Nuevo comentario en ${marca}` })
+  const guardar = () => screen.getByRole('button', { name: 'Guardar comentario' })
+  const listado = () => screen.queryByRole('region', { name: 'Comentarios' })
+  const barra = () => screen.queryByTestId('comment-timeline')
+  const marcadores = () => screen.queryAllByTestId('comment-marker')
 
   function comoRol(roles: string[] | null) {
     vi.mocked(useAuth0).mockReturnValue(
@@ -318,12 +336,27 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     vi.mocked(useAuth0).mockImplementation(() => contextoAuth0({}))
   })
 
-  /** URL firmada n (1, 2…) para cada GET y 201 para cada comentario. */
-  function simularReproduccionYComentarios() {
+  /**
+   * URL firmada n (1, 2…) para cada GET de reproducción, 201 para cada
+   * comentario y `comentarios()` para cada GET del listado.
+   */
+  function simularReproduccionYComentarios(comentarios: () => unknown[] = () => []) {
     let n = 0
-    return simularApi((peticion) =>
-      peticion.method === 'POST' ? comentarioCreado(peticion) : reproduccionSimulada(++n),
-    )
+    return simularApi((peticion) => {
+      if (peticion.method === 'POST') return comentarioCreado(peticion)
+      if (peticion.url === URL_COMENTARIOS) return listaDeComentarios(comentarios())
+      return reproduccionSimulada(++n)
+    })
+  }
+
+  const listados = (peticiones: PeticionRegistrada[]) =>
+    peticiones.filter((p) => p.method === 'GET' && p.url === URL_COMENTARIOS)
+
+  /** Deja pasar las peticiones que el montaje haya lanzado. */
+  async function asentar() {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
   }
 
   it('el productor comenta en la posición del audio', async () => {
@@ -336,14 +369,13 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     const elemento = await audioConUrl(1)
     fireEvent.loadedMetadata(elemento)
     elemento.currentTime = 83.5
+    fireEvent.timeUpdate(elemento)
 
-    expect(formulario()).not.toBeNull()
-    await user.type(campo(), 'Sube la voz')
-    expect(screen.getByText('Marca: 1:23')).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Comentar en 1:23' }))
+    await user.type(campoEn('1:23'), 'Sube la voz')
+    await user.click(guardar())
 
-    await user.click(screen.getByRole('button', { name: 'Comentar' }))
-
-    expect((await screen.findByRole('status')).textContent).toBe('Comentario guardado en 1:23.')
+    expect(await screen.findByText('Comentario guardado en 1:23.')).toBeTruthy()
     const comentarios = peticiones.filter((p) => p.method === 'POST')
     expect(comentarios).toEqual([
       {
@@ -357,22 +389,26 @@ describe('VersionPlayer — comentar (HU-17)', () => {
   it.each([
     ['artista', ['artista']],
     ['sin rol', null],
-  ])('solo el productor ve el formulario (%s)', async (_caso, roles) => {
+  ])('solo el productor comenta y ve los comentarios (%s)', async (_caso, roles) => {
     comoRol(roles)
     simularReproduccion()
-    simularReproduccionYComentarios()
+    const peticiones = simularReproduccionYComentarios()
     renderReproductor()
 
     fireEvent.loadedMetadata(await audioConUrl(1))
+    await asentar()
 
-    expect(formulario()).toBeNull()
+    expect(botonComentar()).toBeNull()
+    expect(listado()).toBeNull()
+    expect(barra()).toBeNull()
+    expect(listados(peticiones)).toHaveLength(0)
   })
 
-  it('sin audio no hay formulario', async () => {
+  it('sin audio no hay comentarios', async () => {
     comoRol(['productor'])
     simularReproduccion()
     let responder: (respuesta: RespuestaSimulada) => void = () => {}
-    simularApi(
+    const peticiones = simularApi(
       () =>
         new Promise<RespuestaSimulada>((resolve) => {
           responder = resolve
@@ -381,7 +417,10 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     renderReproductor()
 
     await screen.findByText('Cargando audio…')
-    expect(formulario()).toBeNull()
+    await asentar()
+    expect(botonComentar()).toBeNull()
+    expect(listado()).toBeNull()
+    expect(barra()).toBeNull()
 
     responder(problema(404, 'RESOURCE_NOT_FOUND'))
 
@@ -390,7 +429,11 @@ describe('VersionPlayer — comentar (HU-17)', () => {
         'Esta versión ya no está disponible.',
       ),
     )
-    expect(formulario()).toBeNull()
+    await asentar()
+    expect(botonComentar()).toBeNull()
+    expect(listado()).toBeNull()
+    expect(barra()).toBeNull()
+    expect(listados(peticiones)).toHaveLength(0)
   })
 
   it('conserva lo escrito al renovar la URL', async () => {
@@ -402,7 +445,8 @@ describe('VersionPlayer — comentar (HU-17)', () => {
 
     const elemento = await audioConUrl(1)
     fireEvent.loadedMetadata(elemento)
-    elemento.currentTime = 10
+    elemento.currentTime = 83.5
+    await user.click(abrir())
     await user.type(campo(), 'Sube la voz')
 
     fireEvent.error(elemento)
@@ -410,11 +454,10 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     cargarMetadatos(renovado)
 
     expect(renovado).not.toBe(elemento)
-    expect(campo().value).toBe('Sube la voz')
-    expect(screen.getByText('Marca: 0:10')).toBeTruthy()
+    expect(campoEn('1:23').value).toBe('Sube la voz')
   })
 
-  it('toma la posición guardada si se escribe durante la renovación', async () => {
+  it('toma la posición guardada si se pulsa durante la renovación', async () => {
     const user = userEvent.setup()
     comoRol(['productor'])
     simularReproduccion()
@@ -430,20 +473,106 @@ describe('VersionPlayer — comentar (HU-17)', () => {
     expect(renovado.currentTime).toBe(0)
 
     // Antes de loadedMetadata: el <audio> nuevo aún no tiene la posición.
-    await user.type(campo(), 'Sube la voz')
-    expect(screen.getByText('Marca: 1:23')).toBeTruthy()
+    await user.click(abrir())
+    await user.type(campoEn('1:23'), 'Sube la voz')
 
     cargarMetadatos(renovado)
-    await user.click(screen.getByRole('button', { name: 'Comentar' }))
-    expect((await screen.findByRole('status')).textContent).toBe('Comentario guardado en 1:23.')
+    await user.click(guardar())
+    expect(await screen.findByText('Comentario guardado en 1:23.')).toBeTruthy()
 
     // Ya cargado, la posición vuelve a ser la del <audio>.
     renovado.currentTime = 100
-    await user.type(campo(), 'Otra')
-    expect(screen.getByText('Marca: 1:40')).toBeTruthy()
+    await user.click(abrir())
+    expect(campoEn('1:40')).toBeTruthy()
 
     expect(peticiones.filter((p) => p.method === 'POST').map((p) => p.body)).toEqual([
       { body: 'Sube la voz', timestamp_ms: 83500 },
     ])
+  })
+
+  it('el productor ve los comentarios y sus marcadores', async () => {
+    comoRol(['productor'])
+    simularReproduccion()
+    const peticiones = simularReproduccionYComentarios(() => [
+      comentarioListado({ timestamp_ms: 27000, body: 'Entra la batería muy fuerte.' }),
+      comentarioListado({ timestamp_ms: 82000, body: 'Sube la voz en el coro.' }),
+      comentarioListado({ timestamp_ms: 158000, body: 'El final se corta de golpe.' }),
+    ])
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+
+    await screen.findByText('El final se corta de golpe.')
+    expect(within(listado() as HTMLElement).getAllByRole('listitem')).toHaveLength(3)
+    expect(marcadores()).toHaveLength(3)
+    expect(listados(peticiones)).toEqual([{ method: 'GET', url: URL_COMENTARIOS, body: undefined }])
+
+    fireEvent.error(elemento)
+    cargarMetadatos(await audioConUrl(2))
+    await asentar()
+
+    expect(listados(peticiones)).toHaveLength(1)
+    expect(marcadores()).toHaveLength(3)
+  })
+
+  it('el comentario nuevo aparece sin recargar', async () => {
+    const user = userEvent.setup()
+    comoRol(['productor'])
+    simularReproduccion()
+    const guardados: unknown[] = []
+    let n = 0
+    const peticiones = simularApi((peticion) => {
+      if (peticion.method === 'POST') {
+        const enviado = peticion.body as { body: string; timestamp_ms: number }
+        guardados.push(comentarioListado(enviado))
+        return comentarioCreado(peticion)
+      }
+      if (peticion.url === URL_COMENTARIOS) return listaDeComentarios([...guardados])
+      return reproduccionSimulada(++n)
+    })
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+    elemento.currentTime = 83.5
+
+    await screen.findByText('Aún no hay comentarios en esta versión.')
+    expect(marcadores()).toHaveLength(0)
+
+    await user.click(abrir())
+    await user.type(campo(), 'Sube la voz')
+    await user.click(guardar())
+
+    expect(await within(listado() as HTMLElement).findByText('Sube la voz')).toBeTruthy()
+    expect(marcadores()).toHaveLength(1)
+    expect(listados(peticiones)).toHaveLength(2)
+  })
+
+  it('el botón sigue la reproducción', async () => {
+    comoRol(['productor'])
+    simularReproduccion()
+    simularReproduccionYComentarios()
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+    expect(screen.getByRole('button', { name: 'Comentar en 0:00' })).toBeTruthy()
+
+    elemento.currentTime = 83.5
+    fireEvent.timeUpdate(elemento)
+    expect(screen.getByRole('button', { name: 'Comentar en 1:23' })).toBeTruthy()
+
+    fireEvent.error(elemento)
+    const renovado = await audioConUrl(2)
+
+    // El <audio> nuevo empieza en 0 hasta loadedMetadata: la etiqueta no salta.
+    fireEvent.timeUpdate(renovado)
+    expect(screen.getByRole('button', { name: 'Comentar en 1:23' })).toBeTruthy()
+
+    cargarMetadatos(renovado)
+    renovado.currentTime = 100
+    fireEvent.timeUpdate(renovado)
+    expect(screen.getByRole('button', { name: 'Comentar en 1:40' })).toBeTruthy()
   })
 })

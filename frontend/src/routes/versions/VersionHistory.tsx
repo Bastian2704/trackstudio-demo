@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { formatDateTime } from '@/lib/dates'
 
 import { fetchVersions } from './versionApi'
-import { type Version, versionTitle } from './versionSchema'
+import { changeCategoryLabel, type Version, versionTitle } from './versionSchema'
 import VersionPlayer from './VersionPlayer'
 
 export default function VersionHistory({ songId }: { songId: string }) {
@@ -34,7 +34,14 @@ export default function VersionHistory({ songId }: { songId: string }) {
         <ol className="space-y-3">
           {data.map((v) => (
             <li key={v.id} className="border-b pb-3">
-              <p className="font-medium">{versionTitle(v)}</p>
+              <p className="font-medium">
+                {versionTitle(v)}
+                {v.change_category && (
+                  <span className="ml-2 rounded bg-accent px-2 py-0.5 align-middle text-[11px] font-semibold text-accent-foreground">
+                    {changeCategoryLabel(v.change_category)}
+                  </span>
+                )}
+              </p>
               {v.verified_at && (
                 <time dateTime={v.verified_at} className="text-sm text-muted-foreground">
                   {formatDateTime(v.verified_at)}
