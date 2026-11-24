@@ -83,11 +83,12 @@ describe('createMeter — volumen y pico', () => {
   })
 
   it('mide el pico real de una señal negativa', () => {
-    // Un impulso de −0,5: el FIR da −0,5 × 0,972 (−6,2 dBTP), solo en negativo.
+    // Un impulso de −0,5: el FIR solo llega a −0,5 × 0,972 (unos −6,3 dBTP), pero
+    // el pico de muestra entra en el máximo , como en ffmpeg: −6,0 dBTP.
     const s = silencio(1)
     s[1000] = -0.5
 
-    cerca(medir([s, s]).true_peak_dbtp, -6.2, 0.1)
+    cerca(medir([s, s]).true_peak_dbtp, -6.0, 0.1)
   })
 })
 
