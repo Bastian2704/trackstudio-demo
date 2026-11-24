@@ -181,6 +181,6 @@ describe('startAnalysis', () => {
     job.cancel()
 
     expect(trabajador().terminate).toHaveBeenCalled()
-    await expect(job.result).resolves.toEqual({ analysis: null, reason: 'error' })
+    await expect(job.result).resolves.toEqual({ analysis: null, reason: 'cancelado' })
   })
 })

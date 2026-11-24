@@ -67,7 +67,7 @@ function analisisPendiente() {
   const result = new Promise<AnalysisOutcome>((r) => {
     resolver = r
   })
-  const cancel = vi.fn(() => resolver({ analysis: null, reason: 'error' }))
+  const cancel = vi.fn(() => resolver({ analysis: null, reason: 'cancelado' }))
   analizar.mockReturnValue({ result, cancel })
   return {
     cancel,
@@ -237,6 +237,31 @@ describe('VersionUpload — análisis técnico (TS-91)', () => {
     expect(trabajo.cancel).toHaveBeenCalled()
   })
 
+  it('tras el tope de espera muestra el aviso de que se sube sin análisis', async () => {
+    // La confirmación falla para que el aviso siga en pantalla (el éxito lo limpia).
+    const trabajo = analisisPendiente()
+    const s3 = simularS3()
+    simularApi(firmando(() => ({ status: 500 })))
+    const { user } = renderSubida()
+
+    await subir(user)
+    await waitFor(() => expect(s3).toHaveLength(1))
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    s3[0].responder(204, '', { ETag: ETAG_DE_S3 })
+    await avanzar(ESPERA_MS)
+    vi.useRealTimers()
+
+    await waitFor(() => expect(trabajo.cancel).toHaveBeenCalled())
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeTruthy())
+    expect(
+      textoEnRol(
+        'status',
+        'No se pudo analizar el audio; la versión se subirá sin análisis técnico.',
+      ),
+    ).toBe(true)
+  })
+
   it('confirma con el análisis si llega antes de los 15 s', async () => {
     const trabajo = analisisPendiente()
     const s3 = simularS3()
@@ -341,7 +366,7 @@ describe('VersionUpload — análisis técnico (TS-91)', () => {
     expect(screen.getByText('Analizando el audio… 40 %')).toBeTruthy()
   })
 
-  it('cancela el análisis si falla la subida a S3', async () => {
+  it('cancela el análisis si falla la subida a S3, sin aviso de análisis', async () => {
     const trabajo = analisisPendiente()
     const s3 = simularS3()
     simularApi(firmando())
@@ -352,6 +377,8 @@ describe('VersionUpload — análisis técnico (TS-91)', () => {
     s3[0].fallarRed()
 
     await waitFor(() => expect(trabajo.cancel).toHaveBeenCalled())
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeTruthy())
+    expect(screen.queryByText(/sin análisis técnico/)).toBeNull()
   })
 
   it('cancela el análisis al desmontar el formulario a mitad', async () => {
