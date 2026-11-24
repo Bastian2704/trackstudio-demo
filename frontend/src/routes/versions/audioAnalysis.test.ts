@@ -58,6 +58,37 @@ describe('createMeter — volumen y pico', () => {
 
     cerca(medir([s, s]).true_peak_dbtp, 0, 0.5)
   })
+
+  // C3 (ts-amp-analisis.08): las compuertas, el solape y el pico negativo.
+  it('aplica la compuerta relativa de −10 LU (EBU Tech 3341, caso 3)', () => {
+    const s = concatenar(seno(1000, -36, 10), seno(1000, -23, 60), seno(1000, -36, 10))
+
+    cerca(medir([s, s]).integrated_lufs, -23, 0.1)
+  })
+
+  it('aplica la compuerta absoluta de −70 LUFS', () => {
+    const debajo = seno(1000, -75, 5)
+    const encima = seno(1000, -50, 5)
+
+    expect(medir([debajo, debajo]).integrated_lufs).toBeNull()
+    cerca(medir([encima, encima]).integrated_lufs, -50, 0.1)
+  })
+
+  it('usa bloques de 400 ms con solape del 75 %', () => {
+    // 400 ms a −23 y 400 ms a −40: sin solape queda un solo bloque útil
+    // (−23); con solape, los tres bloques mixtos pasan la compuerta (−25,0).
+    const s = concatenar(seno(1000, -23, 0.4), seno(1000, -40, 0.4))
+
+    cerca(medir([s, s]).integrated_lufs, -25, 0.2)
+  })
+
+  it('mide el pico real de una señal negativa', () => {
+    // Un impulso de −0,5: el FIR da −0,5 × 0,972 (−6,2 dBTP), solo en negativo.
+    const s = silencio(1)
+    s[1000] = -0.5
+
+    cerca(medir([s, s]).true_peak_dbtp, -6.2, 0.1)
+  })
 })
 
 describe('createMeter — saturación', () => {
