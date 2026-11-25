@@ -47,6 +47,11 @@ class Comment extends Model
             ->first();
     }
 
+    public function isAuthoredBy(string $auth0Sub): bool
+    {
+        return $this->author->auth0_sub === $auth0Sub;
+    }
+
     /** @return BelongsTo<Version, $this> */
     public function version(): BelongsTo
     {

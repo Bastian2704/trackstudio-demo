@@ -28,7 +28,7 @@ final class CommentResource extends JsonResource
             ]),
             'is_mine' => $this->whenLoaded(
                 'author',
-                fn (): bool => $this->resource->author->auth0_sub === (string) $request->user()?->getAuthIdentifier(),
+                fn (): bool => $this->resource->isAuthoredBy((string) $request->user()?->getAuthIdentifier()),
             ),
         ];
     }

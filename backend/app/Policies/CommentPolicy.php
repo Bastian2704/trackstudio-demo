@@ -17,7 +17,7 @@ final class CommentPolicy
      */
     public function create(StatelessUserContract $user, Version $version): bool
     {
-        return $user->getAttribute('role') === Role::Productor;
+        return $this->isProducer($user);
     }
 
     /**
@@ -26,13 +26,18 @@ final class CommentPolicy
      */
     public function viewAny(StatelessUserContract $user, Version $version): bool
     {
-        return $user->getAttribute('role') === Role::Productor;
+        return $this->isProducer($user);
     }
 
     /** Cada usuario borra solo los comentarios que escribió. */
     public function delete(StatelessUserContract $user, Comment $comment): bool
     {
-        return $user->getAttribute('role') === Role::Productor
-            && $comment->author->auth0_sub === (string) $user->getAuthIdentifier();
+        return $this->isProducer($user)
+            && $comment->isAuthoredBy((string) $user->getAuthIdentifier());
+    }
+
+    private function isProducer(StatelessUserContract $user): bool
+    {
+        return $user->getAttribute('role') === Role::Productor;
     }
 }
