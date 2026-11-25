@@ -379,6 +379,8 @@ describe('CommentList — saltar y eliminar (HU-19)', () => {
   it.each<[string, RespuestaSimulada]>([
     ['500', problema(500, 'INTERNAL_ERROR')],
     ['error de red', 'error de red'],
+    // Sintético: fija que se ramifica por `code` y no por el estado (D3.1).
+    ['404 con otro code', problema(404, 'OTRO_CODIGO')],
   ])('muestra el error y conserva el comentario (%s)', async (_caso, fallo) => {
     const peticiones = conBorrado(tresComentarios(), () => fallo)
     const { user } = renderLista()
