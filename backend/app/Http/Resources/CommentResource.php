@@ -26,6 +26,10 @@ final class CommentResource extends JsonResource
                 'role' => $this->resource->author->artist === null ? Role::Productor->value : Role::Artista->value,
                 'name' => $this->resource->author->artist?->name,
             ]),
+            'is_mine' => $this->whenLoaded(
+                'author',
+                fn (): bool => $this->resource->author->auth0_sub === (string) $request->user()?->getAuthIdentifier(),
+            ),
         ];
     }
 }

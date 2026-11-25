@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\Role;
+use App\Models\Comment;
 use App\Models\Version;
 use Auth0\Laravel\Users\StatelessUserContract;
 
@@ -26,5 +27,12 @@ final class CommentPolicy
     public function viewAny(StatelessUserContract $user, Version $version): bool
     {
         return $user->getAttribute('role') === Role::Productor;
+    }
+
+    /** Cada usuario borra solo los comentarios que escribió. */
+    public function delete(StatelessUserContract $user, Comment $comment): bool
+    {
+        return $user->getAttribute('role') === Role::Productor
+            && $comment->author->auth0_sub === (string) $user->getAuthIdentifier();
     }
 }

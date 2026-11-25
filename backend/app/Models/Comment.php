@@ -25,13 +25,26 @@ class Comment extends Model
 
     use HasUuids;
 
-    /** Sin edición (ERD §3.6, I5): la tabla no tiene updated_at. */
     public const UPDATED_AT = null;
 
     /** @return array<string, string> */
     protected function casts(): array
     {
         return ['timestamp_ms' => 'integer'];
+    }
+
+    /**
+     * Un comentario cuya versión está borrada queda oculto con ella y responde 404.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        return $this->newQuery()
+            ->whereHas('version')
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->first();
     }
 
     /** @return BelongsTo<Version, $this> */
