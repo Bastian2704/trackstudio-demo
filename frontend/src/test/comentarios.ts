@@ -27,6 +27,8 @@ export function comentarioCreado(peticion: PeticionRegistrada) {
  * TS-29 (HU-18). Un elemento de GET /api/v1/versions/{version}/comments
  * (spec backend HU-18 §3.4): las seis claves de HU-17 más `author`. Por
  * defecto, del productor (`name: null`). Cada llamada lleva un id distinto.
+ * TS-30 (HU-19) suma `is_mine` (spec backend HU-19 §3.5), por defecto `false`:
+ * de otro usuario, sin papelera.
  */
 let siguienteId = 0
 
@@ -41,6 +43,7 @@ export function comentarioListado(campos: Record<string, unknown> = {}) {
     timestamp_ms: 83500,
     created_at: '2026-11-17T15:20:00+00:00',
     author: { role: 'productor', name: null },
+    is_mine: false,
     ...campos,
   }
 }

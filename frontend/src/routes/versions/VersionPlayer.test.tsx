@@ -27,6 +27,9 @@ import { comentarioCreado, comentarioListado, listaDeComentarios } from '@/test/
  * TS-29 (HU-18) — ts-18.06, spec frontend HU-18 §4.1 tests 1 a 3 (barra,
  * listado y comentario nuevo sin recargar) y §4.2 (HU-17 #1-#4 y #15 con el
  * botón «Comentar en {marca}»).
+ * TS-30 (HU-19) — ts-19.06, spec frontend HU-19 §4.1 tests 1 a 4 (§3.2): el
+ * salto desde el listado y desde un marcador va a la marca y reproduce, también
+ * con la URL caducada o en plena renovación.
  * TS-91 — ts-amp-analisis.06, spec frontend TS-91 §4.5 test 28 (chequeo técnico
  * en el reproductor, al final).
  *
@@ -317,7 +320,7 @@ describe('VersionPlayer', () => {
   })
 })
 
-describe('VersionPlayer — comentarios (HU-17 y HU-18)', () => {
+describe('VersionPlayer — comentarios (HU-17 a HU-19)', () => {
   const URL_COMENTARIOS = `/api/v1/versions/${VERSION.id}/comments`
   const abrir = () => screen.getByRole('button', { name: /^Comentar en / })
   const botonComentar = () => screen.queryByRole('button', { name: /^Comentar en / })
@@ -579,6 +582,89 @@ describe('VersionPlayer — comentarios (HU-17 y HU-18)', () => {
     renovado.currentTime = 100
     fireEvent.timeUpdate(renovado)
     expect(screen.getByRole('button', { name: 'Comentar en 1:40' })).toBeTruthy()
+  })
+
+  /**
+   * Audio 1 cargado y en pausa en 0, con un comentario en 1:22,5. El usuario
+   * pausó: si el salto reproduce, es porque lo pide él.
+   */
+  async function enPausaConComentario() {
+    comoRol(['productor'])
+    const { play } = simularReproduccion()
+    const peticiones = simularReproduccionYComentarios(() => [
+      comentarioListado({ timestamp_ms: 82500, body: 'Sube la voz en el coro.' }),
+    ])
+    renderReproductor()
+
+    const elemento = await audioConUrl(1)
+    fireEvent.loadedMetadata(elemento)
+    fireEvent.pause(elemento)
+    await screen.findByText('Sube la voz en el coro.')
+    play.mockClear()
+
+    return { elemento, play, peticiones }
+  }
+
+  const irA = (marca: string) => screen.getByRole('button', { name: `Ir a ${marca}` })
+
+  it('salta desde el listado y reproduce', async () => {
+    const user = userEvent.setup()
+    const { elemento, play } = await enPausaConComentario()
+
+    await user.click(irA('1:22'))
+
+    expect(elemento.currentTime).toBe(82.5)
+    expect(play).toHaveBeenCalledTimes(1)
+    expect(play.mock.contexts[0]).toBe(elemento)
+    expect(screen.getByRole('button', { name: 'Comentar en 1:22' })).toBeTruthy()
+  })
+
+  it('salta desde un marcador', async () => {
+    const user = userEvent.setup()
+    const { elemento, play } = await enPausaConComentario()
+
+    await user.click(screen.getByRole('button', { name: 'Ir al comentario en 1:22' }))
+
+    expect(elemento.currentTime).toBe(82.5)
+    expect(play).toHaveBeenCalledTimes(1)
+    expect(play.mock.contexts[0]).toBe(elemento)
+  })
+
+  it('el salto llega aunque la URL caduque', async () => {
+    const user = userEvent.setup()
+    const { elemento, play, peticiones } = await enPausaConComentario()
+
+    await user.click(irA('1:22'))
+    // La URL ya había caducado: el <audio> falla al buscar la posición.
+    fireEvent.error(elemento)
+
+    const renovado = await audioConUrl(2)
+    expect(peticiones.filter((p) => p.url === URL_REPRODUCCION)).toHaveLength(2)
+
+    cargarMetadatos(renovado)
+
+    expect(renovado.currentTime).toBe(82.5)
+    expect(play.mock.contexts.at(-1)).toBe(renovado)
+  })
+
+  it('el salto durante la renovación gana a la posición guardada', async () => {
+    const user = userEvent.setup()
+    const { elemento, play } = await enPausaConComentario()
+
+    elemento.currentTime = 42
+    fireEvent.error(elemento)
+    const renovado = await audioConUrl(2)
+
+    // Antes de loadedMetadata: el <audio> nuevo aún no tiene posición.
+    await user.click(irA('1:22'))
+    expect(screen.getByRole('button', { name: 'Comentar en 1:22' })).toBeTruthy()
+    expect(play).not.toHaveBeenCalled()
+
+    cargarMetadatos(renovado)
+
+    expect(renovado.currentTime).toBe(82.5)
+    expect(play).toHaveBeenCalledTimes(1)
+    expect(play.mock.contexts[0]).toBe(renovado)
   })
 })
 

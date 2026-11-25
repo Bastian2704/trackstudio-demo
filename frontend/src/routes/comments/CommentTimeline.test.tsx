@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import CommentTimeline from '@/routes/comments/CommentTimeline'
 import type { Version } from '@/routes/versions/versionSchema'
@@ -10,9 +11,12 @@ import { comentarioListado, listaDeComentarios } from '@/test/comentarios'
 /*
  * TS-29 (HU-18) — ts-18.06, spec frontend HU-18 §4.1 tests 9 a 12 (§3.6).
  *
- * La barra es aria-hidden: no tiene rol, así que se busca por data-testid
- * (spec §5): comment-timeline (bloque), comment-progress (avance, en
- * style.width) y comment-marker (cada grupo, en style.left).
+ * TS-30 (HU-19) — ts-19.06, spec frontend HU-19 §4.1 tests 5 y 6 (§3.4): los
+ * marcadores pasan a ser botones que saltan; el #6 sustituye al #10 de HU-18.
+ *
+ * Se busca por data-testid (spec HU-18 §5): comment-timeline (bloque),
+ * comment-progress (avance, en style.width) y comment-marker (cada grupo, en
+ * style.left).
  */
 const VERSION: Version = {
   id: '9d3e0000-0000-4000-8000-000000000003',
@@ -38,16 +42,21 @@ afterEach(() => {
 })
 
 function renderBarra(positionMs = 0, version: Version = VERSION) {
+  const onSeek = vi.fn()
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const arbol = (posicion: number) => (
     <QueryClientProvider client={queryClient}>
-      <CommentTimeline version={version} positionMs={posicion} />
+      <CommentTimeline version={version} positionMs={posicion} onSeek={onSeek} />
     </QueryClientProvider>
   )
 
   const vista = render(arbol(positionMs))
 
-  return { cambiarPosicion: (posicion: number) => vista.rerender(arbol(posicion)) }
+  return {
+    cambiarPosicion: (posicion: number) => vista.rerender(arbol(posicion)),
+    onSeek,
+    user: userEvent.setup(),
+  }
 }
 
 /** Responde con un comentario en cada marca dada. */
@@ -83,14 +92,39 @@ describe('CommentTimeline', () => {
     expect(avance().style.width).toBe('100%')
   })
 
-  it('es decorativa', async () => {
+  it('la pista es decorativa y los marcadores no', async () => {
     simularMarcas([0, 25000, 100000])
-    renderBarra()
+    const { user } = renderBarra()
 
     await waitFor(() => expect(marcadores()).toHaveLength(3))
 
-    expect(barra()?.getAttribute('aria-hidden')).toBe('true')
-    expect(barra()?.querySelectorAll('button, a, input, [tabindex]')).toHaveLength(0)
+    expect(avance().closest('[aria-hidden="true"]')).not.toBeNull()
+    expect(screen.getAllByRole('button')).toEqual(marcadores())
+    for (const marcador of marcadores()) {
+      expect(marcador.tagName).toBe('BUTTON')
+      expect(marcador.closest('[aria-hidden="true"]')).toBeNull()
+
+      await user.tab()
+      expect(document.activeElement).toBe(marcador)
+    }
+  })
+
+  it('los marcadores son botones que saltan', async () => {
+    simularMarcas([0, 10000, 10500, 50000])
+    const { onSeek, user } = renderBarra()
+
+    await waitFor(() => expect(marcadores()).toHaveLength(3))
+
+    const casos: [string, number][] = [
+      ['Ir al comentario en 0:00', 0],
+      ['Ir a los 2 comentarios desde 0:10', 10000],
+      ['Ir al comentario en 0:50', 50000],
+    ]
+    for (const [nombre, ms] of casos) {
+      await user.click(screen.getByRole('button', { name: nombre }))
+      expect(onSeek).toHaveBeenLastCalledWith(ms)
+    }
+    expect(onSeek).toHaveBeenCalledTimes(3)
   })
 
   it('agrupa los marcadores cercanos', async () => {
