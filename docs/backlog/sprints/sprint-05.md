@@ -232,5 +232,5 @@ La misma del S4: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 - [x] 2026-11-16: TS-28, TS-29, TS-30, TS-73 y TS-44 movidas al sprint; checklists y fronteras en TS-28..TS-30 y TS-73 («humano» → «equipo»); casillas `.s5` comentadas en TS-35..TS-37.
 - [x] 2026-11-16 (replanificación): creadas TS-87..TS-96 con AC, SP y checklist. TS-31, TS-32 y TS-74 movidas al S5, con comentario. Notas en TS-73 (marcos rediseñados) y TS-39 (diagramas BPMN y de contexto).
 - [x] 2026-11-16 (reparto equitativo): creado `TS Sprint 6` (id 74, 2026-11-30 a 2026-12-14) con HU-22, HU-23, HU-27, HU-28, TS-93, TS-94, TS-95, TS-75 y TS-76. TS-93 y TS-94 con etiqueta `target-s6` y comentario. Objetivos de ambos sprints actualizados (S5: 29 SP).
-- [ ] 2026-11-23 (decisión del equipo con el productor de Millenium Sound): `TS-96` y `TS-89` descartadas y fuera del sprint, con comentario. Objetivo del S5: 28 SP.
+- [x] 2026-11-25 (decisión del equipo del 2026-11-23 con el productor de Millenium Sound): `TS-96` y `TS-89` comentadas, con etiqueta `descartado`, movidas al backlog y cerradas en `Listo` (el flujo no tiene un estado de descarte). Objetivo del S5 actualizado a 28 SP.
 - [ ] Responsables e inicio del sprint en Jira (equipo).
