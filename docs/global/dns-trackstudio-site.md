@@ -11,18 +11,22 @@
 
 Estado: `definido` (acordado, sin crear) → `configurado` (creado en Namecheap) → `verificado` (resuelve desde una red externa y, si aplica, con TLS válido o "Verified" en el panel del proveedor).
 
-Los registros de frontend y API dependen de que existan los proyectos de producción en Vercel y Railway (**TS-63**, que bloquea a TS-44). Hasta entonces se quedan en `definido`. Los de Resend ya están verificados (TS-41).
+Los registros de frontend y API se crearon y verificaron el 2026-11-25 (**TS-63**, dentro de TS-44): los destinos de la tabla son los que dieron Vercel y Railway ese día. Los de Resend ya estaban verificados (TS-41).
 
 | Host (campo Host en Namecheap) | FQDN                                 | Tipo  | Destino                                                                   | Servicio                  | Estado   |
 | ------------------------------ | ------------------------------------ | ----- | ------------------------------------------------------------------------- | ------------------------- | -------- |
-| `@`                            | `trackstudio.site`                   | A     | _el que indique Vercel_ (normalmente `76.76.21.21`)                        | Frontend producción       | definido |
-| `www`                          | `www.trackstudio.site`               | CNAME | _el que indique Vercel_ (normalmente `cname.vercel-dns.com.`)              | Redirección a la raíz     | definido |
-| `api`                          | `api.trackstudio.site`               | CNAME | _el target que indique Railway al añadir el custom domain_                | API producción            | definido |
+| `@`                            | `trackstudio.site`                   | A     | `216.198.79.1` (Vercel)                                                   | Frontend producción       | verificado (2026-11-25) |
+| `www`                          | `www.trackstudio.site`               | CNAME | `010d1cdec63fd88c.vercel-dns-017.com.` (Vercel, propio del proyecto)       | Redirección a la raíz     | verificado (2026-11-25) |
+| `api`                          | `api.trackstudio.site`               | CNAME | `u9avl1at.up.railway.app.` (Railway, entorno `production`)                 | API producción            | configurado (2026-11-25); el health se verifica en HU-27 |
+| `_railway-verify.api`          | `_railway-verify.api.trackstudio.site` | TXT | `railway-verify=…` (token público de verificación de Railway)             | Railway (verificación)    | verificado (2026-11-25) |
 | `resend._domainkey`            | `resend._domainkey.trackstudio.site` | TXT   | Clave pública DKIM (`p=MIGfMA0…`), copiada del panel de Resend            | Resend (DKIM)             | verificado (2026-10-08) |
 | `send`                         | `send.trackstudio.site`              | CNAME | `send.forge.rmta.net.` (de ahí salen el MX `10 feedback.forge.rmta.net.` y el SPF) | Resend (rebotes y SPF)    | verificado (2026-10-08) |
 | `_dmarc`                       | `_dmarc.trackstudio.site`            | TXT   | `v=DMARC1; p=none;`                                                       | DMARC                     | verificado (2026-10-08) |
+| `rsend`                        | `rsend.trackstudio.site`             | CNAME | `rsend-sae1.forge.rmta.net.`                                              | Resend (región `sae1`)    | existente; no figuraba en este doc hasta el 2026-11-25 |
 
-En Vercel, `www` se configura como redirección a `trackstudio.site`, que es la URL canónica.
+En Vercel, `www` se configura como redirección (308) a `trackstudio.site`, que es la URL canónica. **Ojo:** al añadir los dos dominios, Vercel deja `www` como principal y redirige la raíz hacia él; hay que invertirlo a mano (Settings → Domains).
+
+Los destinos de Vercel ya no son `76.76.21.21` / `cname.vercel-dns.com.`: desde 2025 da una IP nueva para la raíz y un CNAME por proyecto. Manda siempre lo que muestre el panel.
 
 ## 2. Notas de Namecheap
 
@@ -45,13 +49,15 @@ Usan el dominio, pero son identificadores, no URLs que se visiten. Funcionan aun
 Se aplican en cuanto el host esté `verificado` (HANDOFF v5 §45, D8.3 "Revisar"). Staging no se toca.
 
 **Al activar `trackstudio.site` (frontend):**
-- [ ] Auth0 (aplicación SPA de producción): poner `https://trackstudio.site` en Allowed Callback URLs, Allowed Logout URLs y Allowed Web Origins.
-- [ ] Railway (servicio de producción): `CORS_ALLOWED_ORIGINS` incluye `https://trackstudio.site`.
-- [ ] UptimeRobot: crear el monitor `Frontend producción` y rellenar su fila en `runbook-mantenimiento.md` §1 (TS-44).
+- [x] Auth0 (aplicación SPA de producción): poner `https://trackstudio.site` en Allowed Callback URLs, Allowed Logout URLs y Allowed Web Origins (2026-11-25).
+- [x] Railway (servicio de producción): `CORS_ALLOWED_ORIGINS` incluye `https://trackstudio.site`; `FRONTEND_URL` = `https://trackstudio.site` (2026-11-25).
+- [x] Bucket S3 (compartido con staging, D9.5): CORS `AllowedOrigins` incluye `https://trackstudio.site` y `https://trackstudiodemofront.vercel.app` (2026-11-25).
+- [ ] UptimeRobot: crear el monitor `Frontend producción` y rellenar su fila en `runbook-mantenimiento.md` §1 (`TS-98`, S6). En pausa hasta HU-27 (decisión del equipo, D9.5).
 
 **Al activar `api.trackstudio.site`:**
-- [ ] Vercel (entorno Production): `VITE_API_BASE_URL` = `https://api.trackstudio.site`, y redesplegar.
-- [ ] UptimeRobot: crear el monitor `API producción` (`/api/v1/health`) y rellenar su fila en `runbook-mantenimiento.md` §1 (TS-44).
+- [x] Vercel (entorno Production): `VITE_API_BASE_URL` = `https://api.trackstudio.site` (2026-11-25). Sin redesplegar: se hornea en el primer build de `main` con la app (HU-27).
+- [x] Railway (servicio de producción): `APP_URL` = `https://api.trackstudio.site` (2026-11-25).
+- [ ] UptimeRobot: crear el monitor `API producción` (`/api/v1/health`) y rellenar su fila en `runbook-mantenimiento.md` §1 (`TS-98`, S6). En pausa hasta HU-27 (decisión del equipo, D9.5).
 
 **Al verificar el dominio en Resend:**
 - [x] Marcar 10.1 en el ADR. TS-43 ya está en Listo (2026-10-08).
