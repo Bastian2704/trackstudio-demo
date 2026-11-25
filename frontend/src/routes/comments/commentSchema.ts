@@ -38,6 +38,8 @@ export interface CommentAuthor {
 /** Elemento de GET …/comments: las claves de `Comment` más `author`. */
 export interface ListedComment extends Comment {
   author: CommentAuthor
+  /** Lo escribió el usuario actual: solo esos se pueden eliminar. */
+  is_mine: boolean
 }
 
 /** El nombre si lo hay; si no, el rol. Con TS-96 el productor traerá `name`. */

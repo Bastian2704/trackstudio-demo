@@ -13,6 +13,10 @@ export async function createComment(
   return res.data.data
 }
 
+export async function deleteComment(commentId: string): Promise<void> {
+  await api.delete(`/api/v1/comments/${commentId}`)
+}
+
 /**
  * Listado de una versión (spec backend HU-18 §3.4). La barra y la lista usan
  * la misma clave: TanStack hace una sola petición para las dos.
