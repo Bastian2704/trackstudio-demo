@@ -660,6 +660,7 @@ Configurado en `backend/config/cors.php`. La autenticación es por `Authorizatio
 | 9.2 | Migraciones en deploy | DECIDIDO | Automáticas en cada despliegue de Railway (`migrate --force`), ver D9.2 |
 | 9.3 | Observabilidad | DECIDIDO | Sentry (errores) + UptimeRobot (uptime) — ver D9.3 |
 | 9.4 | Rollback | DECIDIDO | Rollback de plataforma + migraciones compatibles hacia atrás + corrección hacia adelante; copia de BD antes de cada despliegue a producción. Ver D9.4 |
+| 9.5 | Producción: recursos y validación | DECIDIDO | Mismo tenant de Auth0 (SPA propia), mismo bucket S3, Postgres y `APP_KEY` propios; health y monitores se validan en HU-27 (`TS-98`). Ver D9.5 |
 
 ### D9.2 — Migraciones automáticas en cada despliegue de Railway (2026-10-15)
 
@@ -716,6 +717,22 @@ Después de cualquier rollback se corrige **hacia adelante**: `git revert` o un 
 Todas las demás rutas de `/api/v1` exigen el token de Auth0 (D4.8).
 
 → *ISO 25010: fiabilidad (madurez, disponibilidad). Cubre: RNF-04. Riesgo: incumplimiento de ToS de un proveedor externo, aceptado conscientemente.*
+
+### D9.5 — Producción: qué se comparte con staging y cuándo se valida (2026-11-25, `TS-44`)
+
+**Decisión del equipo:**
+
+| Recurso | Producción | ¿Compartido con staging? |
+|---|---|---|
+| Railway | Entorno `production` del mismo proyecto, rama `main`, Postgres propio (variables `DB_*` por referencia), `APP_KEY` propia | No |
+| Vercel | Mismo proyecto: *Production* sale de `main`; staging es el dominio de la rama `develop`. `VITE_AUTH0_CLIENT_ID` y `VITE_API_BASE_URL` separadas por entorno; el resto, compartidas | Proyecto sí, variables sensibles al entorno no |
+| Auth0 | **Mismo tenant**, aplicación SPA nueva (`Track Studio (producción)`), misma conexión, misma API sin permisos (la autorización va por el claim, D4.8) y misma Action de roles | Tenant sí, aplicación no |
+| S3 | **Mismo bucket**; el CORS (D7.5) suma los orígenes de producción | Sí |
+| Dominios | `trackstudio.site` (frontend) y `api.trackstudio.site` (API), ver `docs/global/dns-trackstudio-site.md` | No |
+
+**Validación diferida:** `main` sigue en el esqueleto del Sprint 0. El health de producción, el primer despliegue sano y los monitores de UptimeRobot (D9.3) se verifican en HU-27, tras el primer merge `develop → main` (9.1). Ese criterio de `TS-44` («monitoreo de uptime de producción activo») se separó en `TS-98` (S6, bloqueada por HU-27/`TS-38`), y `TS-44` se cierra con la infraestructura configurada.
+
+**Riesgo aceptado:** con el tenant y el bucket compartidos, los usuarios y el audio de prueba conviven con los reales del cliente. Mitigación: las keys de S3 son UUID (D7.3) y el acceso pasa siempre por las Policies (D8.1). Revisar si el volumen de datos reales lo justifica.
 
 ---
 

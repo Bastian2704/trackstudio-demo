@@ -12,12 +12,14 @@
 | ------------------------------------ | ------------------------------------------------ | --------------------------------------------------------------- | --------- |
 | `Track Studio – API staging`         | Keyword `"status":"ok"`, alerta si **no existe** | `https://trackstudio-demo-staging.up.railway.app/api/v1/health` | 5 min     |
 | `Track Studio – Frontend staging`    | HTTP(s)                                          | `https://trackstudio-staging.vercel.app`                        | 5 min     |
-| `Track Studio – API producción`      | Keyword (igual que staging)                      | _pendiente: producción aún no existe_                           | 5 min     |
-| `Track Studio – Frontend producción` | HTTP(s)                                          | _pendiente: producción aún no existe_                           | 5 min     |
+| `Track Studio – API producción`      | Keyword (igual que staging)                      | `https://api.trackstudio.site/api/v1/health` — _sin crear hasta HU-27_ | 5 min     |
+| `Track Studio – Frontend producción` | HTTP(s)                                          | `https://trackstudio.site` — _sin crear hasta HU-27_            | 5 min     |
+
+**Producción (2026-11-25, D9.5):** la infraestructura existe, pero `main` todavía no tiene la app. Por decisión del equipo, los dos monitores de producción se crean y se activan en `TS-98` (S6), tras el primer merge `develop → main` de HU-27, para no recibir alertas de caída mientras tanto.
 
 - **Cuenta:** `trackstudioec@outlook.com`, plan Free. Las credenciales están en el gestor de contraseñas del equipo, nunca en el repo.
 - **Alertas:** el plan Free solo permite **un contacto de alerta**, el correo de la cuenta. Las alertas llegan únicamente al buzón del equipo, y **los dos integrantes lo revisan**. El productor no recibe alertas técnicas. Hay una mejora opcional pendiente: una regla de reenvío en Outlook (`De` contiene `uptimerobot.com` → correo personal).
-- **Railway:** el Healthcheck Path es `/api/v1/health` y Serverless (suspensión por inactividad) está **desactivado**. En staging se verificó el 2026-09-28.
+- **Railway:** el Healthcheck Path es `/api/v1/health` y Serverless (suspensión por inactividad) está **desactivado**. En staging se verificó el 2026-09-28; en el entorno `production` se configuró igual el 2026-11-25.
 - **SSL:** no hay monitor de vencimiento (es de pago). Vercel y Railway renuevan los certificados solos, y un certificado inválido haría fallar igualmente el monitor HTTP(s). Para comprobarlo a mano:
     ```fish
     echo | openssl s_client -servername <host> -connect <host>:443 2>/dev/null | openssl x509 -noout -enddate
