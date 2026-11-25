@@ -35,6 +35,7 @@ it('clasifica y protege todas las rutas de la API', function () {
     // TS-16..TS-27: artistas, producciones, canciones y versiones, solo productor vía sus Policies.
     // Inventario exacto: ninguna ruta PUT/PATCH/DELETE sobre versions/{version} (HU-14 §3.1).
     expect($inventario)->toBe([
+        'DELETE api/v1/comments/{comment}' => ['auth:auth0-api', 'can:delete,comment'],
         'DELETE api/v1/productions/{production}' => ['auth:auth0-api', 'can:delete,production'],
         'DELETE api/v1/productions/{production}/access/{access}' => ['auth:auth0-api', 'can:perform-producer-action'],
         'DELETE api/v1/songs/{song}' => ['auth:auth0-api', 'can:delete,song'],
@@ -101,6 +102,7 @@ it('restringe a UUID las rutas parametrizadas de canciones', function (string $m
     'reproducción' => ['GET', 'api/v1/versions/{version}/playback-url', 'version'],
     'comentar' => ['POST', 'api/v1/versions/{version}/comments', 'version'],
     'listar comentarios' => ['GET', 'api/v1/versions/{version}/comments', 'version'],
+    'borrar comentario' => ['DELETE', 'api/v1/comments/{comment}', 'comment'],
     'otorgar acceso' => ['POST', 'api/v1/productions/{production}/access', 'production'],
     'historial de accesos' => ['GET', 'api/v1/productions/{production}/access', 'production'],
     'revocar acceso (producción)' => ['DELETE', 'api/v1/productions/{production}/access/{access}', 'production'],
