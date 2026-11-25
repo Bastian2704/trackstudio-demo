@@ -2,8 +2,8 @@
 
 **Estado:** planificado el 2026-11-16 al cerrar `TS Sprint 4` y **replanificado el mismo día** con la ampliación de alcance ([`ampliacion-alcance-2026-11.md`](../ampliacion-alcance-2026-11.md), aprobada por el equipo), repartida de forma equitativa entre S5 y S6. `TS Sprint 5` es el id 73. Jira manda sobre estado, checklist y criterios de aceptación.
 **Ventana:** 2026-11-16 a 2026-11-29 (Jira cierra el 2026-11-30). **Release:** R2 - Beta con artista (el gate R2 sigue en S6).
-**Selección funcional:** HU-17..HU-21 (`TS-28`..`TS-32`, 18 SP) y la ampliación `TS-90`, `TS-91`, `TS-92` y `TS-96` (11 SP): **29 SP**. **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37`, sin contar los SP dos veces.
-**Tasks:** `TS-87` (ERD y ADR), `TS-88` (diseño en Figma), `TS-89` (Auth0, equipo), `TS-73` y `TS-74` (UI Figma), `TS-44` (producción, equipo), `TS-86` (Sprint Planning S5) y el arrastre del S4.
+**Selección funcional:** HU-17..HU-21 (`TS-28`..`TS-32`, 18 SP) y la ampliación `TS-90`, `TS-91` y `TS-92` (10 SP): **28 SP**. `TS-96` y `TS-89` (varios productores) se descartaron el 2026-11-23 (decisión del equipo). **Reserva transversal:** 2 SP equivalentes para `TS-35`..`TS-37`, sin contar los SP dos veces.
+**Tasks:** `TS-87` (ERD y ADR), `TS-88` (diseño en Figma), `TS-73` y `TS-74` (UI Figma), `TS-44` (producción, equipo), `TS-86` (Sprint Planning S5) y el arrastre del S4.
 **Formato:** [campos y reglas de expansión](../backlog-format.md) · catálogo en [jira-backlog.md](../jira-backlog.md) · secuencia en [roadmap.md](../roadmap.md).
 
 ## Cierre del S4
@@ -19,12 +19,12 @@ Entregar en staging los comentarios con marca de tiempo, el acceso del artista y
 | Tipo                  | Alcance                                                    |                              Capacidad |
 | --------------------- | ---------------------------------------------------------- | -------------------------------------: |
 | Historias funcionales | HU-17..HU-21                                               |                                  18 SP |
-| Ampliación de alcance | TS-90, TS-91, TS-92, TS-96                                 |                                  11 SP |
+| Ampliación de alcance | TS-90, TS-91, TS-92                                        |                                  10 SP |
 | Calidad transversal   | Avance verificable de HU-24..HU-26 sobre la superficie S5  |                      2 SP equivalentes |
-| Tasks sin SP          | TS-73, TS-74, TS-87, TS-88, TS-89, TS-44, TS-86 y arrastre | Consumen la misma capacidad del sprint |
-| **Objetivo total**    | Funcional + ampliación + transversal                       |                 **31 SP equivalentes** |
+| Tasks sin SP          | TS-73, TS-74, TS-87, TS-88, TS-44, TS-86 y arrastre        | Consumen la misma capacidad del sprint |
+| **Objetivo total**    | Funcional + ampliación + transversal                       |                 **30 SP equivalentes** |
 
-La ampliación se reparte de forma equitativa entre S5 y S6 (decisión del equipo del 2026-11-16): unos 5 SP más por semana que hasta ahora, frente a 16 SP del S4. Para la velocidad del S5 cuentan los 29 SP de las Stories. El S6 (`TS Sprint 6`, id 74) lleva 27 SP de trabajo nuevo: HU-22, HU-23, HU-27, HU-28, `TS-93` (A/B), `TS-94` (correos) y `TS-95` (dashboard), más el cierre de HU-24..HU-26.
+La ampliación se reparte de forma equitativa entre S5 y S6 (decisión del equipo del 2026-11-16): unos 5 SP más por semana que hasta ahora, frente a 16 SP del S4. Para la velocidad del S5 cuentan los 28 SP de las Stories. El S6 (`TS Sprint 6`, id 74) lleva 27 SP de trabajo nuevo: HU-22, HU-23, HU-27, HU-28, `TS-93` (A/B), `TS-94` (correos) y `TS-95` (dashboard), más el cierre de HU-24..HU-26.
 
 ## Registros del sprint
 
@@ -40,10 +40,8 @@ La ampliación se reparte de forma equitativa entre S5 y S6 (decisión del equip
 | TS-90 | Story |   2 | Motivo de la versión                                      | TS-87; marco de TS-88                       |
 | TS-91 | Story |   5 | Análisis técnico de la versión al subir                   | TS-87; marco de TS-88                       |
 | TS-92 | Story |   3 | Flujo de revisión y aprobación de versiones               | TS-87, TS-32; marco de TS-88                |
-| TS-96 | Story |   1 | Varios productores: autoría visible                       | TS-89 para staging                          |
 | TS-73 | Task  |   — | UI Figma: versiones, subida y reproductor                 | Marcos rediseñados de TS-88                 |
 | TS-74 | Task  |   — | UI Figma: comentarios (HU-17..HU-19)                      | TS-28..TS-30                                |
-| TS-89 | Task  |   — | Segunda cuenta de productor en Auth0 (equipo)             | Acceso a Auth0                              |
 | TS-44 | Task  |   — | Configurar producción (Railway, Vercel, Auth0) y uptime   | Accesos de producción (equipo)              |
 | TS-86 | Task  |   — | Sprint Planning S5                                        | —                                           |
 | TS-35..TS-37 | Story | (8) | HU-24..HU-26 calidad transversal (cierre en S6)   | Superficie entregada en S5                  |
@@ -69,7 +67,7 @@ flowchart TD
 
 1. Primeros días: `TS-87` (slice del ERD y ADR) y arranque de `TS-88` con el historial y el reproductor rediseñados, el motivo, el chequeo y la revisión. Sin ellos no se especifican TS-90, TS-91 ni TS-92.
 2. Spec backend de HU-17 en paralelo: su tabla ya está en el ERD §3.6 y no depende de `TS-87`.
-3. Red/Green de HU-17..HU-19, TS-90 y TS-96. `TS-73` sobre los marcos nuevos.
+3. Red/Green de HU-17..HU-19 y TS-90. `TS-73` sobre los marcos nuevos.
 
 **Segunda mitad (23–29 nov)**
 
@@ -77,7 +75,7 @@ flowchart TD
 5. TS-92 (revisión) en cuanto HU-21 esté Done. `TS-74` cuando HU-19 esté Done.
 6. `TS-88` termina con los marcos del A/B y del dashboard, que se construyen en S6.
 
-`TS-44` y `TS-89` corren en paralelo a cargo del equipo; el agente no toca Railway, Vercel ni Auth0 (`CLAUDE.md` §0.6).
+`TS-44` corre en paralelo a cargo del equipo; el agente no toca Railway, Vercel ni Auth0 (`CLAUDE.md` §0.6).
 
 ## Fronteras de alcance
 
@@ -88,9 +86,9 @@ Vienen del ERD §3.6, de D4.5, de D8.1, de `CLAUDE.md` §5 y de la propuesta apr
 - **HU-19 (TS-30):** el salto pasa por el mismo `resumeAt` con el que `VersionPlayer` conserva la posición al renovar la URL. Borrado físico, solo del autor. Sin edición.
 - **Artista:** HU-17..HU-19 nacen solo para el productor. HU-20/HU-21 habilitan al artista con acceso vigente según las filas «✅ con acceso vigente desde HU-21» de D8.1, sin reabrir las specs anteriores. La prueba de «solo borra los suyos» usa dos productores, y luego un productor y un artista.
 - **ADR 8.1:** la fila RBAC de `comments` se cierra en la spec backend de HU-17; la de las decisiones de revisión, en `TS-87`.
-- **Ampliación en S5 (TS-90, TS-91, TS-92, TS-96):** según [`ampliacion-alcance-2026-11.md`](../ampliacion-alcance-2026-11.md) §5. El análisis se calcula en el navegador al subir y advierte sin bloquear; la revisión registra una fila por decisión; varios productores comparten todo el estudio. En S5 el artista decide desde el historial; la decisión desde la comparación A/B llega con `TS-93` en S6.
+- **Ampliación en S5 (TS-90, TS-91, TS-92):** según [`ampliacion-alcance-2026-11.md`](../ampliacion-alcance-2026-11.md) §5. El análisis se calcula en el navegador al subir y advierte sin bloquear; la revisión registra una fila por decisión. El estudio tiene un único productor: varios productores se descartaron el 2026-11-23. En S5 el artista decide desde el historial; la decisión desde la comparación A/B llega con `TS-93` en S6.
 - **Figma:** ninguna pantalla nueva o rediseñada se especifica sin su marco aprobado en `TS-88`. `TS-73` toma los marcos rediseñados del historial y el reproductor, no los anteriores.
-- **Fuera de S5:** comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`), que van en S6. Fuera del proyecto: resumen con IA, aislamiento por productor, `TS-81` y `TS-82`. `studio_sessions` espera a HU-22/HU-23 (S6).
+- **Fuera de S5:** comparación A/B (`TS-93`), correos del flujo (`TS-94`) y dashboard del proceso (`TS-95`), que van en S6. Fuera del proyecto: resumen con IA, varios productores (`TS-96`, `TS-89`, descartados el 2026-11-23), aislamiento por productor, `TS-81` y `TS-82`. `studio_sessions` espera a HU-22/HU-23 (S6).
 - **ADR 8.5** (rate limiting) y **11.5** (plan de medición de RNF) siguen ABIERTOS y diferidos; no bloquean. Los endpoints de comentarios y de decisiones quedan sin límite de peticiones mientras 8.5 siga abierto.
 
 ## Condiciones de Ready
@@ -143,14 +141,14 @@ Checklist estándar `.01`..`.09` de `backlog-format.md`. HU-20 monta el envío d
 
 > **2026-11-18 (decisión del equipo):** HU-21 se parte en dos. La parte A (listado `/producciones` para los dos roles, lectura del artista de producción, canciones e historial, D8.1 de `productions`) queda implementada sobre la rama de TS-31. La parte B (comentarios del artista) espera a HU-19 (`TS-30`), así que `TS-32` no cierra hasta entonces y `TS-92` se retrasa en la misma medida.
 
-### Ampliación de alcance en S5 (TS-90, TS-91, TS-92, TS-96)
+### Ampliación de alcance en S5 (TS-90, TS-91, TS-92)
 
 Cada Story lleva en Jira sus AC y su checklist `ts-amp-*.01`..`.09`. Resumen:
 
 - **TS-90 Motivo:** categoría y texto obligatorios desde la v2; enmienda de HU-13/HU-14.
 - **TS-91 Análisis:** LUFS (BS.1770), pico real, saturación, silencios y series por segundo, en un Web Worker; validado contra `ffmpeg`; advierte sin bloquear. Las series alimentan las curvas del A/B en S6.
 - **TS-92 Revisión:** en revisión → aprobada o cambios pedidos; una fila por decisión; el artista decide desde el historial.
-- **TS-96 Autoría:** «creado por» y «subido por» con varios productores.
+- ~~**TS-96 Autoría:** «creado por» y «subido por» con varios productores.~~ Descartada el 2026-11-23 (decisión del equipo con el productor de Millenium Sound): el estudio tiene un único productor.
 
 ## Tasks y línea transversal
 
@@ -166,9 +164,9 @@ El equipo y el agente prototipan juntos con el MCP de Figma, en una página prop
 
 `TS-73` sobre los marcos rediseñados de `TS-88`. `TS-74` en cuanto HU-19 esté Done. Aplican las trampas de TS-70..TS-72: marcos móviles y `package.json` tras cualquier `shadcn add`.
 
-### TS-44 / ts-33 y TS-89 - Infraestructura (equipo)
+### TS-44 / ts-33 - Infraestructura (equipo)
 
-Producción (Railway, Vercel y Auth0, merge a `main` con aprobación manual y monitoreo de uptime con alerta) y segunda cuenta de productor en staging.
+Producción (Railway, Vercel y Auth0, merge a `main` con aprobación manual y monitoreo de uptime con alerta). La segunda cuenta de productor (`TS-89`) se descartó el 2026-11-23.
 
 ### TS-35..TS-37 - Calidad acumulativa de S5
 
@@ -191,18 +189,18 @@ Estos pendientes pasan **sin sumar SP** y se cierran en la primera mitad:
 
 ### Inicio (2026-11-16)
 
-- `TS Sprint 4` cerrado; `TS Sprint 5` con objetivo, 29 SP y las Tasks asignadas; `TS Sprint 6` creado con su selección (hecho).
+- `TS Sprint 4` cerrado; `TS Sprint 5` con objetivo, 29 SP (28 tras descartar `TS-96` el 2026-11-23) y las Tasks asignadas; `TS Sprint 6` creado con su selección (hecho).
 - Responsables asignados en Jira e inicio del sprint (equipo).
 
 ### Mitad del sprint (2026-11-23)
 
 - `TS-87` aprobada y los marcos de la primera mitad de `TS-88` aprobados.
-- HU-17..HU-19, TS-90 y TS-96 Done o en review (unos 14 SP).
+- HU-17..HU-19 y TS-90 Done o en review (unos 15 SP).
 - El arrastre del S4 está cerrado.
 
 ### Cierre (2026-11-29)
 
-- HU-17..HU-21, TS-90, TS-91, TS-92 y TS-96 cumplen la Definition of Done (29 SP).
+- HU-17..HU-21, TS-90, TS-91 y TS-92 cumplen la Definition of Done (28 SP).
 - `TS-73` y `TS-74` integradas; marcos del A/B y del dashboard aprobados para S6.
 - `TS-44` preparada (gate «Fin de S5» del roadmap).
 - TS-35..TS-37 tienen la evidencia del S5.
@@ -215,7 +213,7 @@ La misma del S4: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 
 | Riesgo                                                   | Señal                                                              | Respuesta                                                                                                                  |
 | -------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| La velocidad no llega a 29 SP                            | Menos de unos 14 SP cerrados al corte de mitad                     | Si se arrastra algo a S6, recortar la ampliación de S6 desde el final: correos, luego dashboard. El alcance principal y Figma no se recortan. |
+| La velocidad no llega a 28 SP                            | Menos de unos 14 SP cerrados al corte de mitad                     | Si se arrastra algo a S6, recortar la ampliación de S6 desde el final: correos, luego dashboard. El alcance principal y Figma no se recortan. |
 | `TS-87` o `TS-88` se retrasan                            | Sin ERD o sin marcos al tercer día                                 | Bloquean TS-90..TS-92. HU-17..HU-21 no dependen de ellos; priorizar `TS-87` el primer día.                                 |
 | El LUFS no coincide con `ffmpeg`                         | La prueba de referencia de TS-91 falla fuera de tolerancia         | No se muestra el valor hasta que coincida (antiobjetivo de la propuesta); las series por banda pueden salir antes.          |
 | MP3 largos agotan la memoria del navegador               | La pestaña se cae al analizar                                      | Tope de duración en la spec de TS-91; por encima, la versión se sube «sin análisis».                                       |
@@ -234,4 +232,5 @@ La misma del S4: specs aprobadas, tests vistos en rojo y luego en verde, C3 demo
 - [x] 2026-11-16: TS-28, TS-29, TS-30, TS-73 y TS-44 movidas al sprint; checklists y fronteras en TS-28..TS-30 y TS-73 («humano» → «equipo»); casillas `.s5` comentadas en TS-35..TS-37.
 - [x] 2026-11-16 (replanificación): creadas TS-87..TS-96 con AC, SP y checklist. TS-31, TS-32 y TS-74 movidas al S5, con comentario. Notas en TS-73 (marcos rediseñados) y TS-39 (diagramas BPMN y de contexto).
 - [x] 2026-11-16 (reparto equitativo): creado `TS Sprint 6` (id 74, 2026-11-30 a 2026-12-14) con HU-22, HU-23, HU-27, HU-28, TS-93, TS-94, TS-95, TS-75 y TS-76. TS-93 y TS-94 con etiqueta `target-s6` y comentario. Objetivos de ambos sprints actualizados (S5: 29 SP).
+- [x] 2026-11-25 (decisión del equipo del 2026-11-23 con el productor de Millenium Sound): `TS-96` y `TS-89` comentadas, con etiqueta `descartado`, movidas al backlog y cerradas en `Listo` (el flujo no tiene un estado de descarte). Objetivo del S5 actualizado a 28 SP.
 - [ ] Responsables e inicio del sprint en Jira (equipo).
