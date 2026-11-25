@@ -102,7 +102,10 @@ final class VersionService
      * Los pasos a `fallida` se guardan dentro de la transacción y su error se
      * lanza después del commit: un throw dentro de la closure los revertiría.
      *
-     * @param  array{etag: string, duration_ms: int}  $datos
+     * El análisis solo se guarda al verificar; un reintento sobre una
+     * versión ya verificada no lo reemplaza.
+     *
+     * @param  array{etag: string, duration_ms: int, analysis?: ?array<string, mixed>}  $datos
      */
     public function confirmVersion(Version $version, array $datos): Version
     {
@@ -158,6 +161,7 @@ final class VersionService
                 'verified_at' => now(),
                 'size_bytes' => $object['size_bytes'],
                 'duration_ms' => $datos['duration_ms'],
+                'analysis' => $datos['analysis'] ?? null,
             ]);
 
             return [$locked, null];

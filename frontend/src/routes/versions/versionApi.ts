@@ -1,5 +1,6 @@
 import { api } from '@/lib/api'
 import type {
+  AnalysisPayload,
   AudioContentType,
   ChangeCategory,
   SignedUpload,
@@ -70,10 +71,13 @@ export async function confirmVersion(
   versionId: string,
   etag: string,
   durationMs: number,
+  analysis?: AnalysisPayload,
 ): Promise<Version> {
+  // Sin análisis, la clave no se envía
   const res = await api.post<{ data: Version }>(`/api/v1/versions/${versionId}/confirm`, {
     etag,
     duration_ms: durationMs,
+    ...(analysis && { analysis }),
   })
 
   return res.data.data

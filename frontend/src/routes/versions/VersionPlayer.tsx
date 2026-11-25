@@ -9,6 +9,7 @@ import CommentForm from '@/routes/comments/CommentForm'
 import CommentList from '@/routes/comments/CommentList'
 import CommentTimeline from '@/routes/comments/CommentTimeline'
 
+import { TechnicalCheck } from './TechnicalCheck'
 import { fetchPlaybackUrl } from './versionApi'
 import { type Version, versionTitle } from './versionSchema'
 
@@ -101,6 +102,8 @@ export default function VersionPlayer({ version }: { version: Version }) {
             void query.refetch()
           }}
         />
+
+        <TechnicalCheck version={version} />
 
         {/* Fuera de la key del <audio>: al renovar la URL se conserva lo escrito y no se vuelve a pedir el listado. */}
         {canComment && (

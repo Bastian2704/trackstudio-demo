@@ -1,0 +1,6 @@
+{
+  "pink-48k-s24.wav": { "integrated_lufs": -28.5, "true_peak_dbtp": -19.4 },
+  "tone-gated-44k-s16-mono.wav": { "integrated_lufs": -23.5, "true_peak_dbtp": -20.0 },
+  "hot-48k-f32.wav": { "integrated_lufs": -8.7, "true_peak_dbtp": 1.5 },
+  "ext-96k-s32.wav": { "integrated_lufs": -24.3, "true_peak_dbtp": -15.0 }
+}

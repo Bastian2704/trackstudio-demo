@@ -480,6 +480,8 @@ it('crea versions con el contrato exacto aprobado', function () {
         ['column_name' => 'deleted_at', 'data_type' => 'timestamp with time zone', 'is_nullable' => 'YES', 'character_maximum_length' => null],
         // TS-90: add_change_category_to_versions_table la añade al final.
         ['column_name' => 'change_category', 'data_type' => 'character varying', 'is_nullable' => 'YES', 'character_maximum_length' => 20],
+        // TS-91: add_analysis_to_versions_table la añade al final.
+        ['column_name' => 'analysis', 'data_type' => 'jsonb', 'is_nullable' => 'YES', 'character_maximum_length' => null],
     ]);
 
     $uploadStatusDefault = DB::scalar(
@@ -509,7 +511,7 @@ it('protege relaciones, únicos, checks e índices de versions', function () {
     // `upload_status` también aparecen en el CHECK de evidencia.
     $check = fn (string $condicion): ?string => $checks->first(fn (string $definicion): bool => str_contains($definicion, $condicion));
 
-    expect($checks)->toHaveCount(8)
+    expect($checks)->toHaveCount(9)
         ->and($check('version_number > 0'))->toBeString()
         ->and($check('audio/mpeg'))->toBeString()->toContain('audio/wav')
         ->and($check('size_bytes <= 524288000'))->toBeString()->toContain('size_bytes > 0')
@@ -521,7 +523,10 @@ it('protege relaciones, únicos, checks e índices de versions', function () {
         ->and($check("'instrumentos'"))->toBeString()
         ->toContain("'voz'")->toContain("'mezcla'")->toContain("'master'")->toContain("'arreglo'")->toContain("'otro'")
         ->and($check('btrim(description)'))->toBeString()
-        ->toContain('change_category IS NULL')->toContain('description IS NOT NULL');
+        ->toContain('change_category IS NULL')->toContain('description IS NOT NULL')
+        // TS-91: el análisis, si existe, es un objeto JSON.
+        ->and($check('jsonb_typeof(analysis)'))->toBeString()
+        ->toContain('analysis IS NULL')->toContain("'object'");
 
     $indices = collect(DB::select(
         <<<'SQL'
@@ -607,3 +612,33 @@ it('rechaza una categoría fuera del catálogo', function () {
 
     expect(DB::table('versions')->count())->toBe(0);
 });
+
+/*
+|--------------------------------------------------------------------------
+| TS-91 — versions.analysis (modelo-completo.md §3.5)
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/TS-91.md §3.1 y §4 (#1).
+|
+*/
+
+it('rechaza un análisis que no es un objeto JSON', function (string $analisis) {
+    expect(fn () => DB::transaction(fn () => DB::table('versions')->insert(filaDeVersion([
+        'analysis' => $analisis,
+    ]))))->toThrow(QueryException::class, 'versions_analysis_object_check');
+
+    expect(DB::table('versions')->count())->toBe(0);
+})->with([
+    'lista' => ['[]'],
+    'número' => ['1'],
+    'cadena' => ['"texto"'],
+]);
+
+it('acepta un análisis nulo o un objeto JSON', function (?string $analisis) {
+    DB::table('versions')->insert(filaDeVersion(['analysis' => $analisis]));
+
+    expect(DB::table('versions')->value('analysis'))->toBe($analisis);
+})->with([
+    'nulo' => [null],
+    'objeto vacío' => ['{}'],
+]);

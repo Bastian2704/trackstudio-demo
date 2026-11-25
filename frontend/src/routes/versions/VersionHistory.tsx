@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { formatDateTime } from '@/lib/dates'
 
 import { fetchVersions } from './versionApi'
+import { TechnicalCheckBadge } from './TechnicalCheck'
 import { changeCategoryLabel, type Version, versionTitle } from './versionSchema'
 import VersionPlayer from './VersionPlayer'
 
@@ -47,6 +48,10 @@ export default function VersionHistory({ songId }: { songId: string }) {
                   {formatDateTime(v.verified_at)}
                 </time>
               )}
+
+              <p>
+                <TechnicalCheckBadge check={v.technical_check} />
+              </p>
 
               {v.description && <p>{v.description}</p>}
               <Button
