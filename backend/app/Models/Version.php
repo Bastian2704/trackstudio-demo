@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\AudioContentType;
+use App\Enums\ChangeCategory;
 use App\Enums\UploadStatus;
 use Database\Factories\VersionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property int $size_bytes
  * @property ?string $label
  * @property ?string $description
+ * @property ?ChangeCategory $change_category
+ * @property ?array<string, mixed> $analysis
  * @property ?int $duration_ms
  * @property ?Carbon $verified_at
  */
@@ -39,9 +42,11 @@ use Illuminate\Support\Carbon;
     'uploaded_by',
     'label',
     'description',
+    'change_category',
     'etag',
     'verified_at',
     'duration_ms',
+    'analysis',
 ])]
 class Version extends Model
 {
@@ -66,6 +71,8 @@ class Version extends Model
             'content_type' => AudioContentType::class,
             'size_bytes' => 'integer',
             'upload_status' => UploadStatus::class,
+            'change_category' => ChangeCategory::class,
+            'analysis' => 'array',
             'verified_at' => 'datetime',
             'duration_ms' => 'integer',
         ];

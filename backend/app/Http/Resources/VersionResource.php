@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Version;
+use App\Support\TechnicalCheck;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Arr;
 
 /**
  * @property Version $resource
@@ -16,12 +18,15 @@ final class VersionResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
+        $analysis = $this->resource->analysis;
+
         return [
             'id' => $this->resource->id,
             'song_id' => $this->resource->song_id,
             'version_number' => $this->resource->version_number,
             'label' => $this->resource->label,
             'description' => $this->resource->description,
+            'change_category' => $this->resource->change_category?->value,
             'content_type' => $this->resource->content_type->value,
             'size_bytes' => $this->resource->size_bytes,
             'duration_ms' => $this->resource->duration_ms,
@@ -29,6 +34,12 @@ final class VersionResource extends JsonResource
             'verified_at' => $this->resource->verified_at?->toIso8601String(),
             'created_at' => $this->resource->created_at?->toIso8601String(),
             'updated_at' => $this->resource->updated_at?->toIso8601String(),
+            // Las series se guardan, pero solo las lee la comparación A/B.
+            'analysis' => $analysis === null ? null : Arr::except($analysis, 'series'),
+            'technical_check' => $analysis === null ? null : [
+                'checks' => TechnicalCheck::evaluate($this->resource),
+                'thresholds' => TechnicalCheck::THRESHOLDS,
+            ],
         ];
     }
 }

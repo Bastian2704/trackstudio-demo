@@ -23,29 +23,6 @@ uses(RefreshDatabase::class);
 |
 */
 
-const INSTANTE_DEL_COMENTARIO = '2026-11-17 15:20:00';
-const DURACION_PARA_COMENTAR = 213450;
-
-/**
- * Versión verificada de duración conocida, con el reloj fijo en
- * INSTANTE_DEL_COMENTARIO.
- *
- * @param  array<string, mixed>  $atributos
- */
-function versionParaComentar(array $atributos = []): Version
-{
-    test()->travelTo(CarbonImmutable::parse(INSTANTE_DEL_COMENTARIO));
-
-    return Version::factory()->verificada()->create(array_merge([
-        'duration_ms' => DURACION_PARA_COMENTAR,
-    ], $atributos));
-}
-
-function urlDeComentarios(string $versionId): string
-{
-    return "/api/v1/versions/{$versionId}/comments";
-}
-
 it('crea un comentario sobre una versión verificada', function () {
     $version = versionParaComentar();
     impersonarToken(claimsDeToken('productor'));

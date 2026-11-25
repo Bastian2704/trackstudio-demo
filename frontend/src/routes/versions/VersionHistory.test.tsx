@@ -5,11 +5,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import VersionHistory from '@/routes/versions/VersionHistory'
 import { pagina, problema, restaurarApi, simularApi, type RespuestaSimulada } from '@/test/api'
+import { chequeo } from '@/test/analisis'
 import { reproduccionSimulada, simularReproduccion, urlFirmada } from '@/test/audio'
 
 /*
  * TS-25 (HU-14) — ts-14.06, spec frontend HU-14 §4 tests 10 a 13.
  * TS-26 (HU-15) — ts-15.06, spec frontend HU-15 §4 tests 1 a 4 y 13 (al final).
+ * TS-91 — ts-amp-analisis.06, spec frontend TS-91 §4.5 test 28 (insignia del
+ * chequeo en cada versión, al final).
  *
  * Contrato de GET /api/v1/songs/{song}/versions: spec backend HU-14 §3.7 y
  * §3.8. El servidor ya devuelve solo `verificada`, de la más reciente a la más
@@ -31,6 +34,7 @@ function version(n: number, cambios: Record<string, unknown> = {}) {
     version_number: n,
     label: null,
     description: null,
+    change_category: null,
     content_type: 'audio/wav',
     size_bytes: 48211200,
     duration_ms: 213450,
@@ -38,6 +42,8 @@ function version(n: number, cambios: Record<string, unknown> = {}) {
     verified_at: '2026-11-03T14:05:02+00:00',
     created_at: '2026-10-01T12:00:00+00:00',
     updated_at: '2026-11-03T14:05:02+00:00',
+    analysis: null,
+    technical_check: null,
     ...cambios,
   }
 }
@@ -304,5 +310,47 @@ describe('VersionHistory', () => {
       expect(screen.queryByRole('alert')).toBeNull()
       expect(peticiones.filter((p) => p.url.endsWith('/playback-url'))).toHaveLength(4)
     })
+  })
+})
+
+/* TS-90 — ts-amp-motivo.06, spec frontend TS-90 §4 test 13 (§3.6). */
+describe('VersionHistory — motivo (TS-90)', () => {
+  it('muestra la categoría junto al título', async () => {
+    simularApi(() =>
+      pagina([
+        version(2, { change_category: 'master', description: 'Master para streaming.' }),
+        version(1),
+      ]),
+    )
+    renderHistorial()
+
+    const items = await screen.findAllByRole('listitem')
+
+    expect(within(items[0]).getByText('Master')).toBeTruthy()
+    expect(within(items[0]).queryByText('master')).toBeNull()
+    expect(within(items[0]).getByText('Master para streaming.')).toBeTruthy()
+    for (const categoria of ['Voz', 'Instrumentos', 'Mezcla', 'Master', 'Arreglo', 'Otro']) {
+      expect(within(items[1]).queryByText(categoria)).toBeNull()
+    }
+  })
+})
+
+describe('VersionHistory — chequeo técnico (TS-91)', () => {
+  it('pinta en cada versión su propia insignia del chequeo', async () => {
+    simularApi(() =>
+      pagina([
+        version(3, { technical_check: chequeo({ true_peak: 'warning', clipping: 'warning' }) }),
+        version(2, { technical_check: chequeo() }),
+        version(1),
+      ]),
+    )
+    renderHistorial()
+
+    const item = async (titulo: string) =>
+      normalizar((await screen.findByText(titulo)).closest('li')?.textContent)
+
+    expect(await item('v3')).toContain('2 advertencias')
+    expect(await item('v2')).toContain('Chequeo sin advertencias')
+    expect(await item('v1')).toContain('Sin análisis')
   })
 })

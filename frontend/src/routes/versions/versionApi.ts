@@ -1,6 +1,8 @@
 import { api } from '@/lib/api'
 import type {
+  AnalysisPayload,
   AudioContentType,
+  ChangeCategory,
   SignedUpload,
   Version,
   VersionPage,
@@ -11,7 +13,7 @@ export async function createVersion(
   songId: string,
   contentType: AudioContentType,
   sizeBytes: number,
-  extras: { label?: string; description?: string } = {},
+  extras: { label?: string; description?: string; change_category?: ChangeCategory } = {},
 ) {
   const res = await api.post<{ data: Version; upload: SignedUpload }>(
     `/api/v1/songs/${songId}/versions`,
@@ -69,10 +71,13 @@ export async function confirmVersion(
   versionId: string,
   etag: string,
   durationMs: number,
+  analysis?: AnalysisPayload,
 ): Promise<Version> {
+  // Sin análisis, la clave no se envía
   const res = await api.post<{ data: Version }>(`/api/v1/versions/${versionId}/confirm`, {
     etag,
     duration_ms: durationMs,
+    ...(analysis && { analysis }),
   })
 
   return res.data.data

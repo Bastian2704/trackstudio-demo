@@ -114,7 +114,8 @@ it('numera de forma secuencial contando borradas y fallidas', function (string $
 
     impersonarToken(claimsDeToken('productor'));
 
-    $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion())
+    // TS-90 §4 (#14): la v1 está verificada, así que la firma exige el motivo.
+    $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion(datosDeMotivo()))
         ->assertCreated()
         ->assertJsonPath('data.version_number', 5);
 
@@ -337,3 +338,174 @@ it('valida la etiqueta y la descripción', function (array $changes, string $fie
         ->and(Version::withTrashed()->count())->toBe(0)
         ->and($llamadas)->toHaveCount(0);
 })->with('etiquetas y descripciones invalidas');
+
+/*
+|--------------------------------------------------------------------------
+| TS-90 — Motivo de la versión en la firma
+|--------------------------------------------------------------------------
+|
+| Spec: docs/specs/backend/TS-90.md §3.3 y §4 (#6–#10, #12). El motivo es
+| obligatorio si la canción ya tiene una versión verificada vigente (ERD §3.5).
+|
+*/
+
+it('exige categoría y motivo si ya hay una versión verificada', function (array $changes, array $fields) {
+    $llamadas = falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion($changes));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR');
+
+    expect(array_keys($response->json('errors')))->toEqualCanonicalizing($fields)
+        ->and(Version::withTrashed()->count())->toBe(1)
+        ->and($llamadas)->toHaveCount(0);
+})->with([
+    'sin categoría ni texto' => [[], ['change_category', 'description']],
+    'solo la categoría' => [['change_category' => 'mezcla'], ['description']],
+    'solo el texto' => [['description' => 'Subí la voz en el estribillo.'], ['change_category']],
+    'texto en blanco' => [['change_category' => 'mezcla', 'description' => '   '], ['description']],
+]);
+
+it('guarda la categoría y el motivo de una versión nueva', function () {
+    falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion(datosDeMotivo()));
+
+    $response->assertCreated()
+        ->assertJsonPath('data.version_number', 2)
+        ->assertJsonPath('data.change_category', 'mezcla')
+        ->assertJsonPath('data.description', 'Subí la voz en el estribillo.');
+
+    $this->assertDatabaseHas('versions', [
+        'id' => $response->json('data.id'),
+        'change_category' => 'mezcla',
+        'description' => 'Subí la voz en el estribillo.',
+    ]);
+});
+
+it('no pide motivo si la canción no tiene una versión verificada vigente', function (string $previa) {
+    falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+
+    match ($previa) {
+        'ninguna' => null,
+        'pendiente' => Version::factory()->for($song)->create(['version_number' => 1]),
+        'fallida' => Version::factory()->for($song)->fallida()->create(['version_number' => 1]),
+        'verificada borrada' => Version::factory()->for($song)->verificada()->create(['version_number' => 1])->delete(),
+        'verificada de otra canción' => Version::factory()->verificada()->create(['version_number' => 1]),
+    };
+
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion());
+
+    // Una clave ausente también se lee como null: sin la estructura, nacería verde (C2).
+    $response->assertCreated()
+        ->assertJsonStructure(['data' => ['change_category']])
+        ->assertJsonPath('data.change_category', null);
+})->with([
+    'sin versiones' => ['ninguna'],
+    'solo una pendiente' => ['pendiente'],
+    'solo una fallida' => ['fallida'],
+    'una verificada borrada' => ['verificada borrada'],
+    'una verificada de otra canción' => ['verificada de otra canción'],
+]);
+
+it('acepta un motivo opcional en la primera versión', function () {
+    falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion(datosDeMotivo()));
+
+    $response->assertCreated()
+        ->assertJsonPath('data.version_number', 1)
+        ->assertJsonPath('data.change_category', 'mezcla');
+
+    $this->assertDatabaseHas('versions', [
+        'id' => $response->json('data.id'),
+        'change_category' => 'mezcla',
+    ]);
+});
+
+it('exige el texto si la primera versión trae categoría', function () {
+    // Sin required_with, la base rechazaría la fila (versions_change_reason_check) con un 500.
+    $llamadas = falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion(['change_category' => 'voz']));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR');
+
+    expect(array_keys($response->json('errors')))->toBe(['description'])
+        ->and(Version::withTrashed()->count())->toBe(0)
+        ->and($llamadas)->toHaveCount(0);
+});
+
+it('valida el catálogo de categorías', function (mixed $category, bool $conVerificada) {
+    $llamadas = falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+
+    if ($conVerificada) {
+        Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
+    }
+
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion([
+        'change_category' => $category,
+        'description' => 'Subí la voz en el estribillo.',
+    ]));
+
+    $response->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR');
+
+    expect(array_keys($response->json('errors')))->toBe(['change_category'])
+        ->and(Version::withTrashed()->count())->toBe($conVerificada ? 1 : 0)
+        ->and($llamadas)->toHaveCount(0);
+})->with([
+    'en mayúsculas' => ['Voz'],
+    'fuera del catálogo' => ['mastering'],
+    'un número' => [5],
+    'una lista' => [['voz']],
+])->with([
+    'sin verificada previa' => [false],
+    'con verificada previa' => [true],
+]);
+
+it('comprueba el motivo con la canción bloqueada', function () {
+    falsearAlmacenamientoDeAudio();
+    $song = Song::factory()->create();
+    Version::factory()->for($song)->verificada()->create(['version_number' => 1]);
+    impersonarToken(claimsDeToken('productor'));
+
+    /** @var list<string> $consultas */
+    $consultas = [];
+    DB::listen(function (QueryExecuted $query) use (&$consultas): void {
+        $consultas[] = $query->sql;
+    });
+
+    $this->postJson("/api/v1/songs/{$song->id}/versions", datosDeVersion(datosDeMotivo()))->assertCreated();
+
+    $bloqueo = array_key_first(array_filter(
+        $consultas,
+        fn (string $sql): bool => (bool) preg_match('/from "songs".* for update$/i', $sql),
+    ));
+    $comprobacion = array_key_first(array_filter(
+        $consultas,
+        fn (string $sql): bool => (bool) preg_match('/from "versions" where .*"upload_status"/i', $sql),
+    ));
+
+    expect($bloqueo)->not->toBeNull()
+        ->and($comprobacion)->not->toBeNull()
+        ->and($comprobacion)->toBeGreaterThan($bloqueo);
+});

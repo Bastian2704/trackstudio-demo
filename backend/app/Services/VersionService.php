@@ -28,7 +28,7 @@ final class VersionService
     ) {}
 
     /**
-     * @param  array{content_type: string, size_bytes: int, label?: ?string, description?: ?string}  $datos
+     * @param  array{content_type: string, size_bytes: int, label?: ?string, description?: ?string, change_category?: ?string}  $datos
      * @return array{version: Version, upload: array{url: string, fields: array<string, string>, expires_at: CarbonImmutable}}
      */
     public function addVersion(
@@ -62,6 +62,8 @@ final class VersionService
                 ->lockForUpdate()
                 ->first();
 
+            $this->ensureChangeReason($song, $datos);
+
             $number = (int) Version::withTrashed()
                 ->where('song_id', $song->getKey())
                 ->max('version_number') + 1;
@@ -76,6 +78,7 @@ final class VersionService
                 'size_bytes' => $datos['size_bytes'],
                 'label' => $datos['label'] ?? null,
                 'description' => $datos['description'] ?? null,
+                'change_category' => $datos['change_category'] ?? null,
                 'upload_status' => UploadStatus::Pendiente,
                 'uploaded_by' => $usuario->id,
             ]);
@@ -99,7 +102,10 @@ final class VersionService
      * Los pasos a `fallida` se guardan dentro de la transacción y su error se
      * lanza después del commit: un throw dentro de la closure los revertiría.
      *
-     * @param  array{etag: string, duration_ms: int}  $datos
+     * El análisis solo se guarda al verificar; un reintento sobre una
+     * versión ya verificada no lo reemplaza.
+     *
+     * @param  array{etag: string, duration_ms: int, analysis?: ?array<string, mixed>}  $datos
      */
     public function confirmVersion(Version $version, array $datos): Version
     {
@@ -155,6 +161,7 @@ final class VersionService
                 'verified_at' => now(),
                 'size_bytes' => $object['size_bytes'],
                 'duration_ms' => $datos['duration_ms'],
+                'analysis' => $datos['analysis'] ?? null,
             ]);
 
             return [$locked, null];
@@ -202,6 +209,38 @@ final class VersionService
         abort_unless($version->upload_status === UploadStatus::Verificada, 404);
 
         return $this->storage->presignDownload($version->s3_key);
+    }
+
+    /**
+     * Si la canción ya tiene una versión verificada vigente, la nueva exige
+     * categoría y texto del motivo.
+     *
+     * @param  array{change_category?: ?string, description?: ?string}  $datos
+     */
+    private function ensureChangeReason(Song $song, array $datos): void
+    {
+        $requiresReason = Version::query()
+            ->where('song_id', $song->getKey())
+            ->where('upload_status', UploadStatus::Verificada->value)
+            ->exists();
+
+        if (! $requiresReason) {
+            return;
+        }
+
+        $errors = [];
+
+        if (($datos['change_category'] ?? null) === null) {
+            $errors['change_category'] = 'Elige qué cambió en esta versión.';
+        }
+
+        if (($datos['description'] ?? null) === null) {
+            $errors['description'] = 'Explica qué cambió y por qué.';
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     private function abandonCutoff(): CarbonImmutable

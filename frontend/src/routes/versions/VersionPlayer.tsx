@@ -6,7 +6,10 @@ import ErrorAlert from '@/components/ErrorAlert'
 import { useHasRole } from '@/hooks/useRole'
 import type { ApiErrorBody } from '@/lib/api'
 import CommentForm from '@/routes/comments/CommentForm'
+import CommentList from '@/routes/comments/CommentList'
+import CommentTimeline from '@/routes/comments/CommentTimeline'
 
+import { TechnicalCheck } from './TechnicalCheck'
 import { fetchPlaybackUrl } from './versionApi'
 import { type Version, versionTitle } from './versionSchema'
 
@@ -28,8 +31,10 @@ export default function VersionPlayer({ version }: { version: Version }) {
   const resumeAt = useRef<number | null>(null)
   const renewing = useRef(false)
   const [failed, setFailed] = useState(false)
+  // Posición para la barra y el botón, redondeada al segundo (spec HU-18 §3.2).
+  const [positionMs, setPositionMs] = useState(0)
 
-  // HU-17: solo el productor comenta; la parte B de HU-21 sumará al artista.
+  // HU-17/HU-18: solo el productor comenta y ve los comentarios; la parte B de HU-21 sumará al artista.
   const canComment = useHasRole('productor')
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -69,6 +74,12 @@ export default function VersionPlayer({ version }: { version: Version }) {
           onPause={() => {
             wantsToPlay.current = false
           }}
+          onTimeUpdate={(event) => {
+            // Durante la renovación el <audio> nuevo está en 0 hasta loadedmetadata.
+            if (resumeAt.current === null) {
+              setPositionMs(Math.floor(event.currentTarget.currentTime) * 1000)
+            }
+          }}
           onLoadedMetadata={(event) => {
             const audio = event.currentTarget
             renewing.current = false
@@ -92,12 +103,19 @@ export default function VersionPlayer({ version }: { version: Version }) {
           }}
         />
 
-        {/* Fuera de la key del <audio>: al renovar la URL se conserva lo escrito. */}
+        <TechnicalCheck version={version} />
+
+        {/* Fuera de la key del <audio>: al renovar la URL se conserva lo escrito y no se vuelve a pedir el listado. */}
         {canComment && (
-          <CommentForm
-            version={version}
-            getCurrentTime={() => resumeAt.current ?? audioRef.current?.currentTime ?? 0}
-          />
+          <>
+            <CommentTimeline version={version} positionMs={positionMs} />
+            <CommentForm
+              version={version}
+              getCurrentTime={() => resumeAt.current ?? audioRef.current?.currentTime ?? 0}
+              positionMs={positionMs}
+            />
+            <CommentList version={version} />
+          </>
         )}
       </>
     )
