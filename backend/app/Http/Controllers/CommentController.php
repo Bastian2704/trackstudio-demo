@@ -6,11 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Resources\CommentResource;
+use App\Models\Comment;
 use App\Models\Version;
 use App\Services\CommentService;
 use Auth0\Laravel\Users\StatelessUserContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 final class CommentController extends Controller
 {
@@ -29,5 +31,12 @@ final class CommentController extends Controller
         return (new CommentResource(
             $this->comments->addComment($autor, $version, $request->validated())
         ))->response()->setStatusCode(201);
+    }
+
+    public function destroy(Comment $comment): Response
+    {
+        $this->comments->deleteComment($comment);
+
+        return response()->noContent();
     }
 }

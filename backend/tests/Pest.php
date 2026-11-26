@@ -9,6 +9,7 @@ use App\Contracts\MailerContract;
 use App\Enums\ArtistStatus;
 use App\Enums\AudioContentType;
 use App\Models\Artist;
+use App\Models\Comment;
 use App\Models\Production;
 use App\Models\Song;
 use App\Models\User;
@@ -804,8 +805,31 @@ function urlDeComentarios(string $versionId): string
 |--------------------------------------------------------------------------
 */
 
-/** Claves exactas de cada comentario del listado (spec §3.4): las de HU-17 más `author`. */
-const CAMPOS_DE_COMENTARIO_LISTADO = [...CAMPOS_DE_COMENTARIO, 'author'];
+/** Claves exactas de cada comentario del listado: las de HU-17, `author` (HU-18 §3.4) e `is_mine` (HU-19 §3.5). */
+const CAMPOS_DE_COMENTARIO_LISTADO = [...CAMPOS_DE_COMENTARIO, 'author', 'is_mine'];
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de HU-19 (docs/specs/backend/HU-19.md §4)
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Comentario cuyo autor es el usuario local del `sub` de `claimsDeToken()`.
+ *
+ * @param  array<string, mixed>  $atributos
+ */
+function comentarioDelToken(array $atributos = []): Comment
+{
+    $autor = User::query()->firstOrCreate(['auth0_sub' => claimsDeToken()['sub']]);
+
+    return Comment::factory()->create(array_merge(['author_id' => $autor->id], $atributos));
+}
+
+function urlDeComentario(string $commentId): string
+{
+    return "/api/v1/comments/{$commentId}";
+}
 
 /*
 |--------------------------------------------------------------------------

@@ -156,6 +156,26 @@ it('identifica al artista autor por su nombre', function () {
     ]);
 });
 
+it('marca como propios solo los comentarios del usuario del token', function () {
+    // HU-19 §3.5 (#8): del token, de un artista y de otro productor, en ese orden de marca.
+    $version = versionParaComentar();
+    $propio = comentarioDelToken(['version_id' => $version->id, 'timestamp_ms' => 1000]);
+
+    $artista = User::factory()->create();
+    Artist::factory()->create(['user_id' => $artista->id]);
+    Comment::factory()->create(['version_id' => $version->id, 'author_id' => $artista->id, 'timestamp_ms' => 2000]);
+
+    Comment::factory()->create(['version_id' => $version->id, 'timestamp_ms' => 3000]);
+
+    impersonarToken(claimsDeToken('productor'));
+
+    $response = $this->getJson(urlDeComentarios($version->id));
+
+    $response->assertOk()->assertJsonPath('data.0.id', $propio->id);
+
+    expect(array_column($response->json('data'), 'is_mine'))->toBe([true, false, false]);
+});
+
 it('no hace una consulta por comentario', function () {
     exigirRuta('GET', 'api/v1/versions/{version}/comments');
     $version = versionParaComentar();

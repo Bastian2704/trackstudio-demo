@@ -201,6 +201,13 @@ Route::post('/versions/{version}/comments', [CommentController::class, 'store'])
         'can:create,'.Comment::class.',version',
     ]);
 
+Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
+    ->whereUuid('comment')
+    ->middleware([
+        'auth:auth0-api',
+        'can:delete,comment',
+    ]);
+
 Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])
     ->where('token', '[A-Za-z0-9]{64}')
     ->middleware([

@@ -38,6 +38,24 @@ export default function VersionPlayer({ version }: { version: Version }) {
   const canComment = useHasRole('productor')
   const audioRef = useRef<HTMLAudioElement>(null)
 
+  /** Va a `ms` y reproduce, aunque el usuario hubiera pausado. */
+  function seekTo(ms: number) {
+    wantsToPlay.current = true
+    setPositionMs(Math.floor(ms / 1000) * 1000)
+
+    // Renovando la URL: el <audio> nuevo irá a esta posición al cargar.
+    if (resumeAt.current !== null) {
+      resumeAt.current = ms / 1000
+      return
+    }
+
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.currentTime = ms / 1000
+    audio.play().catch(() => {})
+  }
+
   let body
 
   if (failed) {
@@ -108,13 +126,13 @@ export default function VersionPlayer({ version }: { version: Version }) {
         {/* Fuera de la key del <audio>: al renovar la URL se conserva lo escrito y no se vuelve a pedir el listado. */}
         {canComment && (
           <>
-            <CommentTimeline version={version} positionMs={positionMs} />
+            <CommentTimeline version={version} positionMs={positionMs} onSeek={seekTo} />
             <CommentForm
               version={version}
               getCurrentTime={() => resumeAt.current ?? audioRef.current?.currentTime ?? 0}
               positionMs={positionMs}
             />
-            <CommentList version={version} />
+            <CommentList version={version} onSeek={seekTo} />
           </>
         )}
       </>

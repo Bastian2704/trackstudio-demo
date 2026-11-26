@@ -36,6 +36,11 @@ final class CommentService
         ]);
     }
 
+    public function deleteComment(Comment $comment): void
+    {
+        $comment->delete();
+    }
+
     /**
      * @return Collection<int, Comment>
      */
